@@ -1,0 +1,1153 @@
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+<!-- 
+The BSD 2-Clause License
+
+Copyright (c) 2013, YAMAZAKI Satoshi.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+　Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+　Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+---
+BSDライセンス
+
+Copyright (c) 2013, YAMAZAKI Satoshi.
+All rights reserved.
+
+ソースコード形式かバイナリ形式か、変更するかしないかを問わず、以下の条件を満たす場合に限り、再頒布および使用が許可されます。
+
+・ソースコードを再頒布する場合、上記の著作権表示、本条件一覧、および下記免責条項を含めること。
+・バイナリ形式で再頒布する場合、頒布物に付属のドキュメント等の資料に、上記の著作権表示、本条件一覧、および下記免責条項を含めること。
+・書面による特別の許可なしに、本ソフトウェアから派生した製品の宣伝または販売促進に、コントリビューターの名前を使用してはならない。
+
+本ソフトウェアは、著作権者およびコントリビューターによって「現状のまま」提供されており、明示黙示を問わず、商業的な使用可能性、および特定の目的に対する適合性に関する暗黙の保証も含め、またそれに限定されない、いかなる保証もありません。著作権者もコントリビューターも、事由のいかんを問わず、 損害発生の原因いかんを問わず、かつ責任の根拠が契約であるか厳格責任であるか（過失その他の）不法行為であるかを問わず、仮にそのような損害が発生する可能性を知らされていたとしても、本ソフトウェアの使用によって発生した（代替品または代用サービスの調達、使用の喪失、データの喪失、利益の喪失、業務の中断も含め、またそれに限定されない）直接損害、間接損害、偶発的な損害、特別損害、懲罰的損害、または結果損害について、一切責任を負わないものとします。
+
+ -->
+<head>
+<meta charset="utf-8"/>
+<style> body { background-color:#cccccc; } </style>
+</head>
+<body>
+BirdsScript ver.0.01 (c) 2013/08/10 YAMAZAKI Satoshi. <br>
+<textarea cols="60" rows="5" id="yamasemi">
+--- sample code 階乗(fact)
+fact : { _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 } ;
+
+--- 実行して結果を表示
+@.co << fact( n:3 ).0 << ', ' ;
+@.co << fact( n:5 ).0 << ', ' ;
+
+</textarea>
+<input type="button" id="BT1" value="コンパイル（中間コード生成）" onclick="document.getElementById('kawasemi').value ='';document.getElementById('yamasemi_debug').value ='';on_yamasemi(document.getElementById('yamasemi').value, '-' )" Language="JavaScript"><input type="checkbox" onchange="document.getElementById('yamasemi_debug').style.display =this.checked?'block':'none';document.getElementById('kawasemi_debug').style.display =this.checked?'block':'none';">デバッグ情報<br>
+<textarea cols="70" rows="3" id="yamasemi_debug" style="display:none" >
+コンパイル時トレース情報（デバッグ用）
+</textarea><br>
+
+<textarea cols="60" rows="5" id="kawasemi">
+コードを書いて[コンパイル（中間コード生成）]ボタンを押すと、ここに中間コードが生成されます・・・直接入力してもいいけどね
+</textarea>
+<input type="button" id="BT1" value="中間コード実行" onclick="document.getElementById('kawasemi_debug').value ='';document.getElementById('kawasemi_output').value ='';on_kawasemi(document.getElementById('kawasemi').value, '-' )" Language="JavaScript"><BR>
+<textarea cols="80" rows="3" id="kawasemi_debug" style="display:none" >
+中間コード実行時、トレース情報（デバッグ情報）
+</textarea><br>
+<textarea cols="60" rows="5" id="kawasemi_output" >
+[中間コード実行]ボタンを押すと実行結果が表示されます
+</textarea><br>
+<script>//<![CDATA[
+function on_yamasemi(_txt,_flag){var debug_log="";function yamasemi_parser(_tbl){function yamasemi_parser2(_in,_chk_tbl){for(var cc=0;cc<_chk_tbl.length;cc++){var chk=_chk_tbl[cc];var m=chk.src.length;for(var hit=0;hit===0;){hit=1;for(var ii=0;ii<=_in.length-m;ii++){var i=ii;if(chk.lr==="<-")i=_in.length-m-ii;var k=0;for(;k<m;){var c=chk.src[k];if(_in[i+k].lt===c)k++;else if(_in[i+k].lt+_in[i+k].rt===c)k++;else break}if(k===m){var r=chk.fn(_in,i,chk.dis);var tmp=[];for(var j=0;j<_in.length;)if(j===
+i){tmp.push(r);j+=m}else{tmp.push(_in[j]);j++}_in=tmp;hit=0;break}}}}return _in}function null_f(_tbl,_i,_dis){_tbl[_i].lt=_dis;return _tbl[_i]}function ident_f(_tbl,_i){_tbl[_i].lt="ident:";return _tbl[_i]}function member_ident_f(_tbl,_i){return{lt:"expr:",rt:"(. "+_tbl[_i+0].rt+" ."+_tbl[_i+2].rt+" )"}}function public_ident_f(_tbl,_i){_tbl[_i].lt="ident:";_tbl[_i].rt=_tbl[_i+0].rt+_tbl[_i+1].rt;return _tbl[_i]}function expr_f(_tbl,_i){_tbl[_i].lt="expr:";return _tbl[_i]}function define_f(_tbl,_i){return{lt:_tbl[_i+
+1].rt==":"?"const-define:":"define:",rt:_tbl[_i].rt}}function var_def_f(_tbl,_i){return{lt:"expr:",rt:"(:: "+_tbl[_i+0].rt+" "+_tbl[_i+1].rt+" )"}}function var_def2_f(_tbl,_i){return{lt:"expr:",rt:"(:: "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}function var_const_def_f(_tbl,_i){return{lt:"expr:",rt:"(: "+_tbl[_i+0].rt+" "+_tbl[_i+1].rt+" )"}}function var_const_def2_f(_tbl,_i){return{lt:"expr:",rt:"(: "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}function enum_def_f(_tbl,_i){var name=_tbl[_i].rt;var enum_list=
+_tbl[_i+1].rt.split(",");var def="(enum "+_tbl[_i].rt+" ";for(var i=0;i<enum_list.length;i++)def+=enum_list[i]+" ";def+=")";return{lt:"expr:",rt:def}}function get_var_f(_tbl,_i){return{lt:"expr:",rt:_tbl[_i].rt}}function set_var2_f(_tbl,_i){return{lt:"expr:",rt:"("+_tbl[_i].rt+" "+_tbl[_i+1].rt+" )"}}function arg_list1_f(_tbl,_i){return{lt:"arg-list:",rt:_tbl[_i].rt}}function arg_list2_f(_tbl,_i){return{lt:"arg-list:",rt:_tbl[_i].rt+" "+_tbl[_i+1].rt}}function enum_list1_f(_tbl,_i){return{lt:"enum-list:",
+rt:_tbl[_i].rt}}function enum_list2_f(_tbl,_i){return{lt:"enum-list:",rt:_tbl[_i].rt+" "+_tbl[_i+1].rt}}function enum_member_f(_tbl,_i){return{lt:"expr:",rt:"(. [ "+_tbl[_i+0].rt+" ] "+_tbl[_i+2].rt+" )"}}function if_then_f(_tbl,_i){return{lt:"expr:",rt:"(?? "+_tbl[_i+0].rt+" { "+_tbl[_i+2].rt+" } )"}}function if_then_else_f(_tbl,_i){return{lt:"expr:",rt:"(?? "+_tbl[_i+0].rt+" { "+_tbl[_i+2].rt+" } { "+_tbl[_i+4].rt+" } )"}}function break_ident_ex_f(_tbl,_i){return{lt:"expr:",rt:"(break "+_tbl[_i+
+1].rt+" "+_tbl[_i+2].rt+" "+_tbl[_i+3].rt+" )"}}function break_ex_f(_tbl,_i){return{lt:"expr:",rt:"(break noname "+_tbl[_i+1].rt+" )"}}function break_noname_f(_tbl,_i){return{lt:"expr:",rt:"(break noname )"}}function continue_nm_f(_tbl,_i){return{lt:"expr:",rt:"(continue "+_tbl[_i+1].rt+" )"}}function continue_noname_f(_tbl,_i){return{lt:"expr:",rt:"(continue noname )"}}function return_ex_f(_tbl,_i){return{lt:"expr:",rt:"(return [ "+_tbl[_i+1].rt+" ] )"}}function return_list_f(_tbl,_i){return{lt:"expr:",
+rt:"(return [ "+_tbl[_i+1].rt+" ] )"}}function return_f(_tbl,_i){return{lt:"expr:",rt:"(return [  ] )"}}function each_f(_tbl,_i){return{lt:"expr:",rt:"(each "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}function loop_f(_tbl,_i){return{lt:"expr:",rt:"(loop noname "+_tbl[_i+0].rt+" )"}}function increment_f(_tbl,_i){return{lt:"expr:",rt:"("+_tbl[_i+1].rt+" "+_tbl[_i+0].rt+" )"}}function func_call_f(_tbl,_i){return{lt:"func_call?:",rt:""}}function func_call2_f(_tbl,_i){return{lt:"func_body:",rt:"{ }"}}function f_call_f(_tbl,
+_i){return{lt:"expr:",rt:"(call "+_tbl[_i+0].rt+" [ "+_tbl[_i+1].rt+" ] )"}}function list_select_f(_tbl,_i){return{lt:"table_select?:",rt:""}}function scope_f(_tbl,_i){return{lt:"expr:",rt:"( "+_tbl[_i+0].rt+" )"}}function list_f(_tbl,_i){return{lt:"expr:",rt:"[ "+_tbl[_i+0].rt+" ]"}}function list_at_f(_tbl,_i){return{lt:"expr:",rt:"(at "+_tbl[_i+0].rt+" "+_tbl[_i+1].rt+" )"}}debug_log+="\nyamasemi_parser() start ----\n[in]: ";for(var j in _tbl)debug_log+=_tbl[j].lt+_tbl[j].rt+", ";var out1=yamasemi_parser2(_tbl,
+[{fn:null_f,dis:"break:",lr:"->",src:["a:break"],log:"\u4e88\u7d04\u8a9e break"},{fn:null_f,dis:"continue:",lr:"->",src:["a:continue"],log:"\u4e88\u7d04\u8a9e continue"},{fn:null_f,dis:"return:",lr:"->",src:["a:return"],log:"\u4e88\u7d04\u8a9e return"},{fn:null_f,dis:"(:((",lr:"->",src:["(:(","a:","(:("],log:"label"},{fn:null_f,dis:"):))",lr:"->",src:["):)","a:","):)"],log:"label"},{fn:ident_f,dis:"ident:",lr:"->",src:["x:@"],log:"\u4e88\u7d04\u8a9e @ gloval"},{fn:null_f,dis:"expr:",lr:"->",src:["0:",
+".:.","0:"],log:"\u6570\u5b57 real"},{fn:ident_f,dis:"ident:",lr:"->",src:["a:"],log:"\u8b58\u5225\u5b50"},{fn:expr_f,dis:"expr:",lr:"->",src:["0:"],log:"\u6570\u5b57"},{fn:expr_f,dis:"expr:",lr:"->",src:["s:"],log:"\u6587\u5b57"},{fn:expr_f,dis:"expr:",lr:"->",src:["S:"],log:"\u6587\u5b57"},{fn:func_call_f,dis:"func_call?:",lr:"->",src:["(:(","):)"],log:"()"},{fn:list_select_f,dis:"table_select?:",lr:"->",src:["[:[","]:]"],log:"[]"},{fn:func_call2_f,dis:"func_body:",lr:"->",src:["{:{","}:}"],log:"{}"}]);
+var out2=[];for(var i=0;i<out1.length;i++){var o=out1[i].lt+out1[i].rt;if(o==="):)"){var tmp=[];var hit=false;while(e=out2.pop())if(e.lt+e.rt!=="(:(")tmp.unshift(e);else{out2.push({lt:"func_call?:",rt:yamasemi_parser(tmp)});hit=true;break}if(hit==false)throw"SyntaxError: ')'";}else if(o==="]:]"){var tmp=[];var hit=false;while(e=out2.pop())if(e.lt+e.rt!=="[:[")tmp.unshift(e);else{out2.push({lt:"table_select?:",rt:yamasemi_parser(tmp)});hit=true;break}if(hit==false)throw"SyntaxError: ']'";}else if(o===
+"}:}}"){var tmp=[];var hit=false;while(e=out2.pop())if(e.lt+e.rt!=="{:{{")tmp.unshift(e);else{out2.push({lt:"loop_body:",rt:"{ "+yamasemi_parser(tmp)+" }"});hit=true;break}if(hit==false)throw"SyntaxError: '}}'";}else if(o==="}:}"){var tmp=[];var hit=false;while(e=out2.pop())if(e.lt+e.rt!=="{:{")tmp.unshift(e);else{out2.push({lt:"func_body:",rt:"{ "+yamasemi_parser(tmp)+" }"});hit=true;break}if(hit==false)throw"SyntaxError: '}'";}else if(o===";:;"){var tmp=[];while(e=out2.pop()){if(e.lt+e.rt==="{:{"){out2.push(e);
+break}if(e.lt+e.rt==="{:{{"){out2.push(e);break}if(e.lt+e.rt==="(:("){out2.push(e);break}if(e.lt+e.rt==="[:["){out2.push(e);break}tmp.unshift(e)}out2.push({lt:"statement:",rt:yamasemi_parser(tmp)})}else out2.push(out1[i])}var out3=yamasemi_parser2(out2,[{fn:enum_member_f,dis:"expr:",lr:"->",src:["table_select?:",".:.","ident:"],log:"enum list member"},{fn:member_ident_f,lr:"->",src:["ident:",".:.","ident:"]},{fn:f_call_f,dis:"expr:",lr:"->",src:["ident:","func_call?:"],log:"func() call"},{fn:list_at_f,
+dis:"expr:",lr:"->",src:["ident:","table_select?:"],log:"table[] call"},{fn:f_call_f,dis:"expr:",lr:"->",src:["expr:","func_call?:"],log:"func() call"},{fn:list_at_f,dis:"expr:",lr:"->",src:["expr:","table_select?:"],log:"table[] call"},{fn:scope_f,dis:"expr:",lr:"->",src:["func_call?:"],log:"()"},{fn:list_f,dis:"expr:",lr:"->",src:["table_select?:"],log:"[]"},{fn:member_ident_f,lr:"->",src:["expr:",".:.","ident:"]},{fn:member_ident_f,lr:"->",src:["ident:",".:.","expr:"]},{fn:member_ident_f,lr:"->",
+src:["expr:",".:.","expr:"]},{fn:public_ident_f,dis:"ident:",lr:"->",src:[".:.","ident:"],log:". ident -> ident | member\u5909\u6570\u53c2\u7167"},{fn:increment_f,dis:"expr:",lr:"<-",src:["ident:","x:++"],log:"a ++ increment"},{fn:increment_f,dis:"expr:",lr:"<-",src:["ident:","x:--"],log:"a -- decrement"},{lr:"<-",src:["ident:","x:="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"= "+_tbl[_i+0].rt}}},{lr:"<-",src:["ident:","x:*="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"*= "+_tbl[_i+0].rt}}},
+{lr:"<-",src:["ident:","x:/="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"/= "+_tbl[_i+0].rt}}},{lr:"<-",src:["ident:","x:+="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"+= "+_tbl[_i+0].rt}}},{lr:"<-",src:["ident:","x:-="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"-= "+_tbl[_i+0].rt}}},{lr:"<-",src:["ident:","x:&="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"&= "+_tbl[_i+0].rt}}},{lr:"<-",src:["ident:","x:|="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"|= "+_tbl[_i+0].rt}}},{lr:"<-",
+src:["ident:","x:^="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"^= "+_tbl[_i+0].rt}}},{lr:"<-",src:["ident:","x:<<="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"<<= "+_tbl[_i+0].rt}}},{lr:"<-",src:["ident:","x:>>="],fn:function(_tbl,_i){return{lt:"set_var:",rt:">>= "+_tbl[_i+0].rt}}},{lr:"<-",src:["expr:","x:="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"= "+_tbl[_i+0].rt}}},{lr:"<-",src:["expr:","x:*="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"*= "+_tbl[_i+0].rt}}},{lr:"<-",src:["expr:",
+"x:/="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"/= "+_tbl[_i+0].rt}}},{lr:"<-",src:["expr:","x:+="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"+= "+_tbl[_i+0].rt}}},{lr:"<-",src:["expr:","x:-="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"-= "+_tbl[_i+0].rt}}},{lr:"<-",src:["expr:","x:&="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"&= "+_tbl[_i+0].rt}}},{lr:"<-",src:["expr:","x:|="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"|= "+_tbl[_i+0].rt}}},{lr:"<-",src:["expr:","x:^="],fn:function(_tbl,
+_i){return{lt:"set_var:",rt:"^= "+_tbl[_i+0].rt}}},{lr:"<-",src:["expr:","x:<<="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"<<= "+_tbl[_i+0].rt}}},{lr:"<-",src:["expr:","x:>>="],fn:function(_tbl,_i){return{lt:"set_var:",rt:">>= "+_tbl[_i+0].rt}}},{fn:define_f,dis:"define:",lr:"->",src:["ident:","::::"],log:"define"},{fn:define_f,dis:"define:",lr:"->",src:["ident:",":::"],log:"define const"},{fn:get_var_f,dis:"expr:",lr:"->",src:["ident:"],log:"ident -> expr | \u5909\u6570\u53c2\u7167"},{fn:null_f,
+dis:"expr:",lr:"->",src:["expr:","expr:"],log:"expr expr -> member check"},{lr:"->",src:["expr:","x:*","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(* "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:/","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(/ "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:+","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(+ "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:-","expr:"],fn:function(_tbl,
+_i){return{lt:"expr:",rt:"(- "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:&","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(& "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:|","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(| "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:^","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(^ "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:<<","expr:"],fn:function(_tbl,
+_i){return{lt:"expr:",rt:"(<< "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:>>","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(>> "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:<","expr:"],fn:function(_tbl,_i){return{lt:"condition:",rt:"(< "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:>","expr:"],fn:function(_tbl,_i){return{lt:"condition:",rt:"(> "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:<=","expr:"],fn:function(_tbl,
+_i){return{lt:"condition:",rt:"(<= "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:>=","expr:"],fn:function(_tbl,_i){return{lt:"condition:",rt:"(>= "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:==","expr:"],fn:function(_tbl,_i){return{lt:"condition:",rt:"(== "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:!=","expr:"],fn:function(_tbl,_i){return{lt:"condition:",rt:"(!= "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["condition:","x:&&",
+"condition:"],fn:function(_tbl,_i){return{lt:"condition:",rt:"(&& "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["condition:","x:||","condition:"],fn:function(_tbl,_i){return{lt:"condition:",rt:"(|| "+_tbl[_i+0].rt+" "+_tbl[_i+2].rt+" )"}}},{fn:set_var2_f,dis:"expr:",lr:"->",src:["set_var:","expr:"],log:"set_var a = expr."},{fn:set_var2_f,dis:"expr:",lr:"->",src:["set_var:","func_body:"],log:"set_var a = { func_body }"},{fn:null_f,dis:"expr:",lr:"->",src:["set_var:","func_call?:"],log:"set_var a = ( expr. )"},
+{fn:null_f,dis:"expr:",lr:"->",src:["set_var:","table_select?:"],log:"set_var a = [ expr. ]"},{fn:each_f,dis:"expr:",lr:"->",src:["ident:",".:.","loop_body:"],log:"loop with member"},{fn:each_f,dis:"expr:",lr:"->",src:["expr:",".:.","loop_body:"],log:"loop with ex."},{fn:loop_f,dis:"expr:",lr:"->",src:["loop_body:"],log:"loop"},{fn:var_const_def_f,dis:"expr:",lr:"<-",src:["const-define:","expr:"],log:"var const define"},{fn:enum_def_f,dis:"expr:",lr:"<-",src:["const-define:","enum-list:"],log:"enum const define"},
+{fn:var_const_def_f,dis:"expr:",lr:"<-",src:["const-define:","func_body:"],log:"func const define"},{fn:var_def_f,dis:"expr:",lr:"<-",src:["define:","expr:"],log:"var define"},{fn:enum_def_f,dis:"expr:",lr:"<-",src:["define:","enum-list:"],log:"enum define"},{fn:var_def_f,dis:"expr:",lr:"<-",src:["define:","func_body:"],log:"func define"},{fn:null_f,dis:"expr:",lr:"<-",src:["func_body:"],log:"no-neme func define"},{fn:var_def2_f,dis:"expr:",lr:"->",src:["expr:","::::","expr:"],log:"map  a::b"},{fn:var_const_def2_f,
+dis:"expr:",lr:"->",src:["expr:",":::","expr:"],log:"map const  a:b"},{fn:arg_list1_f,dis:"arg-list:",lr:"->",src:["expr:",",:,"],log:"arg list"},{fn:arg_list2_f,dis:"arg-list:",lr:"->",src:["arg-list:","arg-list:"],log:"arg list"},{fn:arg_list2_f,dis:"arg-list:",lr:"->",src:["arg-list:","expr:"],log:"arg list"},{fn:var_def_f,dis:"expr:",lr:"<-",src:["define:","arg-list:"],log:"list define"},{fn:enum_list1_f,dis:"enum-list:",lr:"->",src:["enum:",",:,"],log:"enum list"},{fn:enum_list2_f,dis:"enum-list:",
+lr:"->",src:["enum-list:","enum-list:"],log:"enum list"},{fn:enum_list2_f,dis:"enum-list:",lr:"->",src:["enum-list:","enum:"],log:"enum list"},{fn:break_ident_ex_f,dis:"statement:",lr:"->",src:["break:break","ident:","arg-list:"],log:"break label arg-list"},{fn:break_ex_f,dis:"statement:",lr:"->",src:["break:break","arg-list:"],log:"break arg-list"},{fn:return_list_f,dis:"statement:",lr:"->",src:["return:return","arg-list:"],log:"return arg-list"},{fn:break_ident_ex_f,dis:"statement:",lr:"->",src:["break:break",
+"ident:","expr:"],log:"break label ex."},{fn:break_ex_f,dis:"statement:",lr:"->",src:["break:break","expr:"],log:"break ex."},{fn:return_ex_f,dis:"statement:",lr:"->",src:["return:return","expr:"],log:"return ex."},{fn:break_noname_f,dis:"statement:",lr:"->",src:["break:break"],log:"break"},{fn:return_f,dis:"statement:",lr:"->",src:["return:return"],log:"return"},{fn:continue_nm_f,dis:"statement:",lr:"->",src:["continue:continue","ident:"],log:"continue label"},{fn:continue_noname_f,dis:"statement:",
+lr:"->",src:["continue:continue"],log:"continue"},{fn:if_then_else_f,dis:"expr:",lr:"<-",src:["condition:","x:??","expr:","x:!!","expr:"],log:"if then else"},{fn:if_then_else_f,dis:"expr:",lr:"<-",src:["condition:","x:??","expr:","x:!!","statement:"],log:"if then else"},{fn:if_then_else_f,dis:"expr:",lr:"<-",src:["condition:","x:??","statement:","x:!!","expr:"],log:"if then else"},{fn:if_then_else_f,dis:"expr:",lr:"<-",src:["condition:","x:??","statement:","x:!!","statement:"],log:"if then else"},
+{fn:if_then_f,dis:"expr:",lr:"<-",src:["condition:","x:??","expr:"],log:"if then"},{fn:if_then_f,dis:"expr:",lr:"<-",src:["condition:","x:??","statement:"],log:"if then"},{fn:null_f,dis:"expr:",lr:"->",src:["condition:"],log:"condition: -> expr:"}]);for(var i in out3)if(out3[i].lt!=="expr:"&&out3[i].lt!=="statement:"&&out3[i].lt!=="arg-list:")throw"SyntaxError: "+out3[i].lt+out3[i].rt;var out4="";for(var i in out3)out4+=(i=="0"?"":" ")+out3[i].rt;return out4}var str=function comment_del(_tx){var out1=
+"";for(var i=0;i<_tx.length;i++)switch(_tx[i]){case "'":out1+="s";break;case '"':out1+="S";break;case "/":out1+="b";break;case "-":out1+="b";break;case ".":out1+="b";break;case "\n":out1+="e";break;default:out1+=" ";break}var out2="";var mode=" ";for(var i=0;i<out1.length;i++){switch(out1[i]){case "s":if(mode==="s")mode=" ";else mode="s";break;case "S":if(mode==="S")mode=" ";else mode="S";break}if(mode!==" ")out2+=mode;else out2+=out1[i]}var out3="";mode=" ";for(var i=0;i<out2.length;i++){c=out2[i];
+switch(mode+c){case " b":case "eb":if(_tx.substr(i,2)==="//")c="c";if(_tx.substr(i,3)==="---")c="c";if(_tx.substr(i,3)==="...")c="c";break}switch(c){case "c":mode="c";break;case "e":mode=" ";break}if(mode===" ")out3+=_tx[i]}return out3}(_txt);var out1="";for(var i=0;i<str.length;i++)switch(str[i]){case " ":out1+=" ";break;case "!":out1+="x";break;case '"':out1+="S";break;case "#":out1+="x";break;case "$":out1+="x";break;case "%":out1+="x";break;case "&":out1+="x";break;case "'":out1+="s";break;case "(":out1+=
+"(";break;case ")":out1+=")";break;case "*":out1+="x";break;case "+":out1+="x";break;case ",":out1+=",";break;case "-":out1+="x";break;case ".":out1+=".";break;case "/":out1+="x";break;case "0":out1+="0";break;case "1":out1+="0";break;case "2":out1+="0";break;case "3":out1+="0";break;case "4":out1+="0";break;case "5":out1+="0";break;case "6":out1+="0";break;case "7":out1+="0";break;case "8":out1+="0";break;case "9":out1+="0";break;case ":":out1+=":";break;case ";":out1+=";";break;case "<":out1+="x";
+break;case "=":out1+="x";break;case ">":out1+="x";break;case "?":out1+="x";break;case "@":out1+="x";break;case "A":out1+="a";break;case "B":out1+="a";break;case "C":out1+="a";break;case "D":out1+="a";break;case "E":out1+="a";break;case "F":out1+="a";break;case "G":out1+="a";break;case "H":out1+="a";break;case "I":out1+="a";break;case "J":out1+="a";break;case "K":out1+="a";break;case "L":out1+="a";break;case "M":out1+="a";break;case "N":out1+="a";break;case "O":out1+="a";break;case "P":out1+="a";break;
+case "Q":out1+="a";break;case "R":out1+="a";break;case "S":out1+="a";break;case "T":out1+="a";break;case "U":out1+="a";break;case "V":out1+="a";break;case "W":out1+="a";break;case "X":out1+="a";break;case "Y":out1+="a";break;case "Z":out1+="a";break;case "[":out1+="[";break;case "\\":out1+="x";break;case "]":out1+="]";break;case "^":out1+="x";break;case "_":out1+="a";break;case "`":out1+="x";break;case "a":out1+="a";break;case "b":out1+="a";break;case "c":out1+="a";break;case "d":out1+="a";break;
+case "e":out1+="a";break;case "f":out1+="a";break;case "g":out1+="a";break;case "h":out1+="a";break;case "i":out1+="a";break;case "j":out1+="a";break;case "k":out1+="a";break;case "l":out1+="a";break;case "m":out1+="a";break;case "n":out1+="a";break;case "o":out1+="a";break;case "p":out1+="a";break;case "q":out1+="a";break;case "r":out1+="a";break;case "s":out1+="a";break;case "t":out1+="a";break;case "u":out1+="a";break;case "v":out1+="a";break;case "w":out1+="a";break;case "x":out1+="a";break;case "y":out1+=
+"a";break;case "z":out1+="a";break;case "{":out1+="{";break;case "|":out1+="x";break;case "}":out1+="}";break;case "~":out1+="x";break;default:out1+=" ";break}var out2="";var mode=" ";for(var i=0;i<out1.length;i++){switch(out1[i]){case "s":if(mode==="s")mode=" ";else mode="s";break;case "S":if(mode==="S")mode=" ";else mode="S";break}if(mode!=="a"&&i>0&&out1[i-1]==="a"&&out1[i]==="0")mode="a";else if(mode==="a"&&out1[i]!=="a"&&out1[i]!=="0")mode=" ";if(mode!==" ")out2+=mode;else out2+=out1[i]}var out3=
+"";var wd="";mode=out2[0];var tbl=[];for(var i=0;i<out2.length;i++)if(mode===out2[i])wd+=str[i];else{if(mode!==" ")tbl.push({lt:mode+":",rt:wd});wd=str[i];mode=out2[i]}if(mode!==" ")tbl.push({lt:mode+":",rt:wd});for(var j in tbl){if(tbl[j].lt!=="S:")continue;tbl[j].lt="s:";tbl[j].rt="'"+tbl[j].rt.substr(1,tbl[j].rt.length-2)+"'"}debug_log+="\n[start]------";try{var s_list=yamasemi_parser(tbl);debug_log+="\n[end s-list]: "+s_list;debug_log+="\n------\n"}catch(e){s_list=e}if(_flag===s_list)return"d(^-^)b";
+document.getElementById("yamasemi_debug").value+=debug_log;document.getElementById("kawasemi").value+=s_list;return"NG! q(ToT)p -> "+_txt};
+
+function on_kawasemi(_txt,_flag){var g_token_tbl=[];var g_stack_tbl=[];var g_err_list=[];var g_debug_log="";var g_output="";function kawa_init(){g_token_tbl=[];g_stack_tbl=[];g_err_list=[];g_debug_log="";g_output=""}function syntax_error(_str){g_err_list.push("syntax-error : "+_str);return{_mode:"[event]",_type:"error",_val:"syntax-error : "+_str,_goto:"top"}}function exception(_str){g_err_list.push("exception : "+_str);return{_mode:"[event]",_type:"exception",_val:"exception : "+_str,_goto:"top"}}
+function get_null(){return{_mode:"[stack]",_type:"list",_val:[],_name:"null",_const:false}}function stack_dtor(_stack){for(var i in _stack){var dtor=_stack[i];if(dtor._type==="list")stack_dtor(dtor._val);else if(dtor._type==="func_no"&&dtor._name==="dtor")var r=kawa_parser(g_token_tbl[dtor._val])}}function stack_pop(_pos){var r=get_null();for(;_pos<g_stack_tbl.length;){var dtor=g_stack_tbl.pop();if(dtor._type==="list")stack_dtor(dtor._val);else if(dtor._type==="func_no"&&dtor._name==="dtor")var r=
+kawa_parser(g_token_tbl[dtor._val]);else if(dtor._name==="out")r=dtor}return r}function kawa_parser(_token_list){if(!_token_list)return[];function get_var(_v){if(_v._type==="list_no"){var arg_it=g_stack_tbl.length;var r=kawa_parser(g_token_tbl[_v._val]);if(r._mode==="[event]")return r;for(;arg_it<g_stack_tbl.length;)g_stack_tbl.pop();var r2={_mode:"[stack]",_type:"map",_val:[],_name:"literal",_const:false};var typ="map";for(var it in r){var rv=r[it];if(rv._mode==="[stack]"&&rv._name==="literal"){rv._name=
+""+it;rv._this=r2;r2._type="list"}}r2._val=r;return r2}if(_v._type!=="ident")return _v;var mat=_v._val;for(var i=g_stack_tbl.length-1;i>=0;i--)if(g_stack_tbl[i]._mode==="[stack]")if(g_stack_tbl[i]._name===mat)return g_stack_tbl[i];g_err_list.push("undefined-var (1151): "+mat);return{_mode:"[event]",_type:"error",_val:"undefined-var : "+mat,_goto:"top"}}function set_var(_n,_v){g_debug_log+="\nset_var: "+_n._val+", "+_v._val;var vv=get_var(_v);if(vv._mode==="[event]")return vv;if(_n._type!=="ident"){if(_n._const===
+true)if(_n._this._const===true)return syntax_error("do not set const (1167):"+_n._name+":"+_n._val);_n._val=vv._val;_n._type=vv._type;return _n}for(var i=g_stack_tbl.length-1;i>=0;i--){var o=g_stack_tbl[i];if(o._mode==="[stack]")if(o._name===_n._val){if(o._const===true)return syntax_error("do not set const (1185): "+o._name+":"+o._val);o._val=vv._val;o._type=vv._type;var r=clone(o);r._name="literal";return r}}g_err_list.push("undefined-var (1198): "+_n._name+":"+_n._val);return{_mode:"[event]",_type:"error",
+_val:"undefined-var : "+_n._val,_goto:"top"}}function cmp(_c,_v1,_v2){g_debug_log+="\ncmp:"+_c+", "+_v1._val+", "+_v2._val;var v1=get_var(_v1);if(v1._mode==="[event]")return v1;var v2=get_var(_v2);if(v2._mode==="[event]")return v2;if(v1._type!==v2._type)return{_mode:"[stack]",_type:"bool",_val:false,_name:"literal",_const:true};if(_c==="(>")return{_mode:"[stack]",_type:"bool",_val:v1._val>v2._val,_name:"literal",_const:true};if(_c==="(<")return{_mode:"[stack]",_type:"bool",_val:v1._val<v2._val,_name:"literal",
+_const:true};if(_c==="(>=")return{_mode:"[stack]",_type:"bool",_val:v1._val>=v2._val,_name:"literal",_const:true};if(_c==="(<=")return{_mode:"[stack]",_type:"bool",_val:v1._val<=v2._val,_name:"literal",_const:true};if(_c==="(==")return{_mode:"[stack]",_type:"bool",_val:v1._val===v2._val,_name:"literal",_const:true};if(_c==="(!=")return{_mode:"[stack]",_type:"bool",_val:v1._val!==v2._val,_name:"literal",_const:true};if(_c==="(&&")return{_mode:"[stack]",_type:"bool",_val:v1._val&&v2._val,_name:"literal",
+_const:true};if(_c==="(||")return{_mode:"[stack]",_type:"bool",_val:v1._val||v2._val,_name:"literal",_const:true};if(v1._type==="str"&&v2._type==="str"&&v1._val.length===1&&v2._val.length===1){if(_c==="(+")return{_mode:"[stack]",_type:v1._type,_val:String.fromCharCode(v1._val.charCodeAt(0)+v2._val.charCodeAt(0)),_name:"literal",_const:true};if(_c==="(-")return{_mode:"[stack]",_type:v1._type,_val:String.fromCharCode(v1._val.charCodeAt(0)-v2._val.charCodeAt(0)),_name:"literal",_const:true}}if(_c===
+"(*")return{_mode:"[stack]",_type:v1._type,_val:v1._val*v2._val,_name:"literal",_const:true};if(_c==="(/")return{_mode:"[stack]",_type:v1._type,_val:Math.floor(v1._val/v2._val),_name:"literal",_const:true};if(_c==="(+")return{_mode:"[stack]",_type:v1._type,_val:v1._val+v2._val,_name:"literal",_const:true};if(_c==="(-")return{_mode:"[stack]",_type:v1._type,_val:v1._val-v2._val,_name:"literal",_const:true};if(_c==="(&")return{_mode:"[stack]",_type:v1._type,_val:v1._val&v2._val,_name:"literal",_const:true};
+if(_c==="(|")return{_mode:"[stack]",_type:v1._type,_val:v1._val|v2._val,_name:"literal",_const:true};if(_c==="(^")return{_mode:"[stack]",_type:v1._type,_val:v1._val^v2._val,_name:"literal",_const:true};if(_c==="(>>")return{_mode:"[stack]",_type:v1._type,_val:v1._val>>v2._val,_name:"literal",_const:true};return syntax_error(_c)}function exp(_c,_v1,_v2){g_debug_log+="\nexp:"+_c+", "+_v1._val+", "+_v2._val;var v2=get_var(_v2);if(v2._mode==="[event]")return v2;if(v2._type!=="int")return syntax_error("type not-match (1252): "+
+v2._name+":"+v2._val+" "+v2._type);if(_v1._type!=="ident"){if(_v1._const===true)return syntax_error("do not set const (1255):"+_v1._name+":"+_v1._val);if(_v1._type!=="int")return syntax_error("type not-match (1256):"+_v1._name+":"+_v1._val);if(_c==="*=")return{_mode:"[stack]",_type:"int",_val:_v1._val*=v2._val,_name:"literal",_const:false};if(_c==="/=")return{_mode:"[stack]",_type:"int",_val:_v1._val=Math.floor(_v1._val/v2._val),_name:"literal",_const:false};if(_c==="+=")return{_mode:"[stack]",_type:"int",
+_val:_v1._val+=v2._val,_name:"literal",_const:false};if(_c==="-=")return{_mode:"[stack]",_type:"int",_val:_v1._val-=v2._val,_name:"literal",_const:false};g_err_list.push("undefined-var (1312): "+_v1._val+" "+_c);return{_mode:"[event]",_type:"error",_val:"undefined-var:"+_v1._val,_goto:"top"}}var mat=_v1._val;for(var i=g_stack_tbl.length-1;i>=0;i--){var o=g_stack_tbl[i];if(o._name===mat){if(o._const===true)return syntax_error("do not set const (1272): "+o._name+":"+o._val);if(o._type!=="int")return syntax_error("type not-match (1273):"+
+o._name+":"+o._val);if(_c==="*=")return{_mode:"[stack]",_type:"int",_val:o._val*=v2._val,_name:"literal",_const:false};if(_c==="/=")return{_mode:"[stack]",_type:"int",_val:o._val/=v2._val,_name:"literal",_const:false};if(_c==="+=")return{_mode:"[stack]",_type:"int",_val:o._val+=v2._val,_name:"literal",_const:false};if(_c==="-=")return{_mode:"[stack]",_type:"int",_val:o._val-=v2._val,_name:"literal",_const:false}}}g_err_list.push("undefined-var (1282): "+_v1._name+":"+_v1._val+" "+_c);return{_mode:"[event]",
+_type:"error",_val:"undefined-var:"+_v1._val,_goto:"top"}}function clone(_v){return{_mode:_v._mode,_type:_v._type,_val:_v._val,_name:_v._name,_const:_v._const}}var local_token=[];for(var i=0;i<_token_list.length;i++){var tkn=_token_list[i];if(tkn._type!=="ident"||tkn._val!==")"){if(tkn._val==="("||tkn._val==="(each"||tkn._val==="(loop")tkn._stack_length=g_stack_tbl.length;local_token.push(tkn);continue}var tmp=[];for(var ii=local_token.length-1;ii>=0;--ii){var c=local_token.pop();tmp.unshift(c);if(c._type===
+"ident"&&c._val[0]==="(")break}if(tmp.length<=0)continue;tkn=tmp[0]._val;if(tkn==="(")if(tmp.length<2)local_token.push(get_null());else{var out=stack_pop(tmp[0]._stack_length);if(out._mode==="[event]")return out;if(out._name==="null")local_token.push(tmp[tmp.length-1]);else local_token.push(out)}else if(tkn==="(at"||tkn==="(.")if(tmp.length<3)return syntax_error("arg_size < 3 : "+tkn);else{if(tmp[1]._val==="@"){var c=clone(tmp[1]);c._val=tmp[1]._val+tmp[2]._val;c._type="int";local_token.push(c);continue}var v1=
+get_var(tmp[1]);if(v1._mode==="[event]")return v1;var hit=false;if(v1._mode==="[stack]"&&(v1._type==="list"||v1._type==="map")){var v2=tmp[2];if(tkn==="(at")v2=get_var(tmp[2]);if((v1._type==="list"||v1._type==="map")&&v2._type==="int"&&v2._val>=0&&v2._val<v1._val.length){local_token.push(v1._val[v2._val]);hit=true}else{var mat=v2._val;if(v1._type==="map")mat=""+mat;for(var j in v1._val){hit=v1._val[j];if(hit._name===mat){local_token.push(hit);break}hit=false}if(hit===false){var nm="";for(var j=g_stack_tbl.length-
+1;j>=0;j--)if(g_stack_tbl[j]._mode==="[stack]")if(g_stack_tbl[j]._name===mat){hit=g_stack_tbl[j];break}if(hit!==false&&hit._type==="int"&&hit._val>=0&&hit._val<v1._val.length)local_token.push(v1._val[hit._val])}}if(hit===false)for(var j in v1._val){hit=v1._val[j];if(hit._name==="unmatch"){local_token.push(hit);break}hit=false}}if(hit===false){g_err_list.push("undefined-var (1409): "+v2._name+":"+v2._val);return{_mode:"[event]",_type:"error",_val:"undefined-var : "+v2._val,_goto:"top"}}}else if(tkn===
+"(:"||tkn==="(::")if(tmp.length<3)return syntax_error("arg_size < 3 : "+tkn);else{var v1=tmp[1]._val;g_debug_log+="\ndefine_const:"+v1+", "+tmp[2]._val;if(tmp[1]._type!=="ident")if(tmp[1]._type!=="int")return syntax_error("do not define : "+v1);else v1=""+v1;var v2=get_var(tmp[2]);if(v2._mode==="[event]")return v2;var r={_mode:"[stack]",_type:v2._type,_val:v2._val,_name:v1,_const:tkn==="(:"};g_stack_tbl.push(r);local_token.push(r)}else if(tkn==="(=")if(tmp.length<3)return syntax_error("arg_size < 3 : "+
+tkn);else{var r=set_var(tmp[1],tmp[2]);if(r._mode==="[event]")return r;local_token.push(r)}else if(tkn==="(<<")if(tmp.length<3)return syntax_error("arg_size < 3 : "+tkn);else{g_debug_log+="\npush_var:"+tmp[1]._val+", "+tmp[2]._val;if(tmp[1]._val==="@.co"){var t2=get_var(tmp[2]);if(t2._type==="str"||t2._type==="int"){g_debug_log+="\n>>> "+t2._val;g_output+=t2._val}else if(t2._type==="list"){g_debug_log+="\n>>> "+t2._type+"[ ";g_output+="\n"+"[ ";for(var j in t2._val){g_debug_log+=t2._val[j]._name+
+":"+t2._val[j]._val+", ";g_output+=t2._val[j]._val+", "}g_debug_log+="]";g_output+="]"}else if(t2._type==="map"){g_debug_log+="\n>>> "+t2._type+"[ ";g_output+="\n"+t2._type+"[ ";for(var j in t2._val){g_debug_log+=t2._val[j]._name+":"+t2._val[j]._val+", ";g_output+=t2._val[j]._name+":"+t2._val[j]._val+", "}g_debug_log+="]";g_output+="]"}local_token.push(tmp[1])}else if(tmp[1]._type!=="ident")return syntax_error("(1471): "+tmp[1]._name+":"+tmp[1]._val);for(var j=g_stack_tbl.length-1;j>=0;j--){var o=
+g_stack_tbl[j];if(o._mode==="[stack]")if(o._name===tmp[1]._val){if(o._const===true)return syntax_error("do not set const "+tmp[1]._name+":"+tmp[1]._val);if(o._type==="map"||o._type==="list"){var t2=get_var(tmp[2]);if(t2._name==="literal")o._val.push({_mode:t2._mode,_type:t2._type,_val:t2._val,_name:"."+o._val.length,_const:t2._const,_this:o});else{var c=clone(t2);o._val.push(c)}}else if(o._type==="str")o._val=""+o._val+get_var(tmp[2])._val;else if(o._type==="int"){local_token.push({_mode:"[stack]",
+_type:o._type,_val:o._val<<get_var(tmp[2])._val,_name:"literal",_const:true});break}local_token.push(tmp[1]);break}}}else if(tkn==="(<"||tkn==="(>"||tkn==="(<="||tkn==="(>="||tkn==="(=="||tkn==="(!="||tkn==="(&&"||tkn==="(||"||tkn==="(*"||tkn==="(/"||tkn==="(+"||tkn==="(-"||tkn==="(&"||tkn==="(|"||tkn==="(^"||tkn==="(>>")if(tmp.length<3)return syntax_error("arg_size < 3 : "+tkn);else local_token.push(cmp(tkn,tmp[1],tmp[2]));else if(tkn==="(??")if(tmp.length<3)return syntax_error("arg_size < 3 : "+
+tkn);else if(tmp[1]._type==="bool"&&tmp[1]._val===true){var r=kawa_parser(g_token_tbl[tmp[2]._val]);if(r._mode==="[event]")return r;for(var k in r)local_token.push(r[k])}else if(tmp.length===4){var r=kawa_parser(g_token_tbl[tmp[3]._val]);if(r._mode==="[event]")return r;for(var k in r)local_token.push(r[k])}else local_token.push({_mode:"[token]",_type:"bool",_val:false,_const:true});else if(tkn==="(loop"){if(tmp.length<3)return syntax_error("arg_size < 3 : "+tkn);g_stack_tbl.push({_mode:"[stack]",
+_type:"str",_val:"",_name:"out",_const:false});var arg_it=g_stack_tbl.length;var r=get_null();var lp=0;for(;lp<100;lp++){var r=kawa_parser(g_token_tbl[tmp[2]._val]);if(r._mode==="[event]"&&r._type==="break"){if(r._goto!==tmp[1]._val){var out=stack_pop(tmp[0]._stack_length);if(out._mode==="[event]")return out;local_token.push(get_null());return r}g_stack_tbl.push(r._val);break}if(r._mode==="[event]"&&r._type==="continue"){if(r._goto!==tmp[1]._val){var out=stack_pop(tmp[0]._stack_length);if(out._mode===
+"[event]")return out;local_token.push(get_null());return r}continue}if(r._mode==="[event]")return r}if(lp>=100)return exception("loop limit-over: "+tmp[1]._val);var out=stack_pop(tmp[0]._stack_length);if(out._mode==="[event]")return out;local_token.push(out)}else if(tkn==="(each"){if(tmp.length<3)return syntax_error("arg_size < 3 : "+tkn);var v1=get_var(tmp[1]);if(v1._mode==="[event]")return v1;var max=0;if(v1._type==="str")max=v1._val.length;else if(v1._type==="int")max=v1._val;else if(v1._type===
+"map")max=v1._val.length;else if(v1._type==="list")max=v1._val.length;else return syntax_error("each type error: "+v1._type);g_stack_tbl.push({_mode:"[stack]",_type:"str",_val:"",_name:"out",_const:false});var arg_it=g_stack_tbl.length;g_stack_tbl.push({_mode:"[stack]",_type:v1._type,_val:0,_name:"it",_const:true});g_stack_tbl.push({_mode:"[stack]",_type:"int",_val:max,_name:"max",_const:true});var r=get_null();for(var ech=0;ech<max;ech++){if(v1._type==="str")g_stack_tbl[arg_it]._val=v1._val.substr(ech,
+1);else if(v1._type==="int")g_stack_tbl[arg_it]._val=ech;else if(v1._type==="map"){var c=clone(v1._val[ech]);c._name="it";g_stack_tbl[arg_it]=c}else if(v1._type==="list"){var c=clone(v1._val[ech]);c._name="it";g_stack_tbl[arg_it]=c}r=kawa_parser(g_token_tbl[tmp[2]._val]);if(r._mode==="[event]"&&r._type==="break"){if(r._goto!=="each"){var out=stack_pop(tmp[0]._stack_length);if(out._mode==="[event]")return out;local_token.push(get_null());return r}g_stack_tbl.push(r._val);break}if(r._mode==="[event]"&&
+r._type==="continue"){if(r._goto!=="each"){var out=stack_pop(tmp[0]._stack_length);if(out._mode==="[event]")return out;local_token.push(get_null());return r}continue}if(r._mode==="[event]")return r}var out=stack_pop(tmp[0]._stack_length);if(out._mode==="[event]")return out;local_token.push(out)}else if(tkn==="(break"){if(tmp.length===2)return{_mode:"[event]",_type:"break",_val:get_null(),_goto:tmp[1]._val};if(tmp.length<3)return syntax_error("arg_size < 3 : "+tkn);return{_mode:"[event]",_type:"break",
+_val:get_var(tmp[2]),_goto:tmp[1]._val}}else if(tkn==="(continue"){if(tmp.length<2)return syntax_error("arg_size < 2 : "+tkn);return{_mode:"[event]",_type:"continue",_val:get_null(),_goto:tmp[1]._val}}else if(tkn==="(++")if(tmp.length<2)return syntax_error("arg_size < 2 : "+tkn);else local_token.push(exp("+=",tmp[1],{_mode:"[token]",_type:"int",_val:1}));else if(tkn==="(--")if(tmp.length<2)return syntax_error("arg_size < 2 : "+tkn);else local_token.push(exp("-=",tmp[1],{_mode:"[token]",_type:"int",
+_val:1}));else if(tkn==="(+=")if(tmp.length<3)return syntax_error("arg_size < 3 : "+tkn);else local_token.push(exp("+=",tmp[1],tmp[2]));else if(tkn==="(-=")if(tmp.length<3)return syntax_error("arg_size < 3 : "+tkn);else local_token.push(exp("-=",tmp[1],tmp[2]));else if(tkn==="(*=")if(tmp.length<3)return syntax_error("arg_size < 3 : "+tkn);else local_token.push(exp("*=",tmp[1],tmp[2]));else if(tkn==="(/=")if(tmp.length<3)return syntax_error("arg_size < 3 : "+tkn);else local_token.push(exp("/=",tmp[1],
+tmp[2]));else if(tkn==="(call"){if(tmp.length<3)return syntax_error("arg_size < 3 : "+tkn);var v1=get_var(tmp[1]);if(v1._mode==="[event]")return v1;if(v1._this){var loc_stk=v1._this._val;for(var j=loc_stk.length-1;j>=0;j--)if(loc_stk[j]._mode==="[stack]")g_stack_tbl.push(loc_stk[j])}var arg_it=g_stack_tbl.length;if(tmp.length===3){var r=kawa_parser(g_token_tbl[tmp[2]._val]);if(r._mode==="[event]")return r;for(var j=g_stack_tbl.length-1;arg_it-1<j;j--)g_stack_tbl[j]._name="_"+g_stack_tbl[j]._name;
+g_stack_tbl.push({_mode:"[stack]",_type:"int",_val:g_stack_tbl.length-arg_it,_name:"arg_size",_const:true})}var arg_it2=g_stack_tbl.length;if(v1._type!=="func_no")return syntax_error("func_no: "+v1._val);var r=kawa_parser(g_token_tbl[v1._val]);if(r._mode==="[event]")if(r._type!=="return"){for(;arg_it<g_stack_tbl.length;)g_stack_tbl.pop();return r}else r=r._val;if(r._type!=="list"&&r._type!=="map"){var r2={_mode:"[stack]",_type:"list",_val:[],_name:"out",_const:false};var o=false;for(var j in r){var t=
+clone(r[j]);if(!t._name||t._name===".literal"||t._name==="literal"){if(o===false)o=get_var(t)}else if(t._name==="out")o=t;else{t._this=r2;r2._val.push(t)}}if(o!==false){o._name=".0";o._const=true;o._this=r2;r2._val.push(o)}r=r2}else for(var j in r._val){var t=r._val[j];t._name="."+t._name}for(;arg_it2<g_stack_tbl.length;)var mem=g_stack_tbl.pop();for(;arg_it<g_stack_tbl.length;){var mem=g_stack_tbl.pop();mem._this=r;r._val.push(mem)}local_token.push(r)}else if(tkn==="(return"){if(tmp.length<2)return syntax_error("arg_size < 2 : "+
+tkn);var r=get_var(tmp[1]);if(r._mode==="[event]")return r;if(r._type==="list"||r._type==="map"){var k=0;for(var j in r._val){var t=clone(r._val[j]);if(r._val[j]._name)t._name="."+t._name;else{t=clone(get_var(t));t._name="."+k;k++}local_token.push(t)}}else return syntax_error("return not list : "+tkn);return{_mode:"[event]",_type:"return",_val:local_token}}else return syntax_error("program_error: "+tkn)}return local_token}function comment_del(_tx){var out1="";for(var i=0;i<_tx.length;i++)switch(_tx[i]){case "'":out1+=
+"s";break;case '"':out1+="S";break;case "/":out1+="b";break;case "-":out1+="b";break;case ".":out1+="b";break;case "\n":out1+="e";break;default:out1+=" ";break}var out2="";var mode=" ";for(var i=0;i<out1.length;i++){switch(out1[i]){case "s":if(mode==="s")mode=" ";else mode="s";break;case "S":if(mode==="S")mode=" ";else mode="S";break}if(mode!==" ")out2+=mode;else out2+=out1[i]}var out3="";mode=" ";for(var i=0;i<out2.length;i++){c=out2[i];switch(mode+c){case " b":case "eb":if(_tx.substr(i,2)==="//")c=
+"c";if(_tx.substr(i,3)==="---")c="c";if(_tx.substr(i,3)==="...")c="c";break}switch(c){case "c":mode="c";break;case "e":mode=" ";break}if(mode===" ")out3+=_tx[i]}return out3}function lexer(_in_tbl){function token(_str){if(_str==="a:true")return{_mode:"[stack]",_type:"bool",_val:true,_name:"literal",_const:true};if(_str==="a:false")return{_mode:"[stack]",_type:"bool",_val:false,_name:"literal",_const:true};var t=_str.substr(0,2);if(t==="0:")return{_mode:"[stack]",_type:"int",_val:parseInt(_str.substr(2,
+_str.length-2)),_name:"literal",_const:true};if(t==="s:")return{_mode:"[stack]",_type:"str",_val:_str.substr(3,_str.length-2-2),_name:"literal",_const:true};return{_mode:"[token]",_type:"ident",_val:_str.substr(2,_str.length-2)}}g_token_tbl=[];var root=[];for(var i=0;i<_in_tbl.length;i++)if(_in_tbl[i]==="}:}"){var tmp=[];var e;while(e=root.pop())if(e._type==="ident"&&e._val==="{"){var func_no=g_token_tbl.length;g_token_tbl.push(tmp);root.push({_mode:"[token]",_type:"func_no",_val:func_no});break}else tmp.unshift(e)}else if(_in_tbl[i]===
+"]:]"){var tmp=[];var e;while(e=root.pop())if(e._type==="ident"&&e._val==="["){var list_no=g_token_tbl.length;g_token_tbl.push(tmp);root.push({_mode:"[token]",_type:"list_no",_val:list_no});break}else tmp.unshift(e)}else root.push(token(_in_tbl[i]));g_token_tbl.push(root)}kawa_init();var str=comment_del(_txt);var out1="";for(var i=0;i<str.length;i++)switch(str[i]){case " ":out1+=" ";break;case "!":out1+="a";break;case '"':out1+="s";break;case "#":out1+="a";break;case "$":out1+="a";break;case "%":out1+=
+"a";break;case "&":out1+="a";break;case "'":out1+="s";break;case "(":out1+="a";break;case ")":out1+=")";break;case "*":out1+="a";break;case "+":out1+="a";break;case ",":out1+="a";break;case "-":out1+="a";break;case ".":out1+="a";break;case "/":out1+="a";break;case "0":out1+="0";break;case "1":out1+="0";break;case "2":out1+="0";break;case "3":out1+="0";break;case "4":out1+="0";break;case "5":out1+="0";break;case "6":out1+="0";break;case "7":out1+="0";break;case "8":out1+="0";break;case "9":out1+="0";
+break;case ":":out1+="a";break;case ";":out1+="a";break;case "<":out1+="a";break;case "=":out1+="a";break;case ">":out1+="a";break;case "?":out1+="a";break;case "@":out1+="a";break;case "A":out1+="a";break;case "B":out1+="a";break;case "C":out1+="a";break;case "D":out1+="a";break;case "E":out1+="a";break;case "F":out1+="a";break;case "G":out1+="a";break;case "H":out1+="a";break;case "I":out1+="a";break;case "J":out1+="a";break;case "K":out1+="a";break;case "L":out1+="a";break;case "M":out1+="a";break;
+case "N":out1+="a";break;case "O":out1+="a";break;case "P":out1+="a";break;case "Q":out1+="a";break;case "R":out1+="a";break;case "S":out1+="a";break;case "T":out1+="a";break;case "U":out1+="a";break;case "V":out1+="a";break;case "W":out1+="a";break;case "X":out1+="a";break;case "Y":out1+="a";break;case "Z":out1+="a";break;case "[":out1+="[";break;case "\\":out1+="a";break;case "]":out1+="]";break;case "^":out1+="a";break;case "_":out1+="a";break;case "`":out1+="a";break;case "a":out1+="a";break;
+case "b":out1+="a";break;case "c":out1+="a";break;case "d":out1+="a";break;case "e":out1+="a";break;case "f":out1+="a";break;case "g":out1+="a";break;case "h":out1+="a";break;case "i":out1+="a";break;case "j":out1+="a";break;case "k":out1+="a";break;case "l":out1+="a";break;case "m":out1+="a";break;case "n":out1+="a";break;case "o":out1+="a";break;case "p":out1+="a";break;case "q":out1+="a";break;case "r":out1+="a";break;case "s":out1+="a";break;case "t":out1+="a";break;case "u":out1+="a";break;case "v":out1+=
+"a";break;case "w":out1+="a";break;case "x":out1+="a";break;case "y":out1+="a";break;case "z":out1+="a";break;case "{":out1+="{";break;case "|":out1+="a";break;case "}":out1+="}";break;case "~":out1+="a";break;default:out1+=" ";break}var out2="";var mode=" ";for(var i=0;i<out1.length;i++){switch(out1[i]){case "s":if(mode==="s")mode=" ";else mode="s";break}if(mode!=="a"&&i>0&&out1[i-1]==="a"&&out1[i]==="0")mode="a";else if(mode==="a"&&out1[i]!=="a"&&out1[i]!=="0")mode=" ";if(mode!==" ")out2+=mode;
+else out2+=out1[i]}var out3="";var wd="";mode=out2[0];var tbl=[];for(var i=0;i<out2.length;i++)if(mode===out2[i])wd+=str[i];else{if(mode!==" ")tbl.push(mode+":"+wd);wd=str[i];mode=out2[i]}if(mode!==" ")tbl.push(mode+":"+wd);g_debug_log+="\n[start]------";g_debug_log+="\n"+str;lexer(tbl);var stack=kawa_parser(g_token_tbl[g_token_tbl.length-1]);if(g_err_list.length>0){g_debug_log+="\nerror_list : \n"+g_err_list+"\n";g_output+="\nerror_list : \n"+g_err_list+"\n"}function stack_print(_stack,_tab){var mem;
+if(_stack.length>0)for(var i=_stack.length-1;i>=0;i--){mem=_stack[i];g_debug_log+=_tab;g_debug_log+=", _mode:"+mem._mode;g_debug_log+=", _type:"+mem._type;g_debug_log+=", _name:"+mem._name;g_debug_log+=", _val:"+mem._val;g_debug_log+=", _const:"+mem._const+"\n";if(mem._type==="list")stack_print(mem._val,_tab+"list> ")}}g_debug_log+="\n";stack_print(stack,"stack> ");g_debug_log+="\n";stack_print(g_stack_tbl,"g_stack_tbl> ");g_debug_log+="\n";stack_pop(0);g_debug_log+="\n[end]------\n";if(_flag==="OK"&&
+g_err_list.length===0)return"d(^-^)b";if(_flag==="NG"&&g_err_list.length!==0)return"d(^-^)b";document.getElementById("kawasemi_debug").value+=g_debug_log+"\n";document.getElementById("kawasemi_output").value+=g_output+"\n";return(g_err_list.length===0?"OK! d(^-^)b -> ":"NG! q(ToT)p -> ")+_txt};
+
+//-------------------------------------
+// ダミーボタン↓最後には消す
+function on_button( _txt, _flag )
+{
+    return 'dummy button' ;
+}
+
+//]]></script>
+<pre>
+
+つい、カッ！となってLL言語を作りはじめてしまいました。名前は「BirdsScript」です。
+（2013/08/10 現在、未完成。）
+
+特徴：
+
+すべてのプログラマーのために「軽量で」「安全で」「大規模開発に耐えられる」楽しい言語を目指して設計してみました。
+「軽量で」「安全で」「大規模開発に耐えられる」理由は、
+
+　・定数宣言を重視（不必要な変数はバグの元となると考えて）
+
+　・継承は存在しない（実装の継承は過度に隠ぺいされて可読性が悪いと考えて）
+
+　・ポインターは存在しない（ポインターは、バグの温床という考え）
+
+　・GCではなく、スコープで解放され、デストラクタが走る。
+
+　・型名はほとんんど記述する必要がない。
+
+　・コンテナが存在する
+
+　・関数とクラスは同じ記述、同じ実装。
+
+　・無名関数がある。
+
+　・実装が軽量。
+
+　・タイプセーフな言語にしたい思いは強いです。
+
+　・テストも重視。デバッグも重視。とにかく、プログラマが苦労しない言語を目指しています。
+
+
+概要：
+
+コンパイラというか中間言語へのトランスレータ「Yamasemi」と、
+中間言語の実行部(いわゆるVM)「Kawasemi」の２段構成になっています。
+
+現状、言語設計+試験期間な意味からコンパイラよりもインタープリタに近い状態です。現在は実装の確認という意味で JavaScript 書いています。
+今後の予定としては、やはり C/C++ への移植です。JavaScriptで 1000行程度なので、C/C++ でも 4000行程度の軽量な実装になると予想しています。
+
+型は現在、整数型(int)と文字列型(str)しかありません。早めに、bool, enum はサポートしたいと思っています。
+float やその他の型は外部のライブラリとして用意するつもり。（言語そのもののの実装を軽くしたいので。）
+
+クラスやオブジェクトのようなものは JavaScript と同じようなプロトタイプで用意する方向です。
+継承は嫌いなので、おそらく永遠にサポートされないでしょう。
+
+逆に STL のようなジェネリックプログラミングは優先度高めでサポートします。
+コンテナというか「リスト（配列）」や「マップ（連想配列）」は優先度を上げて実装しています。現状は中途半端に実装されています。
+
+そしてテストとデバッグのしやすさを売りにしたいので test() や assert(), trace() とかを早めに実装したい。
+
+以下、「BirdsScript」の文法です
+-----------------------------------------------------------------
+■コメント
+
+    '---' いわゆる C++ の // と同じ
+    '...' 上と同じ
+
+-----------------------------------------------------------------
+■ 定数/変数宣言
+
+// 予約語は ':', '::'
+// 必ず初期値が必用。空の変数や定数は存在しない（させない）ことで、バグが入り込まないようにする設計方針。
+// 定数 いわゆるC++の const。Scalaの val とも言う。値を変えることができません。
+
+    i : 0 ; ... 定数宣言 val
+
+    str_n : "string\n" ; ... エスケープ有りの文字列
+
+    str : 'string' ; ... エスケープ無しの文字列
+
+// ':' は const なので定数の宣言、上書きするには変数宣言 '::'。 いわゆる var。
+// 変数の方が制約が緩い（危険）なので、ハイコストにしています。上手に使ってください。
+
+    i :: 0 ; ... 変数宣言 var
+
+    str :: "string" ;
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi( "i   : 0 ; ... 定数"         , "(: i 0 )"           ) + "<br>" +
+on_yamasemi( 'str : "string\n" ; ... 定数'  , "(: str 'string\n' )"  ) + "<br>" +
+on_yamasemi( "str : 'string' ; ... 定数"  , "(: str 'string' )"  ) + "<br>" +
+on_yamasemi( "i   :: 0 ; ... 変数"        , "(:: i 0 )"          ) + "<br>" +
+on_yamasemi( 'str :: "string" ; ... 変数' , "(:: str 'string' )" ) + "<br>"
+);
+//--></script><pre>
+-----------------------------------------------------------------
+■ if 文
+
+// 'if', 'else' という予約語はありません。C言語の三項演算子のような '??', '!!' を使います。elseは':'ではなく '!!' な点に注意してください。
+
+    foo < 0 ?? foo = 0 ;
+
+    foo < 0 ?? foo = 0 !! foo = 1 ;
+
+    boo : ( foo < 0 ?? 0 !! 1 ) ; ... スコープとの組み合わせ
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi( "foo::1;foo < 0 ?? foo = 0 ; ... if 文",
+    '(:: foo 1 ) (?? (< foo 0 ) { (= foo 0 ) } )' ) + "<br>" +
+on_yamasemi( "foo::1;foo < 0 ?? foo = 0 !! foo = 1 ; ... if then else 文",
+    '(:: foo 1 ) (?? (< foo 0 ) { (= foo 0 ) } { (= foo 1 ) } )') + "<br>" +
+on_yamasemi( "foo::1;boo : ( foo < 0 ?? 0 !! 1 ) ; ... スコープとの組み合わせ",
+    '(:: foo 1 ) (: boo ( (?? (< foo 0 ) { 0 } { 1 } ) ) )' ) + "<br>" +
+on_yamasemi( "foo::1;boo : foo < 0 ?? 0 !! 1 ; ... スコープなしだと NG. difine ':' が if '??' より先に評価されちゃいます" ,
+    'SyntaxError: const-define:boo') + "<br>"
+);
+//--></script><pre>
+// ?? の前は必ず比較文であること。比較文以外はエラーになります。
+
+    is_ok ?? a=0 !! a=1 ; ... NG
+
+    is_ok == true ?? a=0 !! a=1 ; ... OK
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi( "is_ok::true;a::0; is_ok ?? a=0 !! a=1 ; ... NG"     ,
+ 'SyntaxError: x:??') + "<br>" +
+on_yamasemi( "is_ok::true;a::0;is_ok==true ?? a=0 !! a=1 ; ... OK",
+ '(:: is_ok true ) (:: a 0 ) (?? (== is_ok true ) { (= a 0 ) } { (= a 1 ) } )' ) + "<br>"
+);
+//--></script><pre>
+
+// 現在のところ else 文のみの書き方はNGになっています。メリットが感じられるようなら実装を検討します。
+
+    foo >= 0 !! foo = 0 ; ... NG
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi( "foo >= 0 !! foo = 0 ; ... NG"
+    ,'SyntaxError: x:!!') + "<br>"
+);
+//--></script><pre>
+
+
+-----------------------------------------------------------------
+■ スコープ（ブロックスコープ）
+
+// いわゆるC言語の '{','}' ではなくて '(', ')' になります。
+// 変数/定数宣言のスコープが制限できるので上手に使ってください。
+
+    foo < 0
+    ?? ( foo = 0 ; boo = 0 ; woo = 0 ; )
+    !! ( foo = 1 ; boo = 1 ; woo = 1 ; )
+
+    foo < 0
+    ?? (
+        foo = 0 ;
+        boo = 0 ;
+        woo = 0 ;
+    )
+    !! (
+        foo = 1 ;
+        boo = 1 ;
+        woo = 1 ;
+    )
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    "boo :: foo :: woo :: 1 ;" +
+    "foo < 0" +
+    "?? ( foo = 0 ; boo = 0 ; woo = 0 ; )" +
+    "!! ( foo = 1 ; boo = 1 ; woo = 1 ; )"
+,'(:: boo (:: foo (:: woo 1 ) ) ) (?? (< foo 0 ) { ( (= foo 0 ) (= boo 0 ) (= woo 0 ) ) } { ( (= foo 1 ) (= boo 1 ) (= woo 1 ) ) } )' ) + "<br>"
+);
+//--></script><pre>
+// スコープ'(',')'そのものに値を持たせることもできます。
+// 予約語は'out'。return文に似ているけど、処理は中断されないので注意。
+// ちょっと他の言語には無い考えなので、ここではスキップしておっけーです。
+
+    a : (
+        foo = 1 ;
+        out : boo = 2 ;  ... この式が値が()の値になる
+        woo = 3 ;
+    ) ;
+    @.co << a ;          ... a : 2 になる。 @.co は C言語の stdout の意味で仮実装中。
+
+    b : (
+        foo = 1 ;
+        boo = 2 ;
+        woo = 3 ;
+        boo            ... outを書かなくても最後の';'を書かなければオッケー。
+    ) ;
+    @.co << b ;        ... b : 2 になる。
+
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    "boo :: foo :: woo :: 1 ;" +
+    "a : (" +
+    "    foo = 1 ;" +
+    "    out : boo = 2 ;  ... この式が値が()の値になる\n" +
+    "    woo = 3 ;" +
+    ") ; @.co << a ;      ... b : 2 になる。\n"
+,'(:: boo (:: foo (:: woo 1 ) ) ) (: a ( (= foo 1 ) (: out (= boo 2 ) ) (= woo 3 ) ) ) (<< (. @ .co ) a )' ) + "<br>" +
+on_yamasemi(
+    "boo :: foo :: woo :: 1 ;" +
+    "b : (" +
+    "    foo = 1 ;" +
+    "    boo = 2 ;" +
+    "    woo = 3 ;" +
+    "    boo            ... outを書かなくても最後の';'を書かなければオッケー。\n" +
+    ") ; @.co << b ;    ... b : 2 になる。"
+,'(:: boo (:: foo (:: woo 1 ) ) ) (: b ( (= foo 1 ) (= boo 2 ) (= woo 3 ) boo ) ) (<< (. @ .co ) b )') + "<br>"
+);
+//--></script><pre>
+-----------------------------------------------------------------
+■ for 文
+
+// '{{', '}}' はループ文 -> for(;;){ ... }。
+// break は値を返すことができる。無しも可。
+// ちなみに無限ループではなくて、リミット上限に到達すると例外が発生してループを終わります。
+// break文が無いとワーニングの予定（未実装）。できる限り安全側に倒したい。
+
+    a : {{
+
+        break 10 ;    ... ループを抜ける。 out = 10 ; break ; と同じ。
+
+        continue ;    ... ここは実行されないけど。ループの先頭に戻る。
+
+    }} ;
+    @.co << a ; ... a : 10 ;
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    "a : {{" +
+    "    break 10 ;    ... ループを抜ける。\n" +
+    "    continue ;    ... ここは実行されないけどね\n" +
+    "}} ;  ... a : 10 ;"
+,'(: a (loop noname { (break noname 10 ) (continue noname ) } ) )' ) + "<br>"
+);
+//--></script><pre>
+
+// '.{{', '}}' は each, 'it' はループ内で使用できる変数（イテレータの意味：予約語です）
+// 変数のイテレータであれば、上書き可能です。
+
+    5.{{ @.co << it << ', ' ; }}  ... 0, 1, 2, 3, 4
+
+    @.co << 5.{{ out << it << ', ' ; }}  ... 0, 1, 2, 3, 4
+
+    b : 10.{{
+        it == 5 ?? break 555 ;
+    }} ;
+    @.co << b ; ... b = 555
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    "5.{{ @.co << it << ', ' ; }}  ... 0, 1, 2, 3, 4"
+,"(each 5 { (<< (<< (. @ .co ) it ) ', ' ) } )" ) + "<br>"
+);
+document.write(
+on_yamasemi(
+    "b : 10.{{\n" +
+    "    it == 5 ?? break 555 ;\n" +
+    "}} ; @.co << b ; ... b = 555"
+,'(: b (each 10 { (?? (== it 5 ) { (break noname 555 ) } ) } ) ) (<< (. @ .co ) b )' ) + "<br>"
+);
+//--></script><pre>
+
+    c : 'String' ;
+    d : c.{{
+        it >= 'a' && it <= 'z'
+        ?? out << it - ( 'a' - 'A' ) ; ... out は変数なので上書き可能
+    }} ;
+    @.co << d ; ... d : 'STRING'
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    "c :: 'String' ;\n" +
+    "d : c.{{\n" +
+    "    it >= 'a' && it <= 'z'\n" +
+    "    ?? out << it - ( 'a' - 'A' ) ; ... out は変数なので上書き可能\n" +
+    "}} ; @.co << d ; ... d : 'STRING'\n"
+,"(:: c 'String' ) (: d (each c { (?? (&& (>= it 'a' ) (<= it 'z' ) ) { (<< out (- it ( (- 'a' 'A' ) ) ) ) } ) } ) ) (<< (. @ .co ) d )" ) + "<br>"
+);
+//--></script><pre>
+
+// for ( int i=0 ; i<10 ; i++ ) ... をあえて書くなら
+
+    i :: 0 ;
+    {{
+        ...
+        i >= 10 ?? break ;
+        i ++ ;
+    }}
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    "i :: 0 ;\n" +
+    "{{\n" +
+    "    ...\n" +
+    "    i >= 10 ?? break ;\n" +
+    "    i ++ ;\n" +
+    "}}"
+,'(:: i 0 ) (loop noname { (?? (>= i 10 ) { (break noname ) } ) (++ i ) } )' ) + "<br>"
+);
+//--></script><pre>
+
+// 以下、例外と同等な機能なので・・・実装検討中
+
+// 多重ループを抜ける break, continue (構造化された goto)
+
+    {{
+        ...
+        {{
+            break a ; ... a のあるスコープの外へ飛ぶ
+        }}
+
+    [ a ]}}  ... <- ここへ飛ぶ（外へ抜ける）
+
+    {{[ bb ] ... <- ここへ飛ぶ（ループを繰り返す）
+        ...
+        {{
+            continue bb ; ... bb のあるスコープの最初に飛ぶ
+        }}
+    }}
+
+
+// ループを抜ける break, continue (構造化された goto)
+
+    (
+        ...
+        {{
+            break a ; ... a のあるスコープの外へ飛ぶ
+        }}
+
+    [ a ])  ... <- ここへ飛ぶ（外へ抜ける）
+
+    ([ bb ] ... <- ここへ飛ぶ（ループを繰り返す）
+        ...
+        {{
+            continue bb ; ... bb のあるスコープの最初に飛ぶ
+        }}
+
+    )
+
+
+// ループを抜ける break, continue (構造化された goto)
+
+    (
+        ...
+        {{
+            break a ; ... a のあるスコープの外へ飛ぶ
+        }}
+
+    [ a : { .. } ])   ... break 時に実行される処理が書ける  ... <- ここへ飛ぶ（指定された処理を実行して、外へ抜ける）
+
+    ([ bb : { .. } ]  ... continue 時に実行される処理が書ける ... <- ここへ飛ぶ
+        ...
+        {{
+            continue bb ; ... bb のあるスコープの最初に飛ぶ
+        }}
+
+    )
+
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_button(
+    "    {{  label a ;\n" +
+    "        ... \n" +
+    "        {{\n" +
+    "            break a ; ... label a のあるスコープの外へ飛ぶ\n" +
+    "        }}\n" +
+    "    }}  ... <- ここへ飛ぶ（外へ抜ける）\n"
+,'OK') + "<br>" +
+on_button(
+    "    {{  label bb ; ... <- ここへ飛ぶ（ループを繰り返す）\n" +
+    "        ...\n" +
+    "        {{\n" +
+    "            continue bb ; ... label bb のあるスコープの最初に飛ぶ\n" +
+    "        }}\n" +
+    "    }}\n"
+,'OK') + "<br>"
+);
+//--></script><pre>
+
+-----------------------------------------------------------------------
+■ class と関数の宣言は同じ '{', '}'。特に区別はしていない。同じものを場合によって呼び方を変えている。
+
+    foo : {
+        ... ここにいろいろ書く
+    } ;
+
+    Woo : {
+        ... コンストラクタは普通に記述、関数と同じ
+
+        dtor : {
+            ... デストラクタも用意してみた。名前は final にするか悩み中。
+        }
+    } ;
+
+    ret : foo() ; ... 関数 foo の戻り値を ret に格納
+    ins : Woo() ; ... class Woo のインスタンス ins を生成
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    "foo : {\n" +
+    "    ... ここにいろいろ書く\n" +
+    "} ;\n" +
+    "Woo : {\n" +
+    "    ... コンストラクタ\n" +
+    "    dtor : {\n" +
+    "        ... デストラクタ\n" +
+    "    }\n" +
+    "} ;\n" +
+    "ret : foo() ; ... 関数 foo の戻り値を ret に格納\n" +
+    "ins : Woo() ; ... class Woo のインスタンス ins を生成\n"
+,'(: foo { } ) (: Woo { (: dtor { } ) } ) (: ret (call foo [  ] ) ) (: ins (call Woo [  ] ) )' ) + "<br>"
+);
+//--></script><pre>
+
+// 名無しの class ＆関数もおっけー。
+
+    {
+        ... ここにいろいろ書く
+    } ;
+
+    {
+        ... コンストラクタ
+
+        dtor : {
+            ... デストラクタ
+        }
+    } ;
+
+// ちなみに、上書き可能な関数は↓。変数宣言の要領。
+
+    foo :: {   } ; ... 最初の関数はこれ。上書き可能な変数。
+
+    foo = {   } ; ... こっちの関数に置き換わる
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    "foo :: {   } ; ... 最初の関数はこれ。上書き可能な変数。\n" +
+    "foo = {   } ; ... こっちの関数に置き換わる\n"
+,'(:: foo { } ) (= foo { } )' ) + "<br>"
+);
+//--></script><pre>
+
+// 引数はいわゆるメンバ変数として値が渡ってくるイメージ
+// arg_size は引数の数（予約語です）
+
+    foo : {
+        @.co << _a ;       ... 第１引数
+        @.co << arg_size ; ... 1
+    } ;
+    foo( a:1 ) ; ... 引数はいわゆるSTLの map,　必ず名前が必要。
+
+    woo : {
+        @.co << _x ; ... 第１引数
+        @.co << _y ; ... 第２引数
+        @.co << _z ; ... 第３引数
+        @.co << arg_size ; ... 10
+    } ;
+    woo( x:1, y:2, z:3, a:4, b:5, c:6, d:7, e:8, f:9, g:10 ) ;
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    "foo : {\n" +
+    "    @.co << _a ; ... 第１引数\n" +
+    "    @.co << arg_size ; ... 1\n" +
+    "} ;\n" +
+    "foo( a:1 ) ; ... 引数は map"
+,'(: foo { (<< (. @ .co ) _a ) (<< (. @ .co ) arg_size ) } ) (call foo [ (: a 1 ) ] )' ) + "<br>" +
+on_yamasemi(
+    "woo : {" +
+    "    @.co << _x ; ... 第１引数\n" +
+    "    @.co << _y ; ... 第２引数\n" +
+    "    @.co << _z ; ... 第３引数\n" +
+    "    @.co << arg_size ; ... 10\n" +
+    "} ;" +
+    "woo( x:1, y:2, z:3, a:4, b:5, c:6, d:7, e:8, f:9, g:10, ) ;"
+,'(: woo { (<< (. @ .co ) _x ) (<< (. @ .co ) _y ) (<< (. @ .co ) _z ) (<< (. @ .co ) arg_size ) } ) (call woo [ (: x 1 ) (: y 2 ) (: z 3 ) (: a 4 ) (: b 5 ) (: c 6 ) (: d 7 ) (: e 8 ) (: f 9 ) (: g 10 ) ] )' ) + "<br>"
+);
+
+//--></script><pre>
+
+// 戻り値は return 文。複数の値が返せます。が、１つや無しでも list もしくは map が返ります。
+// list の場合は .0 、map の場合は .xx を使って戻り値を参照する必要があります。
+
+    return x:123, y:456 ; ... 基本（引数と同じく）map で返す
+
+    return 123 ; ... 1つの場合
+
+    return 123, 456 ; ... 複数の場合
+
+    foo : {
+        return a:10, b:20, c:30 ;
+    } ;
+    r : foo() ;
+    @.co << r.b ; ... 20
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    "return 123 ; ... 1つ\n" +
+    "return 123, 456 ;\n" +
+    "return x:123, y:456 ;\n"
+,'(return [ 123 ] ) (return [ 123 456 ] ) (return [ (: x 123 ) (: y 456 ) ] )') + "<br>" +
+on_yamasemi(
+    "foo : {\n" +
+    "    return a:10, b:20, c:30 ;\n" +
+    "} ;\n" +
+    "r : foo() ;\n" +
+    "@.co << r.b ; ... 20"
+,'(: foo { (return [ (: a 10 ) (: b 20 ) (: c 30 ) ] ) } ) (: r (call foo [  ] ) ) (<< (. @ .co ) (. r .b ) )' ) + "<br>"
+);
+//--></script><pre>
+
+    a == b ?? return ( c == b ?? 1 !! 2 ) ;
+
+    a == b ?? return 1, 2, 3, ;
+
+    a == b ?? return x:1, y:2, z:3, ;
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    "a == b ?? return (c == b ?? 1 !! 2 ) ;\n" +
+    "a == b ?? return 1,2,3, ;\n" +
+    "a == b ?? return x:1, y:2, z:3, ;"
+,'(?? (== a b ) { (return [ ( (?? (== c b ) { 1 } { 2 } ) ) ] ) } ) (?? (== a b ) { (return [ 1 2 3 ] ) } ) (?? (== a b ) { (return [ (: x 1 ) (: y 2 ) (: z 3 ) ] ) } )' ) + "<br>"
+);
+//--></script><pre>
+
+// class 内メンバ変数の表記
+// 基本 private、publicにしたい場合は変数名の先頭に '.' をつける。
+
+    Foo : {
+        x  :: 123 ;  ... private
+        .y :: 456 ;  ... public
+    } ;
+
+    foo : Foo() ;
+    foo.x = 0 ;  ... NG
+    foo.y = 0 ;  ... OK
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    "Foo : {\n" +
+    "    x  :: 123 ;  ... private\n" +
+    "    .y :: 456 ;  ... public\n" +
+    "} ;\n" +
+
+    "foo : Foo() ;\n" +
+    "foo.x = 0 ;  ... NG\n" +
+    "foo.y = 0 ;  ... OK\n"
+,'(: Foo { (:: x 123 ) (:: .y 456 ) } ) (: foo (call Foo [  ] ) ) (= (. foo .x ) 0 ) (= (. foo .y ) 0 )' ) + "<br>"
+);
+//--></script><pre>
+
+// class 内メソッドの表記も同様（メソッドとclassの区別は無いですが）
+
+    Foo : {
+        x : {
+            ... private
+        } ;
+        .y : {
+            ... public
+        } ;
+    } ;
+
+    foo : Foo() ;
+    foo.x() ;  ... NG
+    foo.y() ;  ... OK
+
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    "Foo : {\n" +
+    "    x : {\n" +
+    "        ... private\n" +
+    "    } ;\n" +
+    "    .y : {\n" +
+    "        ... public\n" +
+    "    } ;\n" +
+    "} ;\n" +
+
+    "foo : Foo() ;\n" +
+    "foo.x() ;  ... NG\n" +
+    "foo.y() ;  ... OK\n"
+,'(: Foo { (: x { } ) (: .y { } ) } ) (: foo (call Foo [  ] ) ) (call (. foo .x ) [  ] ) (call (. foo .y ) [  ] )') + "<br>"
+);
+//--></script><pre>
+
+-----------------------------------------------------------------------
+■コンテナ '[', ']' JavaScript ではおなじみの概念。
+
+// STLの std::vector, std::map　が混在している
+
+    int_list : [ 1, 2, 3, 4, 5, ] ;
+    str_list : [ '1', '2', '3', ] ;
+    str_map  : [ 1:'one', 2:'two', ] ;
+
+    @.co << int_list[0] ; ... 1
+    @.co << str_list[2] ; ... 2
+    @.co << str_map[2] ;  ... two
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    "int_list : [ 1, 2, 3, 4, 5, ] ;\n" +
+    "str_list : [ '1', '2', '3', ] ;\n" +
+    "str_map  : [ 1:'one', 2:'two', ] ;\n" +
+
+    "@.co << int_list[0] ; ... 1\n" +
+    "@.co << str_list[2] ; ... 2\n" +
+    "@.co << str_map[2] ; ... two\n"
+
+,"(: int_list [ 1 2 3 4 5 ] ) (: str_list [ '1' '2' '3' ] ) (: str_map [ (: 1 'one' ) (: 2 'two' ) ] ) (<< (. @ .co ) (at int_list 0 ) ) (<< (. @ .co ) (at str_list 2 ) ) (<< (. @ .co ) (at str_map 2 ) )" ) + "<br>"
+);
+//--></script><pre>
+
+// switch 文は無いので関数で実装。
+
+    sw : [                      ... 固定テーブル（マップ）
+        1 : { @.co << "one" },  ... func {} です。 () で書くと先に実行しちゃいます。
+        2 : { @.co << "two" },
+        unmatch : { @.co << it },  ... 一致しなかった時に呼ばれる関数（unmatchは予約語です）
+    ] ;
+    @.co << sw[2]() ; ... two ここで実行されます。
+
+
+    sw :: [] ; ... 可変テーブル（マップ）、後から追加・変更可能。
+    sw[1] = { @.co << 'one' } ;
+    sw[2] = { @.co << 'two' } ;
+    sw[unmatch] = { @.co << it } ;  ... 一致しなかった時に呼ばれる関数
+    @.co << sw[2]() ; ... 'two'
+
+
+    sw :: [] ; ... 可変テーブル（マップ）、後から追加・変更可能。
+    sw << ( 1 : { @.co << 'one' } ) ;
+    sw << ( 2 : { @.co << 'two' } ) ;
+    sw << ( unmatch : { @.co << it } ) ;  ... 一致しなかった時に呼ばれる関数
+    @.co << sw[2]() ; ... 'two'
+
+
+
+// if 文でもいいんじゃないかな。
+
+    i == 1 ?? @.co << 'one' !!
+    i == 2 ?? @.co << 'two' !! @.co << i ;
+
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    "sw:[                          ... 固定テーブル（マップ）\n" +
+    "    1 : { @.co << 'one' },  ... func {} です。 () で書くと先に実行しちゃいます。\n" +
+    "    2 : { @.co << 'two' },\n" +
+    "    unmatch : { @.co << it },  ... 一致しなかった時に呼ばれる関数\n" +
+    "] ;\n" +
+    "@.co << sw[2]() ; ... 'two'"
+,"(: sw [ (: 1 { (<< (. @ .co ) 'one' ) } ) (: 2 { (<< (. @ .co ) 'two' ) } ) (: unmatch { (<< (. @ .co ) it ) } ) ] ) (<< (. @ .co ) (call (at sw 2 ) [  ] ) )" ) + "<br>"
+);
+document.write(
+on_yamasemi(
+    "sw::[] ; ... 可変テーブル（マップ）、後から追加・変更可能。\n" +
+    "sw[1] = { @.co << 'one' } ;\n" +
+    "sw[2] = { @.co << 'two' } ;\n" +
+    "sw[unmatch] = { @.co << it } ;  ... 一致しなかった時に呼ばれる関数\n" +
+    "@.co << sw[2]() ; ... 'two' "
+,"(:: sw [  ] ) (= (at sw 1 ) { (<< (. @ .co ) 'one' ) } ) (= (at sw 2 ) { (<< (. @ .co ) 'two' ) } ) (= (at sw unmatch ) { (<< (. @ .co ) it ) } ) (<< (. @ .co ) (call (at sw 2 ) [  ] ) )" ) + "<br>"
+);
+document.write(
+on_yamasemi(
+    "sw::[] ; ... 可変テーブル（マップ）、後から追加・変更可能。\n" +
+    "sw << ( 1 : { @.co << 'one' } ) ;\n" +
+    "sw << ( 2 : { @.co << 'two' } ) ;\n" +
+    "sw << ( unmatch : { @.co << it } ) ;  ... 一致しなかった時に呼ばれる関数\n" +
+    "@.co << sw[2]() ; ... 'two' "
+,"(:: sw [  ] ) (<< sw ( (: 1 { (<< (. @ .co ) 'one' ) } ) ) ) (<< sw ( (: 2 { (<< (. @ .co ) 'two' ) } ) ) ) (<< sw ( (: unmatch { (<< (. @ .co ) it ) } ) ) ) (<< (. @ .co ) (call (at sw 2 ) [  ] ) )" ) + "<br>"
+);
+document.write(
+on_yamasemi(
+    "i:0;\n" +
+    "    i == 1 ?? @.co << 'one' !!\n" +
+    "    i == 2 ?? @.co << 'two' !! @.co << i ;\n"
+,"(: i 0 ) (?? (== i 1 ) { (<< (. @ .co ) 'one' ) } { (?? (== i 2 ) { (<< (. @ .co ) 'two' ) } { (<< (. @ .co ) i ) } ) } )" ) + "<br>"
+) ;
+
+//--></script><pre>
+
+このあたりから下は、検討中。未実装。
+
+// enum は仮実装中。まだ動きません。
+
+    NUM : [ ONE, TWO, ] ; ... NUM は型名になります
+    n :: NUM.ONE ;
+    @.co << n ; ... "ONE"
+    n = NUM.TWO ;
+    @.co << n ; ... "TWO"
+    n = NUM.ZERO ;  ... NG
+
+    n :: [ ONE, TWO, ].ONE ; ... 型名無しでも利用できます
+    @.co << n ; ... "ONE"
+    n = TWO ;
+    @.co << n ; ... "TWO"
+    n = ZERO ;  ... NG
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    'NUM : [ ONE, TWO, ] ; ... NUM は型名になります\n' +
+    'n :: NUM.ONE ;' +
+    '@.co << n ; ... "ONE"\n' +
+    'n = NUM.TWO ;' +
+    '@.co << n ; ... "TWO"\n'
+,'(: NUM [ ONE TWO ] ) (:: n (. NUM .ONE ) ) (<< (. @ .co ) n ) (= n (. NUM .TWO ) ) (<< (. @ .co ) n )' ) + "<br>"
+);
+document.write(
+on_yamasemi(
+    'n :: [ ONE, TWO, ].ONE ; ... 型名無しでも利用できます\n' +
+    '@.co << n ; ... "ONE"\n' +
+    'n = TWO ;' +
+    '@.co << n ; ... "TWO"\n'
+,'(:: n (. [ ONE TWO ] ONE ) ) (<< (. @ .co ) n ) (= n TWO ) (<< (. @ .co ) n )' ) + "<br>"
+);
+//--></script><pre>
+
+
+// @.xxxxって書いたらグローバル ... の予定
+
+    @.co : use SystemConsoleOut ;
+
+    @.log : use DebugLogStream ;
+
+
+// 例外も、構想のみで、実装されていません。
+
+    @.ex = use Exception ;
+
+    @.ex.limit = { @.co << "limit over" ; } ; ... 既存関数の上書き
+
+
+    // 例外はscopeに対する記述。後に書くと有効にならない（飛ばされる）ので必ず先に書いてください
+    ([ exception : { .. } ] ... 例外の記述
+
+        ([ error     : { .. }, ... 例外の記述 上書き
+           undefined : { .. } ]... 例外 undefined の記述
+
+        )
+    )
+
+
+    // 例外はscopeに対する記述。後に書くと有効にならない（飛ばされる）ので必ず先に書いてください
+    ([ catch : { @.co << 'catch 1: ' << it  } ] ... 例外の記述
+
+        ([ catch : { @.co << 'catch 2: ' << it  } ] ... 例外の記述
+
+            a != 0 ?? error 'ERROR' ; ... break と同じように処理を中断して .catch を実行する
+
+        )
+    )
+
+
+
+// イベントは、言語仕様ではなくライブラリ仕様の予定
+
+    @.ev = use Event ;
+
+    @.ev.set_timer : ( msec:1000, on:{ @.co << "now!" }, ) ;
+
+    @.ev << [ msec:1000, on:{ @.co << "now!" }, ] ; ... こんなふうに書いてみるとか
+
+以上です。
+
+//---------------------------------------------------------------------------------
+
+ここからは単体テスト　sample-code
+
+    f : { a:1 ; b:2 ; .c:3 ; return 4, 5, 6 ; }
+    @.co << f( x:7, y:8, z:9 ) ; ... オブジェクトの中はどうなっている？？
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    'f : { a:1 ; b:2 ; .c:3 ; return 4, 5, 6 ; }\n' +
+    '@.co << f( x:7, y:8, z:9 ) ;\n'
+,'(: f { (: a 1 ) (: b 2 ) (: .c 3 ) (return [ 4 5 6 ] ) } ) (<< (. @ .co ) (call f [ (: x 7 ) (: y 8 ) (: z 9 ) ] ) )' ) + "<br>" +
+on_kawasemi(
+'(: f { (: a 1 ) (: b 2 ) (: .c 3 ) (return [ 4 5 6 ] ) } ) (<< (. @ .co ) (call f [ (: x 7 ) (: y 8 ) (: z 9 ) ] ) )'
+, 'OK' ) + '<br>'
+);
+//--></script><pre>
+
+スコープの確認
+
+    @.co << 0 ;
+    @.co << ( 1 ) ;
+    @.co << ( ( 2 ) ) ;
+    @.co << ( ( ( 3 ) ) ) ;
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    '@.co << 0 ;\n' +
+    '@.co << ( 1 ) ;\n' +
+    '@.co << ( ( 2 ) ) ;\n' +
+    '@.co << ( ( ( 3 ) ) ) ;\n'
+, '(<< (. @ .co ) 0 ) (<< (. @ .co ) ( 1 ) ) (<< (. @ .co ) ( ( 2 ) ) ) (<< (. @ .co ) ( ( ( 3 ) ) ) )' ) + '<br>' +
+on_kawasemi(
+    '(<< (. @ .co ) 0 ) (<< (. @ .co ) ( 1 ) ) (<< (. @ .co ) ( ( 2 ) ) ) (<< (. @ .co ) ( ( ( 3 ) ) ) )'
+    , 'OK' ) + '<br>'
+) ;
+
+//--></script><pre>
+
+... 階乗　３パターン
+
+    fact : { return ( _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 ) ; }　;
+    @.co << fact( n:3 ).0 ;
+
+    fact2 : { .r : ( _n <= 1 ?? 1 !! _n * fact2( n:_n-1 ).r ) ; } ;
+    @.co << fact2( n:3 ).r ;
+
+    fact3 : { _n <= 1 ?? 1 !! _n * fact3( n:_n-1 ).0 } ;
+    @.co << fact3( n:3 ).0 ;
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    'fact : { return ( _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 ) ; }　;\n' +
+    '@.co << fact( n:3 ).0 ;\n'
+    , '(: fact { (return [ ( (?? (<= _n 1 ) { 1 } { (* _n (. (call fact [ (: n (- _n 1 ) ) ] ) .0 ) ) } ) ) ] ) } ) (<< (. @ .co ) (. (call fact [ (: n 3 ) ] ) .0 ) )' ) + '<br>' +
+on_kawasemi(
+    '(: fact { (return [ ( (?? (<= _n 1 ) { 1 } { (* _n (. (call fact [ (: n (- _n 1 ) ) ] ) .0 ) ) } ) ) ] ) } ) (<< (. @ .co ) (. (call fact [ (: n 3 ) ] ) .0 ) )'
+    , 'OK' ) + '<br>'
+) ;
+
+document.write(
+on_yamasemi(
+    'fact2 : { .r : ( _n <= 1 ?? 1 !! _n * fact2( n:_n-1 ).r ) ; } ;\n' +
+    '@.co << fact2( n:3 ).r ;\n'
+    , '(: fact2 { (: .r ( (?? (<= _n 1 ) { 1 } { (* _n (. (call fact2 [ (: n (- _n 1 ) ) ] ) .r ) ) } ) ) ) } ) (<< (. @ .co ) (. (call fact2 [ (: n 3 ) ] ) .r ) )' ) + '<br>' +
+on_kawasemi(
+    '(: fact2 { (: .r ( (?? (<= _n 1 ) { 1 } { (* _n (. (call fact2 [ (: n (- _n 1 ) ) ] ) .r ) ) } ) ) ) } ) (<< (. @ .co ) (. (call fact2 [ (: n 3 ) ] ) .r ) )'
+    , 'OK' ) + '<br>'
+) ;
+document.write(
+on_yamasemi(
+    'fact3 : { _n <= 1 ?? 1 !! _n * fact3( n:_n-1 ).0 } ;\n' +
+    '@.co << fact3( n:3 ).0 ;\n'
+    , '(: fact3 { (?? (<= _n 1 ) { 1 } { (* _n (. (call fact3 [ (: n (- _n 1 ) ) ] ) .0 ) ) } ) } ) (<< (. @ .co ) (. (call fact3 [ (: n 3 ) ] ) .0 ) )' ) + '<br>' +
+on_kawasemi(
+    '(: fact3 { (?? (<= _n 1 ) { 1 } { (* _n (. (call fact3 [ (: n (- _n 1 ) ) ] ) .0 ) ) } ) } ) (<< (. @ .co ) (. (call fact3 [ (: n 3 ) ] ) .0 ) )'
+    , 'OK' ) + '<br>'
+) ;
+//--></script><pre>
+
+--- エラトステネスの篩
+    prime : {
+        .rtn :: '' ;
+        tabl :: [] ;
+        _n.{{ tabl << (flg::false) }} ;
+        tabl[0] = true ;
+        tabl[1] = true ;
+
+        _n.{{
+            i:it ;
+            tabl[i] == false ?? (
+                .rtn << i << ', ' ;
+                j::i ;
+                {{
+                    j += i ;
+                    j >= _n ?? break !! tabl[j] = true ;
+                }}
+            )
+        }}
+    } ;
+    @.co << prime( n:100 ).rtn ;
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi(
+    "--- エラトステネスの篩\n" +
+    "prime : {\n" +
+    "    .rtn :: '' ;\n" +
+    "    tabl :: [] ;\n" +
+    "    _n.{{ tabl << (flg::false) }} ;\n" +
+    "    tabl[0] = true ;\n" +
+    "    tabl[1] = true ;\n" +
+    "    _n.{{\n" +
+    "        i:it ;\n" +
+    "        tabl[i] == false ?? (\n" +
+    "            .rtn << i << ', ' ;\n" +
+    "            j::i ;\n" +
+    "            {{\n" +
+    "                j += i ;\n" +
+    "                j >= _n ?? break !! tabl[j] = true ;\n" +
+    "            }}\n" +
+    "        )\n" +
+    "    }}\n" +
+    "} ;\n" +
+    "@.co << prime( n:100 ).rtn ;\n"
+    ,
+    "(: prime { (:: .rtn '' ) (:: tabl [  ] ) (each _n { (<< tabl ( (:: flg false ) ) ) } ) (= (at tabl 0 ) true ) (= (at tabl 1 ) true ) (each _n { (: i it ) (?? (== (at tabl i ) false ) { ( (<< (<< .rtn i ) ', ' ) (:: j i ) (loop noname { (+= j i ) (?? (>= j _n ) { (break noname ) } { (= (at tabl j ) true ) } ) } ) ) } ) } ) } ) (<< (. @ .co ) (. (call prime [ (: n 100 ) ] ) .rtn ) )"
+) + "<br>" +
+on_kawasemi(
+    "(: prime { (:: .rtn '' ) (:: tabl [  ] ) (each _n { (<< tabl ( (:: flag false ) ) ) } ) (= (at tabl 0 ) true ) (= (at tabl 1 ) true ) (each _n { (: i it ) (?? (== (at tabl i ) false ) { ( (<< (<< .rtn i ) ', ' ) (:: j i ) (loop noname { (+= j i ) (?? (>= j _n ) { (break noname ) } { (= (at tabl j ) true ) } ) } ) ) } ) } ) } ) (<< (. @ .co ) (. (call prime [ (: n 100 ) ] ) .rtn ) )"
+, 'OK' ) + '<br>'
+) ;
+//--></script><pre>
+
+    --- フィボナッチ数列 ( Fibonacci series )
+    fib : {
+        a::0 ; b::1 ; r::[] ;
+        {{
+            a > _max ?? break ;
+            r << a ;
+            c:a+b ; a=b ; b=c ;
+        }}
+        .r : r ;
+    }
+
+    fib( max:2000 ).r.{{ @.co << it << ', ' }} ; ... 0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi( "\
+    --- フィボナッチ数列 ( Fibonacci series )\n\
+    fib : {\n\
+        a::0 ; b::1 ; r::[] ;\n\
+        {{\n\
+            a > _max ?? break ;\n\
+            r << a ;\n\
+            c:a+b ; a=b ; b=c ;\n\
+        }}\n\
+        .r : r ;\n\
+    }\n\
+\n\
+    fib( max:2000 ).r.{{ @.co << it << ', ' }} ; ... 0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597\n\
+", "\
+(: fib { (:: a 0 ) (:: b 1 ) (:: r [  ] ) (loop noname { (?? (> a _max ) { (break noname ) } ) (<< r a ) (: c (+ a b ) ) (= a b ) (= b c ) } ) (: .r r ) } ) (each (. (call fib [ (: max 2000 ) ] ) .r ) { (<< (<< (. @ .co ) it ) ', ' ) } )" ) + "<br>" +
+on_kawasemi("\
+(: fib { (:: a 0 ) (:: b 1 ) (:: r [  ] ) (loop noname { (?? (> a _max ) { (break noname ) } ) (<< r a ) (: c (+ a b ) ) (= a b ) (= b c ) } ) (: .r r ) } ) (each (. (call fib [ (: max 2000 ) ] ) .r ) { (<< (<< (. @ .co ) it ) ', ' ) } )", "OK"  ) + "<br>"
+) ;
+//--></script><pre>
+
+    --- 疑似乱数生成アルゴリズム xorshift(xor128)
+    xor128 : {                          ... unsigned long xor128() {
+        x::123456789 ; y::362436069 ;   ...   static unsigned long x=123456789, y=362436069,
+        z::521288629 ; w:: 88675123 ;   ...                        z=521288629, w=88675123;
+        .get : {
+            t:x^(x<<11) ;               ...   unsigned long t=(x^(x<<11}};
+            x=y; y=z; z=w;              ...   x=y; y=z; z=w;
+            return w = (w^(w>>19) )^(t^(t>>8) ) ; ...   return ( w=(w^(w>>19}}^(t^(t>>8}} );
+        }
+    }                                   ... }
+
+    xs : xor128() ;
+    20.{{ @.co << xs.get().0 << ', ' }} ; ... 20 time test
+
+
+</pre><script type="text/JavaScript"><!--
+document.write(
+on_yamasemi( "\
+    --- 疑似乱数生成アルゴリズム xorshift(xor128)\n\
+    xor128 : {                          ... unsigned long xor128() {\n\
+        x::123456789 ; y::362436069 ;   ...   static unsigned long x=123456789, y=362436069,\n\
+        z::521288629 ; w:: 88675123 ;   ...                        z=521288629, w=88675123;\n\
+        .get : {\n\
+            t:x^(x<<11) ;               ...   unsigned long t=(x^(x<<11}};\n\
+            x=y; y=z; z=w;              ...   x=y; y=z; z=w;\n\
+            return w = (w^(w>>19) )^(t^(t>>8) ) ; ...   return ( w=(w^(w>>19}}^(t^(t>>8}} );\n\
+        }\n\
+    }                                   ... }\n\
+\n\
+    xs : xor128() ;\n\
+    20.{{ @.co << xs.get().0 << ', ' }} ; ... 20 time test\n\
+", "\
+(: xor128 { (:: x 123456789 ) (:: y 362436069 ) (:: z 521288629 ) (:: w 88675123 ) (: .get { (: t (^ x ( (<< x 11 ) ) ) ) (= x y ) (= y z ) (= z w ) (return [ (= w (^ ( (^ w ( (>> w 19 ) ) ) ) ( (^ t ( (>> t 8 ) ) ) ) ) ) ] ) } ) } ) (: xs (call xor128 [  ] ) ) (each 20 { (<< (<< (. @ .co ) (. (call (. xs .get ) [  ] ) .0 ) ) ', ' ) } )" ) + "<br>" +
+on_kawasemi("\
+(: xor128 { (:: x 123456789 ) (:: y 362436069 ) (:: z 521288629 ) (:: w 88675123 ) (: .get { (: t (^ x ( (<< x 11 ) ) ) ) (= x y ) (= y z ) (= z w ) (return [ (= w (^ ( (^ w ( (>> w 19 ) ) ) ) ( (^ t ( (>> t 8 ) ) ) ) ) ) ] ) } ) } ) (: xs (call xor128 [  ] ) ) (each 20 { (<< (<< (. @ .co ) (. (call (. xs .get ) [  ] ) .0 ) ) ', ' ) } )", "OK"  ) + "<br>"
+) ;
+//--></script><pre>
+
+
+</pre>
+</body>
+</html>
+
