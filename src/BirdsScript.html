@@ -1,6 +1,104 @@
 <!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
-<!-- 
+<!--
+つい、カッ！となってLL言語を作りはじめてしまいました。名前は「BirdsScript」です。
+（2013/09/10 現在、未完成。）
+
+Source Layout
+=============
+
+プロジェクトには、以下のファイルが含まれます。
+
+    README.md             このファイル
+    src/                  ソースコード
+    src/BirdsScript.html  Javascriptによるコンパイラ＆実行系の試作。それからメモ。
+
+特徴：
+--------
+
+すべてのプログラマーのために「軽量で」「安全で」「大規模開発に耐えられる」「使って楽しい」言語を目指して設計してみました。
+（C/C++ や JavaScript に近い文法だと勝手に思っています）
+
+
+「軽量で」
+--------
+
+  ・記述量が軽量（ var とか function とか class とか private とか public とか書く必要はありません。型名も int とか string とか （いまのところ）ほとんんど記述する必要がない。）
+
+  ・文法も軽量。予約語も少ない。（ if, for, each, switch, case, などの予約語は存在せず、代替の記述方法があります ）
+
+  ・実装も軽量。いまのところコンパイラ(Yamasemi)も、実行系(Kawasemi)も、JavaScriptで1000行程度。（最終的にはC/C++で4000行程度になるはず。）
+
+「安全で」
+--------
+
+  ・定数宣言を重視（不必要な変数はバグの元となると考えて（関数型言語を見習って））
+
+  ・空の変数は存在できない（変数の値が未定という状態は無い）
+
+  ・コンテナにも更新の可、不可がある。
+  （STLでいうコンテナ。JavaやC#でいうコレクション。配列：listと 連想配列map の両方の機能を持つ）
+
+  ・カプセル化がデフォルト。メンバは private になる（デフォルトで隠蔽され、外部からのアクセス可能にするには手間（'.'の記述）が必要）
+
+  ・ポインタは存在しない（ポインタはバグの温床という考え）
+
+  ・class継承は存在しない。代わりにprototype系のオブジェクト継承を考えています。（実装の継承は過度に隠ぺいされて可読性、メンテナンス性・保守性が悪いと考えて）
+
+  ・GCではなく、ブロックスコープで解放され、デストラクタが走ります（GCは処理が重いときに走り始めるので嫌いです）
+
+  ・例外を多数実装。無限ループする前に例外が発生してループを抜けます。（未実装ですが、ゼロ除算、最大最小値超え、範囲外アクセス、スタックメモリ枯渇、などなど）
+
+  ・タイプセーフ（静的型付け）な言語にしたい思いは強い（インターフェースが一致しない、型が一致しない場合はコンパイルエラー。予定＆希望＆未実装）
+
+「大規模開発に耐えられる」
+--------
+
+  ・オブジェクト指向（クラスとか、オブジェクトとか、カプセル化とか）の概念は入っている
+
+  ・STLのようなジェネリックな言語にしたい思いは強いです（希望＆未実装）。
+
+  ・テストも重視。デバッグも重視。（未実装）
+
+  ・可読性もメンテナンス性も重視。（希望）
+
+「使って楽しい」
+--------
+
+  ・コンテナがある。
+
+  ・each がある。
+
+  ・関数とクラスは同じ記述、同じ実装。
+
+  ・無名関数がある。無名クラスがある。
+
+  ・クロージャーも・・・？
+
+とにかく、プログラマが苦労しない言語を目指しています。
+
+
+概要：
+--------
+
+コンパイラというか中間言語へのトランスレータ「Yamasemi」と、中間言語の実行部(いわゆるVM)「Kawasemi」の２段構成になっています。
+
+現状、言語設計+試験期間な意味からコンパイラよりもインタープリタに近い状態です。現在は実装の確認という意味で JavaScript 書いています。
+今後の予定としては、やはり C/C++ への移植です。JavaScriptで 1000行程度なので、C/C++ でも 4000行程度の軽量な実装になると予想しています。
+
+型は現在、整数型(int)と文字列型(str)しかありません。早めに、bool, enum（シンボル？）はサポートしたいと思っています。
+float やその他の型は外部のライブラリとして用意するつもり。（言語そのもののの実装を軽くしたいので。）
+
+クラスやオブジェクトのようなものは JavaScript と同じようなプロトタイプで用意する方向です。
+継承（実装の継承は可読性とメンテナンス性が悪い）は嫌いなので、おそらく永遠にサポートされないでしょう。
+
+逆に STL のようなジェネリックプログラミングは優先度高めでサポートします。
+
+そしてテストとデバッグのしやすさを売りにしたいので test() や assert(), trace() とかを早めに実装したい。
+
+
+
 The BSD 2-Clause License
+------------------------
 
 Copyright (c) 2013, YAMAZAKI Satoshi.
 All rights reserved.
@@ -12,8 +110,9 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
----
+
 BSDライセンス
+----------
 
 Copyright (c) 2013, YAMAZAKI Satoshi.
 All rights reserved.
@@ -30,8 +129,8 @@ All rights reserved.
 <head>
 <meta charset="utf-8"/>
 <style> body { background-color:#cccccc; } </style>
-<!-- <script type="text/javascript" charset="utf-8" src="Yamasemi.js"></script> -->
-<!-- <script type="text/javascript" charset="utf-8" src="Kawasemi.js"></script> -->
+<script type="text/javascript" charset="utf-8" src="Yamasemi.mini.js"></script>
+<script type="text/javascript" charset="utf-8" src="Kawasemi.mini.js"></script>
 </head>
 <body>
 BirdsScript ver.0.01 (c) 2013/08/17 YAMAZAKI Satoshi. <br>
@@ -44,7 +143,13 @@ fact : { _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 } ;
 @.co << fact( n:5 ).0 << ', ' ;
 
 </textarea>
-<input type="button" id="BT1" value="コンパイル（中間コード生成）" onclick="document.getElementById('kawasemi').value ='';document.getElementById('yamasemi_debug').value ='';on_yamasemi(document.getElementById('yamasemi').value, '-' )" Language="JavaScript"><input type="checkbox" onchange="document.getElementById('yamasemi_debug').style.display =this.checked?'block':'none';document.getElementById('kawasemi_debug').style.display =this.checked?'block':'none';">デバッグ情報<br>
+<input type="button" id="BT1" value="コンパイル（中間コード生成）" onclick="
+document.getElementById('kawasemi').value='';
+document.getElementById('yamasemi_debug').value ='';
+on_yamasemi(document.getElementById('yamasemi').value, '-' )" Language="JavaScript">
+<input type="checkbox" id="debug_check" onchange="
+document.getElementById('yamasemi_debug').style.display=this.checked?'block':'none';
+document.getElementById('kawasemi_debug').style.display=this.checked?'block':'none';">デバッグ情報<br>
 <textarea cols="70" rows="3" id="yamasemi_debug" style="display:none" >
 コンパイル時トレース情報（デバッグ用）
 </textarea><br>
@@ -59,167 +164,7 @@ fact : { _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 } ;
 <textarea cols="60" rows="5" id="kawasemi_output" >
 [中間コード実行]ボタンを押すと実行結果が表示されます
 </textarea><br>
-<script>//<![CDATA[
-
-function on_yamasemi(_txt,_flag){var debug_log="";function yamasemi_parser(_tbl,_debug_mode){function yamasemi_parser2(_in,_chk_tbl){for(var cc=0;cc<_chk_tbl.length;cc++){var chk=_chk_tbl[cc];var m=chk.src.length;for(var hit=0;hit===0;){hit=1;for(var ii=0;ii<=_in.length-m;ii++){var i=ii;if(chk.lr==="<-")i=_in.length-m-ii;var k=0;for(;k<m;){var c=chk.src[k];if(_in[i+k].lt===c)k++;else if(_in[i+k].lt+_in[i+k].rt===c)k++;else break}if(k===m){var r=chk.fn(_in,i,chk.dis);var tmp=[];for(var j=0;j<_in.length;)if(j===
-i){tmp.push(r);j+=m}else{tmp.push(_in[j]);j++}_in=tmp;hit=0;break}}}}return _in}function null_f(_tbl,_i,_dis){_tbl[_i].lt=_dis;return _tbl[_i]}function enum_def_f(_tbl,_i){var name=_tbl[_i].rt;var enum_list=_tbl[_i+1].rt.split(",");var def="(enum "+_tbl[_i].rt+" ";for(var i=0;i<enum_list.length;i++)def+=enum_list[i]+" ";def+=")";return{lt:"expr:",rt:def}}debug_log+="\nyamasemi_parser() start ----\n[in]: ";for(var j in _tbl)debug_log+=_tbl[j].lt+_tbl[j].rt+", ";var debug_line="";var out1=yamasemi_parser2(_tbl,
-[{lr:"->",src:["a:break"],fn:function(_tbl,_i){return{lt:"break:",rt:_tbl[_i].rt}}},{lr:"->",src:["a:continue"],fn:function(_tbl,_i){return{lt:"continue:",rt:_tbl[_i].rt}}},{lr:"->",src:["a:return"],fn:function(_tbl,_i){return{lt:"return:",rt:_tbl[_i].rt}}},{lr:"->",src:["x:@"],fn:function(_tbl,_i){return{lt:"ident:",rt:_tbl[_i].rt}}},{lr:"->",src:["0:",".:.","0:"],fn:function(_tbl,_i){return{lt:"expr:",rt:_tbl[_i].rt}}},{lr:"->",src:["a:"],fn:function(_tbl,_i){return{lt:"ident:",rt:_tbl[_i].rt}}},
-{lr:"->",src:["0:"],fn:function(_tbl,_i){return{lt:"expr:",rt:_tbl[_i].rt}}},{lr:"->",src:["s:"],fn:function(_tbl,_i){return{lt:"expr:",rt:_tbl[_i].rt}}},{lr:"->",src:["S:"],fn:function(_tbl,_i){return{lt:"expr:",rt:_tbl[_i].rt}}},{lr:"->",src:["(:(","):)"],fn:function(_tbl,_i){return{lt:"func_call?:",rt:""}}},{lr:"->",src:["[:[","]:]"],fn:function(_tbl,_i){return{lt:"table_select?:",rt:""}}},{lr:"->",src:["{:{","}:}"],fn:function(_tbl,_i){return{lt:"func_body:",rt:"{ }"}}}]);var out2=[];for(var i=
-0;i<out1.length;i++){var o=out1[i].lt+out1[i].rt;if(o==="):)"){var tmp=[];var hit=false;while(e=out2.pop())if(e.lt+e.rt!=="(:(")tmp.unshift(e);else{out2.push({lt:"func_call?:",rt:yamasemi_parser(tmp,_debug_mode)});hit=true;break}if(hit==false)throw"SyntaxError: ')'"+(debug_line===""?"":"\n\t"+debug_line);}else if(o==="]:]"){var tmp=[];var hit=false;while(e=out2.pop())if(e.lt+e.rt!=="[:[")tmp.unshift(e);else{out2.push({lt:"table_select?:",rt:yamasemi_parser(tmp,_debug_mode)});hit=true;break}if(hit==
-false)throw"SyntaxError: ']'"+(debug_line===""?"":"\n\t"+debug_line);}else if(o==="}:}}"){var tmp=[];var hit=false;while(e=out2.pop())if(e.lt+e.rt!=="{:{{")tmp.unshift(e);else{out2.push({lt:"loop_body:",rt:"{ "+yamasemi_parser(tmp,_debug_mode)+" }"});hit=true;break}if(hit==false)throw"SyntaxError: '}}'"+(debug_line===""?"":"\n\t"+debug_line);}else if(o==="}:}"){var tmp=[];var hit=false;while(e=out2.pop())if(e.lt+e.rt!=="{:{")tmp.unshift(e);else{out2.push({lt:"func_body:",rt:"{ "+yamasemi_parser(tmp,
-_debug_mode)+" }"});hit=true;break}if(hit==false)throw"SyntaxError: '}'"+(debug_line===""?"":"\n\t"+debug_line);}else if(o===";:;"){var tmp=[];while(e=out2.pop()){if(e.lt+e.rt==="{:{"){out2.push(e);break}if(e.lt+e.rt==="{:{{"){out2.push(e);break}if(e.lt+e.rt==="(:("){out2.push(e);break}if(e.lt+e.rt==="[:["){out2.push(e);break}tmp.unshift(e)}out2.push({lt:"statement:",rt:yamasemi_parser(tmp,_debug_mode)})}else if(out1[i].lt==="line:"){if(out2.length>0)out2[out2.length-1].debug_line='\n(line "'+out1[i].rt+
-'" )';else out2.push({lt:"debug-line:",rt:'\n(line "'+out1[i].rt+'" )'});debug_line=out1[i].rt}else out2.push(out1[i])}var out3=yamasemi_parser2(out2,[{lr:"->",src:["table_select?:",".:.","ident:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(. [ "+_tbl[_i].rt+" ] "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["ident:",".:.","ident:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(. "+_tbl[_i].rt+" ."+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["ident:","func_call?:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(call "+
-_tbl[_i].rt+" [ "+_tbl[_i+1].rt+" ] )"}}},{lr:"->",src:["ident:","table_select?:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(at "+_tbl[_i].rt+" "+_tbl[_i+1].rt+" )"}}},{lr:"->",src:["expr:","func_call?:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(call "+_tbl[_i].rt+" [ "+_tbl[_i+1].rt+" ] )"}}},{lr:"->",src:["expr:","table_select?:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(at "+_tbl[_i].rt+" "+_tbl[_i+1].rt+" )"}}},{lr:"->",src:["func_call?:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"( "+
-_tbl[_i].rt+" )"}}},{lr:"->",src:["table_select?:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"[ "+_tbl[_i].rt+" ]"}}},{lr:"->",src:["expr:",".:.","ident:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(. "+_tbl[_i].rt+" ."+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["ident:",".:.","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(. "+_tbl[_i].rt+" ."+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:",".:.","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(. "+_tbl[_i].rt+" ."+_tbl[_i+2].rt+" )"}}},{lr:"->",
-src:[".:.","ident:"],fn:function(_tbl,_i){return{lt:"ident:",rt:_tbl[_i].rt+_tbl[_i+1].rt}}},{lr:"<-",src:["x:++","ident:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(++ "+_tbl[_i+1].rt+" )"}}},{lr:"<-",src:["x:--","ident:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(-- "+_tbl[_i+1].rt+" )"}}},{lr:"<-",src:["ident:","x:="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"= "+_tbl[_i].rt}}},{lr:"<-",src:["ident:","x:*="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"*= "+_tbl[_i].rt}}},{lr:"<-",src:["ident:",
-"x:/="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"/= "+_tbl[_i].rt}}},{lr:"<-",src:["ident:","x:+="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"+= "+_tbl[_i].rt}}},{lr:"<-",src:["ident:","x:-="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"-= "+_tbl[_i].rt}}},{lr:"<-",src:["ident:","x:&="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"&= "+_tbl[_i].rt}}},{lr:"<-",src:["ident:","x:|="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"|= "+_tbl[_i].rt}}},{lr:"<-",src:["ident:","x:^="],fn:function(_tbl,
-_i){return{lt:"set_var:",rt:"^= "+_tbl[_i].rt}}},{lr:"<-",src:["ident:","x:<<="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"<<= "+_tbl[_i].rt}}},{lr:"<-",src:["ident:","x:>>="],fn:function(_tbl,_i){return{lt:"set_var:",rt:">>= "+_tbl[_i].rt}}},{lr:"<-",src:["expr:","x:="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"= "+_tbl[_i].rt}}},{lr:"<-",src:["expr:","x:*="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"*= "+_tbl[_i].rt}}},{lr:"<-",src:["expr:","x:/="],fn:function(_tbl,_i){return{lt:"set_var:",
-rt:"/= "+_tbl[_i].rt}}},{lr:"<-",src:["expr:","x:+="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"+= "+_tbl[_i].rt}}},{lr:"<-",src:["expr:","x:-="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"-= "+_tbl[_i].rt}}},{lr:"<-",src:["expr:","x:&="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"&= "+_tbl[_i].rt}}},{lr:"<-",src:["expr:","x:|="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"|= "+_tbl[_i].rt}}},{lr:"<-",src:["expr:","x:^="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"^= "+_tbl[_i].rt}}},
-{lr:"<-",src:["expr:","x:<<="],fn:function(_tbl,_i){return{lt:"set_var:",rt:"<<= "+_tbl[_i].rt}}},{lr:"<-",src:["expr:","x:>>="],fn:function(_tbl,_i){return{lt:"set_var:",rt:">>= "+_tbl[_i].rt}}},{lr:"->",src:["ident:","::::"],fn:function(_tbl,_i){return{lt:"define:",rt:_tbl[_i].rt}}},{lr:"->",src:["ident:",":::"],fn:function(_tbl,_i){return{lt:"const-define:",rt:_tbl[_i].rt}}},{lr:"->",src:["ident:","x:<-"],fn:function(_tbl,_i){return{lt:"const-define:",rt:_tbl[_i].rt}}},{lr:"->",src:["ident:"],
-fn:function(_tbl,_i){return{lt:"expr:",rt:_tbl[_i].rt}}},{lr:"->",src:["expr:","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:_tbl[_i].rt}}},{lr:"->",src:["expr:","x:*","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(* "+_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:/","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(/ "+_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:+","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(+ "+_tbl[_i].rt+" "+_tbl[_i+2].rt+
-" )"}}},{lr:"->",src:["expr:","x:-","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(- "+_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:&","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(& "+_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:|","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(| "+_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:^","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(^ "+_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",
-src:["expr:","x:<<","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(<< "+_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:>>","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(>> "+_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:<","expr:"],fn:function(_tbl,_i){return{lt:"condition:",rt:"(< "+_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:>","expr:"],fn:function(_tbl,_i){return{lt:"condition:",rt:"(> "+_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",
-src:["expr:","x:<=","expr:"],fn:function(_tbl,_i){return{lt:"condition:",rt:"(<= "+_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:>=","expr:"],fn:function(_tbl,_i){return{lt:"condition:",rt:"(>= "+_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:==","expr:"],fn:function(_tbl,_i){return{lt:"condition:",rt:"(== "+_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:","x:!=","expr:"],fn:function(_tbl,_i){return{lt:"condition:",rt:"(!= "+_tbl[_i].rt+" "+_tbl[_i+2].rt+
-" )"}}},{lr:"->",src:["condition:","x:&&","condition:"],fn:function(_tbl,_i){return{lt:"condition:",rt:"(&& "+_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["condition:","x:||","condition:"],fn:function(_tbl,_i){return{lt:"condition:",rt:"(|| "+_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["set_var:","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"("+_tbl[_i].rt+" "+_tbl[_i+1].rt+" )"}}},{lr:"->",src:["set_var:","func_body:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"("+_tbl[_i].rt+
-" "+_tbl[_i+1].rt+" )"}}},{lr:"->",src:["set_var:","func_call?:"],fn:function(_tbl,_i){return{lt:"expr:",rt:_tbl[_i].rt}}},{lr:"->",src:["set_var:","table_select?:"],fn:function(_tbl,_i){return{lt:"expr:",rt:_tbl[_i].rt}}},{lr:"->",src:["ident:",".:.","loop_body:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(each "+_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:",".:.","loop_body:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(each "+_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["loop_body:"],
-fn:function(_tbl,_i){return{lt:"expr:",rt:"(loop noname "+_tbl[_i].rt+" )"}}},{lr:"<-",src:["const-define:","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(: "+_tbl[_i].rt+" "+_tbl[_i+1].rt+" )"}}},{lr:"<-",src:["const-define:","enum-list:"],fn:enum_def_f,dis:"expr:"},{lr:"<-",src:["const-define:","func_body:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(: "+_tbl[_i].rt+" "+_tbl[_i+1].rt+" )"}}},{lr:"<-",src:["define:","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(:: "+_tbl[_i].rt+" "+
-_tbl[_i+1].rt+" )"}}},{lr:"<-",src:["define:","enum-list:"],fn:enum_def_f,dis:"expr:"},{lr:"<-",src:["define:","func_body:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(:: "+_tbl[_i].rt+" "+_tbl[_i+1].rt+" )"}}},{lr:"<-",src:["func_body:"],fn:function(_tbl,_i){return{lt:"expr:",rt:_tbl[_i].rt}}},{lr:"->",src:["expr:","::::","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(:: "+_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:",":::","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(: "+
-_tbl[_i].rt+" "+_tbl[_i+2].rt+" )"}}},{lr:"->",src:["expr:",",:,"],fn:function(_tbl,_i){return{lt:"arg-list:",rt:_tbl[_i].rt}}},{lr:"->",src:["arg-list:","arg-list:"],fn:function(_tbl,_i){return{lt:"arg-list:",rt:_tbl[_i].rt+" "+_tbl[_i+1].rt}}},{lr:"->",src:["arg-list:","expr:"],fn:function(_tbl,_i){return{lt:"arg-list:",rt:_tbl[_i].rt+" "+_tbl[_i+1].rt}}},{lr:"<-",src:["define:","arg-list:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(:: "+_tbl[_i].rt+" "+_tbl[_i+1].rt+" )"}}},{lr:"->",src:["enum:",
-",:,"],fn:function(_tbl,_i){return{lt:"enum-list:",rt:_tbl[_i].rt}}},{lr:"->",src:["enum-list:","enum-list:"],fn:function(_tbl,_i){return{lt:"enum-list:",rt:_tbl[_i].rt+" "+_tbl[_i+1].rt}}},{lr:"->",src:["enum-list:","enum:"],fn:function(_tbl,_i){return{lt:"enum-list:",rt:_tbl[_i].rt+" "+_tbl[_i+1].rt}}},{lr:"->",src:["break:break","ident:","arg-list:"],fn:function(_tbl,_i){return{lt:"statement:",rt:"(break "+_tbl[_i+1].rt+" "+_tbl[_i+2].rt+" "+_tbl[_i+3].rt+" )"}}},{lr:"->",src:["break:break","arg-list:"],
-fn:function(_tbl,_i){return{lt:"statement:",rt:"(break noname "+_tbl[_i+1].rt+" )"}}},{lr:"->",src:["return:return","arg-list:"],fn:function(_tbl,_i){return{lt:"statement:",rt:"(return [ "+_tbl[_i+1].rt+" ] )"}}},{lr:"->",src:["break:break","ident:","expr:"],fn:function(_tbl,_i){return{lt:"statement:",rt:"(break "+_tbl[_i+1].rt+" "+_tbl[_i+2].rt+" "+_tbl[_i+3].rt+" )"}}},{lr:"->",src:["break:break","expr:"],fn:function(_tbl,_i){return{lt:"statement:",rt:"(break noname "+_tbl[_i+1].rt+" )"}}},{lr:"->",
-src:["return:return","expr:"],fn:function(_tbl,_i){return{lt:"statement:",rt:"(return [ "+_tbl[_i+1].rt+" ] )"}}},{lr:"->",src:["break:break"],fn:function(_tbl,_i){return{lt:"statement:",rt:"(break noname )"}}},{lr:"->",src:["return:return"],fn:function(_tbl,_i){return{lt:"statement:",rt:"(return [  ] )"}}},{lr:"->",src:["continue:continue","ident:"],fn:function(_tbl,_i){return{lt:"statement:",rt:"(continue "+_tbl[_i+1].rt+" )"}}},{lr:"->",src:["continue:continue"],fn:function(_tbl,_i){return{lt:"statement:",
-rt:"(continue noname )"}}},{lr:"<-",src:["condition:","x:??","expr:","x:!!","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(?? "+_tbl[_i].rt+" { "+_tbl[_i+2].rt+" } { "+_tbl[_i+4].rt+" } )"}}},{lr:"<-",src:["condition:","x:??","expr:","x:!!","statement:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(?? "+_tbl[_i].rt+" { "+_tbl[_i+2].rt+" } { "+_tbl[_i+4].rt+" } )"}}},{lr:"<-",src:["condition:","x:??","statement:","x:!!","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(?? "+_tbl[_i].rt+" { "+
-_tbl[_i+2].rt+" } { "+_tbl[_i+4].rt+" } )"}}},{lr:"<-",src:["condition:","x:??","statement:","x:!!","statement:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(?? "+_tbl[_i].rt+" { "+_tbl[_i+2].rt+" } { "+_tbl[_i+4].rt+" } )"}}},{lr:"<-",src:["condition:","x:??","expr:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(?? "+_tbl[_i].rt+" { "+_tbl[_i+2].rt+" } )"}}},{lr:"<-",src:["condition:","x:??","statement:"],fn:function(_tbl,_i){return{lt:"expr:",rt:"(?? "+_tbl[_i].rt+" { "+_tbl[_i+2].rt+" } )"}}},{lr:"->",
-src:["condition:"],fn:function(_tbl,_i){return{lt:"expr:",rt:_tbl[_i].rt}}}]);for(var i in out3)if(out3[i].lt!=="expr:"&&out3[i].lt!=="statement:"&&out3[i].lt!=="arg-list:"&&out3[i].lt!=="debug-line:")throw"SyntaxError: "+out3[i].lt+out3[i].rt+(debug_line===""?"":"\n\t"+debug_line);var out4="";if(_debug_mode===true)for(var i in out3){out4+=(out4===""?"":" ")+out3[i].rt;if(out3[i].debug_line!==undefined)out4+=" "+out3[i].debug_line}else for(var i in out3)if(out3[i].lt!=="debug-line:")out4+=(out4===
-""?"":" ")+out3[i].rt;return out4}var str=function comment_del(_tx){var out1="";for(var i=0;i<_tx.length;i++)switch(_tx[i]){case "'":out1+="s";break;case '"':out1+="S";break;case "/":out1+="b";break;case "-":out1+="b";break;case ".":out1+="b";break;case "\n":out1+="e";break;default:out1+=" ";break}var out2="";var mode=" ";for(var i=0;i<out1.length;i++){switch(out1[i]){case "s":if(mode==="s")mode=" ";else mode="s";break;case "S":if(mode==="S")mode=" ";else mode="S";break}if(mode!==" ")out2+=mode;else out2+=
-out1[i]}var out3="";mode=" ";for(var i=0;i<out2.length;i++){c=out2[i];switch(mode+c){case " b":case "eb":if(_tx.substr(i,2)==="//")c="c";if(_tx.substr(i,3)==="---")c="c";if(_tx.substr(i,3)==="...")c="c";break}switch(c){case "c":mode="c";break;case "e":mode=" ";break}if(mode===" ")out3+=_tx[i]}return out3}(_txt);var token_tbl=function(_str){var out1="";for(var i=0;i<_str.length;i++)switch(_str[i]){case "\n":out1+="L";break;case " ":out1+=" ";break;case "!":out1+="x";break;case '"':out1+="S";break;
-case "#":out1+="x";break;case "$":out1+="x";break;case "%":out1+="x";break;case "&":out1+="x";break;case "'":out1+="s";break;case "(":out1+="(";break;case ")":out1+=")";break;case "*":out1+="x";break;case "+":out1+="x";break;case ",":out1+=",";break;case "-":out1+="x";break;case ".":out1+=".";break;case "/":out1+="x";break;case "0":out1+="0";break;case "1":out1+="0";break;case "2":out1+="0";break;case "3":out1+="0";break;case "4":out1+="0";break;case "5":out1+="0";break;case "6":out1+="0";break;case "7":out1+=
-"0";break;case "8":out1+="0";break;case "9":out1+="0";break;case ":":out1+=":";break;case ";":out1+=";";break;case "<":out1+="x";break;case "=":out1+="x";break;case ">":out1+="x";break;case "?":out1+="x";break;case "@":out1+="x";break;case "A":out1+="a";break;case "B":out1+="a";break;case "C":out1+="a";break;case "D":out1+="a";break;case "E":out1+="a";break;case "F":out1+="a";break;case "G":out1+="a";break;case "H":out1+="a";break;case "I":out1+="a";break;case "J":out1+="a";break;case "K":out1+="a";
-break;case "L":out1+="a";break;case "M":out1+="a";break;case "N":out1+="a";break;case "O":out1+="a";break;case "P":out1+="a";break;case "Q":out1+="a";break;case "R":out1+="a";break;case "S":out1+="a";break;case "T":out1+="a";break;case "U":out1+="a";break;case "V":out1+="a";break;case "W":out1+="a";break;case "X":out1+="a";break;case "Y":out1+="a";break;case "Z":out1+="a";break;case "[":out1+="[";break;case "\\":out1+="x";break;case "]":out1+="]";break;case "^":out1+="x";break;case "_":out1+="a";
-break;case "`":out1+="x";break;case "a":out1+="a";break;case "b":out1+="a";break;case "c":out1+="a";break;case "d":out1+="a";break;case "e":out1+="a";break;case "f":out1+="a";break;case "g":out1+="a";break;case "h":out1+="a";break;case "i":out1+="a";break;case "j":out1+="a";break;case "k":out1+="a";break;case "l":out1+="a";break;case "m":out1+="a";break;case "n":out1+="a";break;case "o":out1+="a";break;case "p":out1+="a";break;case "q":out1+="a";break;case "r":out1+="a";break;case "s":out1+="a";break;
-case "t":out1+="a";break;case "u":out1+="a";break;case "v":out1+="a";break;case "w":out1+="a";break;case "x":out1+="a";break;case "y":out1+="a";break;case "z":out1+="a";break;case "{":out1+="{";break;case "|":out1+="x";break;case "}":out1+="}";break;case "~":out1+="x";break;default:out1+=" ";break}var out2="";var mode=" ";for(var i=0;i<out1.length;i++){switch(out1[i]){case "s":if(mode==="s")mode=" ";else if(mode!=="S")mode="s";break;case "S":if(mode==="S")mode=" ";else if(mode!=="s")mode="S";break}if(mode===
-" "&&i>0&&out1[i-1]==="a"&&out1[i]==="0")mode="a";else if(mode==="a"&&out1[i]!=="a"&&out1[i]!=="0")mode=" ";if(mode!==" ")out2+=mode;else out2+=out1[i]}var out3="";var wd="";mode=out2[0];var tbl=[];var line=1;for(var j=0;j<out2.length;j++)if(out2[j]==="L")break;var s=_str.substr(0,j);s=s.split('"').join("'");if(s!=="")tbl.push({lt:"line:",rt:""+line+": "+s});for(var i=0;i<out2.length;i++){if(mode===out2[i])wd+=_str[i];else{if(mode!==" ")if(mode==="L"){for(var j=i+1;j<out2.length;j++)if(out2[j]===
-"L")break;var s=_str.substr(i+1,j-i-1);s=s.split('"').join("'");if(s!=="")tbl.push({lt:"line:",rt:""+line+": "+s})}else tbl.push({lt:mode+":",rt:wd});wd=_str[i];mode=out2[i]}if(out2[i]==="L")line++}if(mode!==" "&&mode!=="L")tbl.push({lt:mode+":",rt:wd});for(var j in tbl){if(tbl[j].lt!=="S:")continue;tbl[j].lt="s:";tbl[j].rt="'"+tbl[j].rt.substr(1,tbl[j].rt.length-2)+"'"}return tbl}(str);debug_log+="\n[start]------";try{var s_list=yamasemi_parser(token_tbl,false);debug_log+="\n[end s-list]: "+s_list;
-debug_log+="\n------\n"}catch(e){s_list=e}if(_flag===s_list)return"d(^-^)b";document.getElementById("yamasemi_debug").value+=debug_log;document.getElementById("kawasemi").value+=s_list;return"NG! q(ToT)p -> "+_txt};
-
-
-function on_kawasemi(H,I){function x(){return{_mode:"[stack]",_type:"list",_val:[],_name:"null",_const:!1}}function J(k){for(var a in k){var f=k[a];"list"===f._type?J(f._val):"func_no"===f._type&&"dtor"===f._name&&y(s[f._val])}}function z(k){for(var a=x();k<h.length;){var f=h.pop();"list"===f._type?J(f._val):"func_no"===f._type&&"dtor"===f._name?a=y(s[f._val]):"out"===f._name&&(a=f)}return a}function y(F){function a(a){v.push("syntax-error : "+a+"\n\tline:"+A);return{_mode:"[event]",_type:"error",
-_val:"syntax-error : "+a,_goto:"top"}}function f(a){v.push("exception : "+a+"\n\tline:"+A);return{_mode:"[event]",_type:"exception",_val:"exception : "+a,_goto:"top"}}function q(a){if("list_no"===a._type){var b=h.length;a=y(s[a._val]);if("[event]"===a._mode)return a;for(;b<h.length;)h.pop();var b={_mode:"[stack]",_type:"map",_val:[],_name:"literal",_const:!1},d;for(d in a){var e=a[d];"[stack]"===e._mode&&"literal"===e._name&&(e._name=""+d,e._this=b,b._type="list")}b._val=a;return b}if("ident"!==a._type)return a;
-d=a._val;for(a=h.length-1;0<=a;a--)if("[stack]"===h[a]._mode&&h[a]._name===d)return h[a];v.push("undefined-var: "+d+"\n\tline:"+A);return{_mode:"[event]",_type:"error",_val:"undefined-var : "+d,_goto:"top"}}function l(b,d){k+="\nset_var: "+b._val+", "+d._val;var e=q(d);if("[event]"===e._mode)return e;if("ident"!==b._type){if(!0===b._const&&!0===b._this._const)return a("do not set const (1167):"+b._name+":"+b._val);b._val=e._val;b._type=e._type;return b}for(var g=h.length-1;0<=g;g--){var f=h[g];if("[stack]"===
-f._mode&&f._name===b._val){if(!0===f._const)return a("do not set const (1185): "+f._name+":"+f._val);f._val=e._val;f._type=e._type;e=B(f);e._name="literal";return e}}v.push("undefined-var: "+b._name+":"+b._val+"\n\tline:"+A);return{_mode:"[event]",_type:"error",_val:"undefined-var : "+b._val,_goto:"top"}}function r(b,d,e){k+="\ncmp:"+b+", "+d._val+", "+e._val;d=q(d);if("[event]"===d._mode)return d;e=q(e);if("[event]"===e._mode)return e;if(d._type!==e._type)return{_mode:"[stack]",_type:"bool",_val:!1,
-_name:"literal",_const:!0};if("(>"===b)return{_mode:"[stack]",_type:"bool",_val:d._val>e._val,_name:"literal",_const:!0};if("(<"===b)return{_mode:"[stack]",_type:"bool",_val:d._val<e._val,_name:"literal",_const:!0};if("(>="===b)return{_mode:"[stack]",_type:"bool",_val:d._val>=e._val,_name:"literal",_const:!0};if("(<="===b)return{_mode:"[stack]",_type:"bool",_val:d._val<=e._val,_name:"literal",_const:!0};if("(=="===b)return{_mode:"[stack]",_type:"bool",_val:d._val===e._val,_name:"literal",_const:!0};
-if("(!="===b)return{_mode:"[stack]",_type:"bool",_val:d._val!==e._val,_name:"literal",_const:!0};if("(&&"===b)return{_mode:"[stack]",_type:"bool",_val:d._val&&e._val,_name:"literal",_const:!0};if("(||"===b)return{_mode:"[stack]",_type:"bool",_val:d._val||e._val,_name:"literal",_const:!0};if("str"===d._type&&"str"===e._type&&1===d._val.length&&1===e._val.length){if("(+"===b)return{_mode:"[stack]",_type:d._type,_val:String.fromCharCode(d._val.charCodeAt(0)+e._val.charCodeAt(0)),_name:"literal",_const:!0};
-if("(-"===b)return{_mode:"[stack]",_type:d._type,_val:String.fromCharCode(d._val.charCodeAt(0)-e._val.charCodeAt(0)),_name:"literal",_const:!0}}return"(*"===b?{_mode:"[stack]",_type:d._type,_val:d._val*e._val,_name:"literal",_const:!0}:"(/"===b?{_mode:"[stack]",_type:d._type,_val:Math.floor(d._val/e._val),_name:"literal",_const:!0}:"(+"===b?{_mode:"[stack]",_type:d._type,_val:d._val+e._val,_name:"literal",_const:!0}:"(-"===b?{_mode:"[stack]",_type:d._type,_val:d._val-e._val,_name:"literal",_const:!0}:
-"(&"===b?{_mode:"[stack]",_type:d._type,_val:d._val&e._val,_name:"literal",_const:!0}:"(|"===b?{_mode:"[stack]",_type:d._type,_val:d._val|e._val,_name:"literal",_const:!0}:"(^"===b?{_mode:"[stack]",_type:d._type,_val:d._val^e._val,_name:"literal",_const:!0}:"(>>"===b?{_mode:"[stack]",_type:d._type,_val:d._val>>e._val,_name:"literal",_const:!0}:a(b)}function D(b,d,e){k+="\nexp:"+b+", "+d._val+", "+e._val;e=q(e);if("[event]"===e._mode)return e;if("int"!==e._type)return a("type not-match (1252): "+e._name+
-":"+e._val+" "+e._type);if("ident"!==d._type){if(!0===d._const)return a("do not set const (1255):"+d._name+":"+d._val);if("int"!==d._type)return a("type not-match (1256):"+d._name+":"+d._val);if("*="===b)return{_mode:"[stack]",_type:"int",_val:d._val*=e._val,_name:"literal",_const:!1};if("/="===b)return{_mode:"[stack]",_type:"int",_val:d._val=Math.floor(d._val/e._val),_name:"literal",_const:!1};if("+="===b)return{_mode:"[stack]",_type:"int",_val:d._val+=e._val,_name:"literal",_const:!1};if("-="===
-b)return{_mode:"[stack]",_type:"int",_val:d._val-=e._val,_name:"literal",_const:!1};v.push("undefined-var: "+d._val+" "+b+"\n\tline:"+A);return{_mode:"[event]",_type:"error",_val:"undefined-var:"+d._val,_goto:"top"}}for(var g=d._val,f=h.length-1;0<=f;f--){var l=h[f];if(l._name===g){if(!0===l._const)return a("do not set const (1272): "+l._name+":"+l._val);if("int"!==l._type)return a("type not-match (1273):"+l._name+":"+l._val);if("*="===b)return{_mode:"[stack]",_type:"int",_val:l._val*=e._val,_name:"literal",
-_const:!1};if("/="===b)return{_mode:"[stack]",_type:"int",_val:l._val/=e._val,_name:"literal",_const:!1};if("+="===b)return{_mode:"[stack]",_type:"int",_val:l._val+=e._val,_name:"literal",_const:!1};if("-="===b)return{_mode:"[stack]",_type:"int",_val:l._val-=e._val,_name:"literal",_const:!1}}}v.push("undefined-var: "+d._name+":"+d._val+" "+b+"\n\tline:"+A);return{_mode:"[event]",_type:"error",_val:"undefined-var:"+d._val,_goto:"top"}}function B(a){return{_mode:a._mode,_type:a._type,_val:a._val,_name:a._name,
-_const:a._const}}if(!F)return[];for(var A="",n=[],C=0;C<F.length;C++){var g=F[C];if("ident"!==g._type||")"!==g._val){if("("===g._val||"(each"===g._val||"(loop"===g._val)g._stack_length=h.length;n.push(g)}else{for(var e=[],d=n.length-1;0<=d;--d){var b=n.pop();e.unshift(b);if("ident"===b._type&&"("===b._val[0])break}if(!(0>=e.length))if(g=e[0]._val,"("===g)if(2>e.length)n.push(x());else{d=z(e[0]._stack_length);if("[event]"===d._mode)return d;"null"===d._name?n.push(e[e.length-1]):n.push(d)}else if("(at"===
-g||"(."===g){if(3>e.length)return a("arg_size < 3 : "+g);if("@"===e[1]._val)b=B(e[1]),b._val=e[1]._val+e[2]._val,b._type="int",n.push(b);else{d=q(e[1]);if("[event]"===d._mode)return d;b=!1;if("[stack]"===d._mode&&("list"===d._type||"map"===d._type)){var u=e[2];"(at"===g&&(u=q(e[2]));if(("list"===d._type||"map"===d._type)&&"int"===u._type&&0<=u._val&&u._val<d._val.length)n.push(d._val[u._val]),b=!0;else{e=u._val;"map"===d._type&&(e=""+e);for(var m in d._val){b=d._val[m];if(b._name===e){n.push(b);break}b=
-!1}if(!1===b){for(m=h.length-1;0<=m;m--)if("[stack]"===h[m]._mode&&h[m]._name===e){b=h[m];break}!1!==b&&("int"===b._type&&0<=b._val&&b._val<d._val.length)&&n.push(d._val[b._val])}}if(!1===b)for(m in d._val){b=d._val[m];if("unmatch"===b._name){n.push(b);break}b=!1}}if(!1===b)return v.push("undefined-var: "+u._name+":"+u._val+"\n\tline:"+A),{_mode:"[event]",_type:"error",_val:"undefined-var : "+u._val,_goto:"top"}}}else if("(:"===g||"(::"===g){if(3>e.length)return a("arg_size < 3 : "+g);d=e[1]._val;
-k+="\ndefine_const:"+d+", "+e[2]._val;if("ident"!==e[1]._type){if("int"!==e[1]._type)return a("do not define : "+d);d=""+d}u=q(e[2]);if("[event]"===u._mode)return u;b={_mode:"[stack]",_type:u._type,_val:u._val,_name:d,_const:"(:"===g};h.push(b);n.push(b)}else if("(="===g){if(3>e.length)return a("arg_size < 3 : "+g);b=l(e[1],e[2]);if("[event]"===b._mode)return b;n.push(b)}else if("(<<"===g){if(3>e.length)return a("arg_size < 3 : "+g);k+="\npush_var:"+e[1]._val+", "+e[2]._val;if("@.co"===e[1]._val){b=
-q(e[2]);if("str"===b._type||"int"===b._type)k+="\n>>> "+b._val,t+=b._val;else if("list"===b._type){k+="\n>>> "+b._type+"[ ";t+="\n[ ";for(m in b._val)k+=b._val[m]._name+":"+b._val[m]._val+", ",t+=b._val[m]._val+", ";k+="]";t+="]"}else if("map"===b._type){k+="\n>>> "+b._type+"[ ";t+="\n"+b._type+"[ ";for(m in b._val)k+=b._val[m]._name+":"+b._val[m]._val+", ",t+=b._val[m]._name+":"+b._val[m]._val+", ";k+="]";t+="]"}n.push(e[1])}else if("ident"!==e[1]._type)return a("(1471): "+e[1]._name+":"+e[1]._val);
-for(m=h.length-1;0<=m;m--)if(d=h[m],"[stack]"===d._mode&&d._name===e[1]._val){if(!0===d._const)return a("do not set const "+e[1]._name+":"+e[1]._val);if("map"===d._type||"list"===d._type)b=q(e[2]),"literal"===b._name?d._val.push({_mode:b._mode,_type:b._type,_val:b._val,_name:"."+d._val.length,_const:b._const,_this:d}):(b=B(b),d._val.push(b));else if("str"===d._type)d._val=""+d._val+q(e[2])._val;else if("int"===d._type){n.push({_mode:"[stack]",_type:d._type,_val:d._val<<q(e[2])._val,_name:"literal",
-_const:!0});break}n.push(e[1]);break}}else if("(<"===g||"(>"===g||"(<="===g||"(>="===g||"(=="===g||"(!="===g||"(&&"===g||"(||"===g||"(*"===g||"(/"===g||"(+"===g||"(-"===g||"(&"===g||"(|"===g||"(^"===g||"(>>"===g){if(3>e.length)return a("arg_size < 3 : "+g);n.push(r(g,e[1],e[2]))}else if("(??"===g){if(3>e.length)return a("arg_size < 3 : "+g);if("bool"===e[1]._type&&!0===e[1]._val){b=y(s[e[2]._val]);if("[event]"===b._mode)return b;for(var E in b)n.push(b[E])}else if(4===e.length){b=y(s[e[3]._val]);
-if("[event]"===b._mode)return b;for(E in b)n.push(b[E])}else n.push({_mode:"[token]",_type:"bool",_val:!1,_const:!0})}else if("(loop"===g){if(3>e.length)return a("arg_size < 3 : "+g);h.push({_mode:"[stack]",_type:"str",_val:"",_name:"out",_const:!1});g=h.length;b=x();for(d=0;100>d;d++){b=y(s[e[2]._val]);if("[event]"===b._mode&&"break"===b._type){if(b._goto!==e[1]._val){d=z(e[0]._stack_length);if("[event]"===d._mode)return d;n.push(x());return b}h.push(b._val);break}if("[event]"===b._mode&&"continue"===
-b._type){if(b._goto!==e[1]._val){d=z(e[0]._stack_length);if("[event]"===d._mode)return d;n.push(x());return b}}else if("[event]"===b._mode)return b}if(100<=d)return f("loop limit-over: "+e[1]._val);d=z(e[0]._stack_length);if("[event]"===d._mode)return d;n.push(d)}else if("(each"===g){if(3>e.length)return a("arg_size < 3 : "+g);d=q(e[1]);if("[event]"===d._mode)return d;var w=0;if("str"===d._type)w=d._val.length;else if("int"===d._type)w=d._val;else if("map"===d._type)w=d._val.length;else if("list"===
-d._type)w=d._val.length;else return a("each type error: "+d._type);h.push({_mode:"[stack]",_type:"str",_val:"",_name:"out",_const:!1});g=h.length;h.push({_mode:"[stack]",_type:d._type,_val:0,_name:"it",_const:!0});h.push({_mode:"[stack]",_type:"int",_val:w,_name:"max",_const:!0});for(var b=x(),p=0;p<w;p++){"str"===d._type?h[g]._val=d._val.substr(p,1):"int"===d._type?h[g]._val=p:"map"===d._type?(b=B(d._val[p]),b._name="it",h[g]=b):"list"===d._type&&(b=B(d._val[p]),b._name="it",h[g]=b);b=y(s[e[2]._val]);
-if("[event]"===b._mode&&"break"===b._type){if("each"!==b._goto){d=z(e[0]._stack_length);if("[event]"===d._mode)return d;n.push(x());return b}h.push(b._val);break}if("[event]"===b._mode&&"continue"===b._type){if("each"!==b._goto){d=z(e[0]._stack_length);if("[event]"===d._mode)return d;n.push(x());return b}}else if("[event]"===b._mode)return b}d=z(e[0]._stack_length);if("[event]"===d._mode)return d;n.push(d)}else{if("(break"===g)return 2===e.length?{_mode:"[event]",_type:"break",_val:x(),_goto:e[1]._val}:
-3>e.length?a("arg_size < 3 : "+g):{_mode:"[event]",_type:"break",_val:q(e[2]),_goto:e[1]._val};if("(continue"===g)return 2>e.length?a("arg_size < 2 : "+g):{_mode:"[event]",_type:"continue",_val:x(),_goto:e[1]._val};if("(++"===g){if(2>e.length)return a("arg_size < 2 : "+g);n.push(D("+=",e[1],{_mode:"[token]",_type:"int",_val:1}))}else if("(--"===g){if(2>e.length)return a("arg_size < 2 : "+g);n.push(D("-=",e[1],{_mode:"[token]",_type:"int",_val:1}))}else if("(+="===g){if(3>e.length)return a("arg_size < 3 : "+
-g);n.push(D("+=",e[1],e[2]))}else if("(-="===g){if(3>e.length)return a("arg_size < 3 : "+g);n.push(D("-=",e[1],e[2]))}else if("(*="===g){if(3>e.length)return a("arg_size < 3 : "+g);n.push(D("*=",e[1],e[2]))}else if("(/="===g){if(3>e.length)return a("arg_size < 3 : "+g);n.push(D("/=",e[1],e[2]))}else if("(call"===g){if(3>e.length)return a("arg_size < 3 : "+g);d=q(e[1]);if("[event]"===d._mode)return d;if(d._this)for(b=d._this._val,m=b.length-1;0<=m;m--)"[stack]"===b[m]._mode&&h.push(b[m]);g=h.length;
-if(3===e.length){b=y(s[e[2]._val]);if("[event]"===b._mode)return b;for(m=h.length-1;g-1<m;m--)h[m]._name="_"+h[m]._name;h.push({_mode:"[stack]",_type:"int",_val:h.length-g,_name:"arg_size",_const:!0})}e=h.length;if("func_no"!==d._type)return a("func_no: "+d._val);b=y(s[d._val]);if("[event]"===b._mode){if("return"!==b._type){for(;g<h.length;)h.pop();return b}b=b._val}if("list"!==b._type&&"map"!==b._type){w={_mode:"[stack]",_type:"list",_val:[],_name:"out",_const:!1};d=!1;for(m in b)p=B(b[m]),p._name&&
-".literal"!==p._name&&"literal"!==p._name?"out"===p._name?d=p:(p._this=w,w._val.push(p)):!1===d&&(d=q(p));!1!==d&&(d._name=".0",d._const=!0,d._this=w,w._val.push(d));b=w}else for(m in b._val)p=b._val[m],p._name="."+p._name;for(;e<h.length;)d=h.pop();for(;g<h.length;)d=h.pop(),d._this=b,b._val.push(d);n.push(b)}else{if("(return"===g){if(2>e.length)return a("arg_size < 2 : "+g);b=q(e[1]);if("[event]"===b._mode)return b;if("list"===b._type||"map"===b._type)for(m in E=0,b._val)p=B(b._val[m]),b._val[m]._name?
-p._name="."+p._name:(p=B(q(p)),p._name="."+E,E++),n.push(p);else return a("return not list : "+g);return{_mode:"[event]",_type:"return",_val:n}}if("(line"===g)A=e[1]._val;else return a("program_error: "+g)}}}}return n}function C(h,a){var f;if(0<h.length)for(var q=h.length-1;0<=q;q--)f=h[q],k+=a,k+=", _mode:"+f._mode,k+=", _type:"+f._type,k+=", _name:"+f._name,k+=", _val:"+f._val,k+=", _const:"+f._const+"\n","list"===f._type&&C(f._val,a+"list> ")}var s=[],h=[],v=[],k="",t="",K=function(k){for(var a=
-"",f=0;f<k.length;f++)switch(k[f]){case "'":a+="s";break;case '"':a+="S";break;case "/":a+="b";break;case "-":a+="b";break;case ".":a+="b";break;case "\n":a+="e";break;default:a+=" "}for(var h="",l=" ",f=0;f<a.length;f++){switch(a[f]){case "s":"s"===l?l=" ":"S"!==l&&(l="s");break;case "S":"S"===l?l=" ":"s"!==l&&(l="S")}h=" "!==l?h+l:h+a[f]}a="";l=" ";for(f=0;f<h.length;f++){c=h[f];switch(l+c){case " b":case "eb":"//"===k.substr(f,2)&&(c="c"),"---"===k.substr(f,3)&&(c="c"),"..."===k.substr(f,3)&&(c=
-"c")}switch(c){case "c":l="c";break;case "e":l=" "}" "===l&&(a+=k[f])}return a}(H),G=function(k){for(var a="",f=0;f<K.length;f++)switch(k[f]){case " ":a+=" ";break;case "!":a+="a";break;case '"':a+="S";break;case "#":a+="a";break;case "$":a+="a";break;case "%":a+="a";break;case "&":a+="a";break;case "'":a+="s";break;case "(":a+="a";break;case ")":a+=")";break;case "*":a+="a";break;case "+":a+="a";break;case ",":a+="a";break;case "-":a+="a";break;case ".":a+="a";break;case "/":a+="a";break;case "0":a+=
-"0";break;case "1":a+="0";break;case "2":a+="0";break;case "3":a+="0";break;case "4":a+="0";break;case "5":a+="0";break;case "6":a+="0";break;case "7":a+="0";break;case "8":a+="0";break;case "9":a+="0";break;case ":":a+="a";break;case ";":a+="a";break;case "<":a+="a";break;case "=":a+="a";break;case ">":a+="a";break;case "?":a+="a";break;case "@":a+="a";break;case "A":a+="a";break;case "B":a+="a";break;case "C":a+="a";break;case "D":a+="a";break;case "E":a+="a";break;case "F":a+="a";break;case "G":a+=
-"a";break;case "H":a+="a";break;case "I":a+="a";break;case "J":a+="a";break;case "K":a+="a";break;case "L":a+="a";break;case "M":a+="a";break;case "N":a+="a";break;case "O":a+="a";break;case "P":a+="a";break;case "Q":a+="a";break;case "R":a+="a";break;case "S":a+="a";break;case "T":a+="a";break;case "U":a+="a";break;case "V":a+="a";break;case "W":a+="a";break;case "X":a+="a";break;case "Y":a+="a";break;case "Z":a+="a";break;case "[":a+="[";break;case "\\":a+="a";break;case "]":a+="]";break;case "^":a+=
-"a";break;case "_":a+="a";break;case "`":a+="a";break;case "a":a+="a";break;case "b":a+="a";break;case "c":a+="a";break;case "d":a+="a";break;case "e":a+="a";break;case "f":a+="a";break;case "g":a+="a";break;case "h":a+="a";break;case "i":a+="a";break;case "j":a+="a";break;case "k":a+="a";break;case "l":a+="a";break;case "m":a+="a";break;case "n":a+="a";break;case "o":a+="a";break;case "p":a+="a";break;case "q":a+="a";break;case "r":a+="a";break;case "s":a+="a";break;case "t":a+="a";break;case "u":a+=
-"a";break;case "v":a+="a";break;case "w":a+="a";break;case "x":a+="a";break;case "y":a+="a";break;case "z":a+="a";break;case "{":a+="{";break;case "|":a+="a";break;case "}":a+="}";break;case "~":a+="a";break;default:a+=" "}for(var h="",l=" ",f=0;f<a.length;f++){switch(a[f]){case "s":"s"===l?l=" ":"S"!==l&&(l="s");break;case "S":"S"===l?l=" ":"s"!==l&&(l="S")}" "===l&&0<f&&"a"===a[f-1]&&"0"===a[f]?l="a":"a"===l&&("a"!==a[f]&&"0"!==a[f])&&(l=" ");h=" "!==l?h+l:h+a[f]}for(var a="",l=h[0],r=[],f=0;f<
-h.length;f++)l===h[f]?a+=k[f]:(" "!==l&&r.push(l+":"+a),a=k[f],l=h[f]);" "!==l&&r.push(l+":"+a);return r}(K),k=k+"\n[start]------";(function(h){function a(a){if("a:true"===a)return{_mode:"[stack]",_type:"bool",_val:!0,_name:"literal",_const:!0};if("a:false"===a)return{_mode:"[stack]",_type:"bool",_val:!1,_name:"literal",_const:!0};var f=a.substr(0,2);return"0:"===f?{_mode:"[stack]",_type:"int",_val:parseInt(a.substr(2,a.length-2)),_name:"literal",_const:!0}:"s:"===f?{_mode:"[stack]",_type:"str",_val:a.substr(3,
-a.length-2-2),_name:"literal",_const:!0}:{_mode:"[token]",_type:"ident",_val:a.substr(2,a.length-2)}}s=[];for(var f=[],k=0;k<h.length;k++)if("}:}"===h[k])for(var l=[],r;r=f.pop();)if("ident"===r._type&&"{"===r._val){r=s.length;s.push(l);f.push({_mode:"[token]",_type:"func_no",_val:r});break}else l.unshift(r);else if("]:]"===h[k])for(l=[];r=f.pop();)if("ident"===r._type&&"["===r._val){r=s.length;s.push(l);f.push({_mode:"[token]",_type:"list_no",_val:r});break}else l.unshift(r);else f.push(a(h[k]));
-s.push(f)})(G);G=y(s[s.length-1]);0<v.length&&(k+="\nerror_list : \n"+v+"\n",t+="\nerror_list : \n"+v+"\n");k+="\n";C(G,"stack> ");k+="\n";C(h,"g_stack_tbl> ");k+="\n";z(0);k+="\n[end]------\n";if("OK"===I&&0===v.length||"NG"===I&&0!==v.length)return"d(^-^)b";document.getElementById("kawasemi_debug").value+=k+"\n";document.getElementById("kawasemi_output").value+=t+"\n";return(0===v.length?"OK! d(^-^)b -> ":"NG! q(ToT)p -> ")+H};
-
-//]]></script>
 <pre>
-
-つい、カッ！となってLL言語を作りはじめてしまいました。名前は「BirdsScript」です。
-（2013/08/17 現在、未完成。）
-
-特徴：
-
-すべてのプログラマーのために「軽量で」「安全で」「大規模開発に耐えられる」「使って楽しい」言語を目指して設計してみました。
-（C/C++ や JavaScript に近い文法だと思っています）
-
-
-「軽量で」
-
-　・記述量が軽量（ var とか function とか class とか private とか public とか書く必要はありません。型名も　int とか string とか （いまのところ）ほとんんど記述する必要がない。）
-
-　・文法も軽量。予約語も少ない。（ if, for, each, switch, case, などは存在せず、代替の記述方法があります ）
-
-　・実装も軽量。いまのところコンパイラ(Yamasemi)も、実行系(Kawasemi)も、JavaScriptで1000行程度。最終的にはC/C++で4000行程度になるはず。
-
-「安全で」
-
-　・定数宣言を重視（不必要な変数はバグの元となると考えて）
-
-　・空の変数は存在できない（変数の値が未定という状態は無い）
-
-　・コンテナにも更新の可、不可がある。
-
-　・メンバは普通 private になる（デフォルトでカプセル化、隠蔽され、外部からのアクセス可能にするには手間'.'の記述が必要）
-
-　・ポインタは存在しない（ポインタはバグの温床という考え）
-
-　・継承は存在しない（実装の継承は過度に隠ぺいされて可読性が悪いと考えて）
-
-　・GCではなく、スコープで解放され、デストラクタが走ります（GCは処理が重いときに走り始めるので嫌いです）
-
-　・例外を多数実装。無限ループする前に例外が発生してループを抜けます。（未実装ですが、ゼロ除算、最大最小値超え、範囲外アクセス、スタックメモリ枯渇、などなど）
-
-　・タイプセーフな言語にしたい思いは強い（希望＆未実装）
-
-「大規模開発に耐えられる」
-
-　・オブジェクト指向（クラスとか、オブジェクトとか、カプセル化とか）の概念は入っている
-
-　・STLのようなジェネリックな言語にしたい思いは強いです（希望＆未実装）。
-
-　・テストも重視。デバッグも重視。（未実装）
-
-　・可読性もメンテナンス性も重視。（希望）
-
-「使って楽しい」
-
-　・コンテナがある（配列も連想配列もごちゃ混ぜなコンテナ）
-
-　・関数とクラスは同じ記述、同じ実装。
-
-　・無名関数がある。無名クラスがある。
-
-　・クロージャーも・・・？
-
-とにかく、プログラマが苦労しない言語を目指しています。
-
-
-概要：
-
-コンパイラというか中間言語へのトランスレータ「Yamasemi」と、中間言語の実行部(いわゆるVM)「Kawasemi」の２段構成になっています。
-
-現状、言語設計+試験期間な意味からコンパイラよりもインタープリタに近い状態です。現在は実装の確認という意味で JavaScript 書いています。
-今後の予定としては、やはり C/C++ への移植です。JavaScriptで 1000行程度なので、C/C++ でも 4000行程度の軽量な実装になると予想しています。
-
-型は現在、整数型(int)と文字列型(str)しかありません。早めに、bool, enum はサポートしたいと思っています。
-float やその他の型は外部のライブラリとして用意するつもり。（言語そのもののの実装を軽くしたいので。）
-
-クラスやオブジェクトのようなものは JavaScript と同じようなプロトタイプで用意する方向です。
-継承（実装の継承は可読性とメンテナンス性が悪い）は嫌いなので、おそらく永遠にサポートされないでしょう。
-
-逆に STL のようなジェネリックプログラミングは優先度高めでサポートします。
-コンテナというか「リスト（配列）」や「マップ（連想配列）」は優先度を上げて実装しています。現状は中途半端に実装されています。
-
-そしてテストとデバッグのしやすさを売りにしたいので test() や assert(), trace() とかを早めに実装したい。
 
 以下、「BirdsScript」の文法です
 -----------------------------------------------------------------
@@ -251,7 +196,7 @@ float やその他の型は外部のライブラリとして用意するつも�
 </pre><script type="text/JavaScript"><!--
 document.write(
 on_yamasemi( "i   : 0 ; ... 定数"         , "(: i 0 )"           ) + "<br>" +
-on_yamasemi( 'str : "string\n" ; ... 定数'  , "(: str 'string\n' )"  ) + "<br>" +
+on_yamasemi( 'str : "string\n" ; ... 定数', "(: str 'string\n' )" ) + "<br>" +
 on_yamasemi( "str : 'string' ; ... 定数"  , "(: str 'string' )"  ) + "<br>" +
 on_yamasemi( "i   :: 0 ; ... 変数"        , "(:: i 0 )"          ) + "<br>" +
 on_yamasemi( 'str :: "string" ; ... 変数' , "(:: str 'string' )" ) + "<br>"
@@ -281,7 +226,7 @@ on_yamasemi( "foo::1;boo : foo < 0 ?? 0 !! 1 ; ... スコープなしだと NG. 
 );
 //--></script><pre>
 // ?? の前は必ず比較文であること。比較文以外はエラーになります。
-//　flag = true ?? ... のようなタイポを防ぐ理由もあります。
+//  flag = true ?? ... のようなタイポを防ぐ理由もあります。
 
     is_ok ?? a=0 !! a=1 ; ... NG
 
@@ -386,7 +331,7 @@ on_yamasemi(
 -----------------------------------------------------------------
 ■ 繰り返し構文、for 文、each 文
 
-// 予約語 break, continue 
+// 予約語 break, continue
 
 // '{{', '}}' はループ文 -> for(;;){ ... }。
 // break は値を返すことができる。無しも可。
@@ -413,7 +358,7 @@ on_yamasemi(
 );
 //--></script><pre>
 
-// '.{{', '}}' は each, 'it' はループ内で使用できる変数（イテレータの意味：　it は予約語です）
+// '.{{', '}}' は each, 'it' はループ内で使用できる変数（イテレータの意味：  it は予約語です）
 // 変数のイテレータであれば、上書き可能です。
 
     5.{{ @.co << it << ', ' ; }}  ... 0, 1, 2, 3, 4
@@ -477,7 +422,7 @@ on_yamasemi(
     {{
         ...
         i >= 10 ?? break ;
-        ++ i ; ... i ++ C言語などと異なり、先に実行されるのであえて前方のみにしました。 
+        ++ i ; ... i ++ C言語などと異なり、先に実行されるのであえて前方のみにしました。
     }}
 
 </pre><script type="text/JavaScript"><!--
@@ -536,7 +481,7 @@ on_yamasemi(
 
 
 </pre><script type="text/JavaScript"><!--
-document.write(
+// document.write(
 // on_button(
 //     "    {{  label a ;\n" +
 //     "        ... \n" +
@@ -559,7 +504,7 @@ document.write(
 -----------------------------------------------------------------------
 ■ class と関数の宣言は同じ '{', '}'。特に区別はしていない。同じものを場合によって呼び方を変えているだけ。
 
-// 予約語： dtor　デストラクタ
+// 予約語： dtor  デストラクタ
 
     foo : {
         ... ここにいろいろ書く
@@ -633,13 +578,13 @@ on_yamasemi(
 
 // 引数はいわゆるメンバ変数として値が渡ってくるイメージ
 // f( a:0, x:1, y:2 ) と呼ぶと関数内に _a:0; _x:1; _y:2; が宣言されたのとほぼ同じ。
-// 予約語：　arg_size は引数の数
+// 予約語：  arg_size は引数の数
 
     foo : {
         @.co << _a ;       ... 第１引数
         @.co << arg_size ; ... 1
     } ;
-    foo( a:1 ) ; ... 引数はいわゆるSTLの map,　必ず名前が必要。
+    foo( a:1 ) ; ... 引数はいわゆるSTLの map,  必ず名前が必要。
 
     woo : {
         @.co << _x ; ... 第１引数
@@ -681,7 +626,7 @@ on_yamasemi(
 
 // 特に、戻り値の参照のしかたに注意が必要です。
 // list の場合は .0 、map の場合は .xx を使って戻り値を参照する必要があります。
-// うっかり .0 を忘れると list や　map そのものを参照してしまいます。
+// うっかり .0 を忘れると list や  map そのものを参照してしまいます。
 
 // memo : であるならもう return の構文は return [ .. ] のみにしてしまってよい気がする。
 
@@ -783,7 +728,7 @@ on_yamasemi(
 
 // 記述のお作法として class は先頭文字を大文字、 メンバや関数は先頭文字を小文字でお願いします。
 // ラクダ記法も好きではないので、小文字の場合は _ を使ってください。
-// Class() ; member() ; function() ; get_list() ... 
+// Class() ; member() ; function() ; get_list() ...
 
 
 </pre><script type="text/JavaScript"><!--
@@ -808,7 +753,7 @@ on_yamasemi(
 -----------------------------------------------------------------------
 ■コンテナ '[', ']' JavaScript ではおなじみの概念。
 
-// STLの std::vector, std::map　が混在しているコンテナ
+// STLの std::vector, std::map  が混在しているコンテナ
 
     int_list : [ 1, 2, 3, 4, 5, ] ;
     str_list : [ '1', '2', '3', ] ;
@@ -844,7 +789,7 @@ on_yamasemi(
 );
 //--></script><pre>
 
-//　ちょっと脱線
+//  ちょっと脱線
 // switch 文は無いので関数の map で実装。
 
     sw : [                      ... 固定テーブル（マップ）
@@ -954,7 +899,7 @@ on_yamasemi(
 
 // @.xxxxって書いたらグローバル ... の予定
 
-    @.co : use SystemConsoleOut ;　
+    @.co : use SystemConsoleOut ;
 
     @.log : use DebugLogStream ;
 
@@ -977,9 +922,9 @@ on_yamasemi(
 
 
     // 例外はscopeに対する記述。後に書くと有効にならない（飛ばされる）ので必ず先に書いてください
-    (　catch <- { @.co << 'catch 1: ' << it  } ; ... 例外の記述
+    (  catch <- { @.co << 'catch 1: ' << it  } ; ... 例外の記述
 
-        (　catch <- { @.co << 'catch 2: ' << it  } ; ... 例外の記述
+        (  catch <- { @.co << 'catch 2: ' << it  } ; ... 例外の記述
 
             a != 0 ?? error 'ERROR' ; ... break と同じように処理を中断して catch を実行しスコープを抜ける
 
@@ -1000,7 +945,7 @@ on_yamasemi(
 
 //---------------------------------------------------------------------------------
 
-ここからは単体テスト　sample-code
+ここからは単体テスト  sample-code
 
     f : { a:1 ; b:2 ; .c:3 ; return 4, 5, 6 ; }
     @.co << f( x:7, y:8, z:9 ) ; ... オブジェクトの中はどうなっている？？
@@ -1039,9 +984,9 @@ on_kawasemi(
 
 //--></script><pre>
 
-... 階乗　３パターン
+... 階乗  ３パターン
 
-    fact : { return ( _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 ) ; }　;
+    fact : { return ( _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 ) ; }  ;
     @.co << fact( n:3 ).0 ;
 
     fact2 : { .r : ( _n <= 1 ?? 1 !! _n * fact2( n:_n-1 ).r ) ; } ;
@@ -1053,7 +998,7 @@ on_kawasemi(
 </pre><script type="text/JavaScript"><!--
 document.write(
 on_yamasemi(
-    'fact : { return ( _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 ) ; }　;\n' +
+    'fact : { return ( _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 ) ; }  ;\n' +
     '@.co << fact( n:3 ).0 ;\n'
     , '(: fact { (return [ ( (?? (<= _n 1 ) { 1 } { (* _n (. (call fact [ (: n (- _n 1 ) ) ] ) .0 ) ) } ) ) ] ) } ) (<< (. @ .co ) (. (call fact [ (: n 3 ) ] ) .0 ) )' ) + '<br>' +
 on_kawasemi(
@@ -1207,7 +1152,7 @@ on_kawasemi("\
 (: xor128 { (:: x 123456789 ) (:: y 362436069 ) (:: z 521288629 ) (:: w 88675123 ) (: .get { (: t (^ x ( (<< x 11 ) ) ) ) (= x y ) (= y z ) (= z w ) (return [ (= w (^ ( (^ w ( (>> w 19 ) ) ) ) ( (^ t ( (>> t 8 ) ) ) ) ) ) ] ) } ) } ) (: xs (call xor128 [  ] ) ) (each 20 { (<< (<< (. @ .co ) (. (call (. xs .get ) [  ] ) .0 ) ) ', ' ) } )", "OK"  ) + "<br>"
 ) ;
 //--></script><pre>
-<!-- 
+<!--
 
 --- 挿入ソート、選択ソート、バブルソート
 
@@ -1320,24 +1265,24 @@ p :: [3,1,4,1,5,9,2,6,5,3,5,8,9,7,9] ; @.co << p ;
 
 ... merge_sort( a:p, first:0, last:14 ) ; @.co << p ;
 
-... 引数aが無くても動いちゃったよ。これは見えないように直さないとね。 _a -> __a -> ___a とかね。引数以外のメンバは見えていいの？
 
-... ループ内のundefined が止まらない。throuすればいい？
+... 以下優先度順対応項目
+
+... ループ内のundefined が止まらない。throwすればいい？
+
+... break, continue が動いていないもよう
+
+... return の戻り値は１つにする？？
 
 ... a : [] ; b :: a ; で a が更新されるのを阻止する。::はコピーなんだよ。
 
-... pair ( range ) のサポート　 1..10 とかね。
+... pair ( range ) のサポート   1..10 とかね。
 
-... heap_sort( a:p, n::14 ) ; @.co << p ;
-... あれ？ 0 が残っている
-
-quick_sort( a:p, first:0, last:14 ) ; @.co << p ; ... @.co << p.sort()  って書きたい
-... 基底クラス list のメソッド拡張。こんな感じ→ list << ( .sort : { quick_sort( a:_, first:0, last:_.length ) } ) ;
+... +, -, ?, ! の４文字はシンボル（英数字）として認識。
 
 ... 引数のデフォルト値、サポート。
-... a : ( _a == undefined ? 0 : _a ) ;   
+... a : ( _a == undefined ? 0 : _a ) ;
 ... a : _a || 0 ; ... この書き方はいまひとつ好きになれない。
-
 
 ... float 演算サポート
 
@@ -1349,9 +1294,20 @@ quick_sort( a:p, first:0, last:14 ) ; @.co << p ; ... @.co << p.sort()  って�
 
 ... test(), assert(), trace() のサポート
 
-... 配列の範囲外アクセス、連想配列の案マッチ、スタックメモリの枯渇。それぞれ例外を投げる。
+... 配列の範囲外アクセス、連想配列のunmatch、スタックメモリの枯渇。それぞれ例外を投げる。
 ... ゼロ除算、最大値最小値超えも。
 ... コールスタックの限界超え例外のサポート。
+
+
+
+
+... heap_sort( a:p, n::14 ) ; @.co << p ;
+... あれ？ 0 が残っている
+
+quick_sort( a:p, first:0, last:14 ) ; @.co << p ; ... @.co << p.sort()  って書きたい
+... 基底クラス list のメソッド拡張。こんな感じ→ list << ( .sort : { quick_sort( a:_, first:0, last:_.length ) } ) ;
+
+... list.test : { @.co << _ ; } ; [ 1, 2, 3, ].test() ; ... [ 1, 2, 3, ]
 
  -->
 
