@@ -10,7 +10,9 @@ Source Layout
 
     README.md             このファイル
     src/                  ソースコード
-    src/BirdsScript.html  Javascriptによるコンパイラ＆実行系の試作。それからメモ。
+    src/BirdsScript.html  HTMLによるコンパイラ(Yamasemi)＆実行系(Kawasemi)の呼び出しとテスト。それから仕様メモ。
+    src/Kawasemi.mini.js  Javascriptによる実行系の試作。
+    src/Yamasemi.mini.js  Javascriptによるコンパイラの試作。
 
 特徴：
 --------
@@ -145,22 +147,14 @@ fact : { _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 } ;
 </textarea>
 <input type="button" id="BT1" value="コンパイル（中間コード生成）" onclick="
 document.getElementById('kawasemi').value='';
-document.getElementById('yamasemi_debug').value ='';
 on_yamasemi(document.getElementById('yamasemi').value, '-' )" Language="JavaScript">
-<input type="checkbox" id="debug_check" onchange="
-document.getElementById('yamasemi_debug').style.display=this.checked?'block':'none';
-document.getElementById('kawasemi_debug').style.display=this.checked?'block':'none';">デバッグ情報<br>
-<textarea cols="70" rows="3" id="yamasemi_debug" style="display:none" >
-コンパイル時トレース情報（デバッグ用）
-</textarea><br>
-
+<input type="checkbox" id="debug_check" >デバッグ情報埋め込み<br>
 <textarea cols="60" rows="5" id="kawasemi">
 コードを書いて[コンパイル（中間コード生成）]ボタンを押すと、ここに中間コードが生成されます・・・直接入力してもいいけどね
 </textarea>
-<input type="button" id="BT1" value="中間コード実行" onclick="document.getElementById('kawasemi_debug').value ='';document.getElementById('kawasemi_output').value ='';on_kawasemi(document.getElementById('kawasemi').value, '-' )" Language="JavaScript"><BR>
-<textarea cols="80" rows="3" id="kawasemi_debug" style="display:none" >
-中間コード実行時、トレース情報（デバッグ情報）
-</textarea><br>
+<input type="button" id="BT1" value="中間コード実行" onclick="
+document.getElementById('kawasemi_output').value ='';
+on_kawasemi(document.getElementById('kawasemi').value, '-' )" Language="JavaScript"><BR>
 <textarea cols="60" rows="5" id="kawasemi_output" >
 [中間コード実行]ボタンを押すと実行結果が表示されます
 </textarea><br>

@@ -8,7 +8,9 @@ Source Layout
 
     README.md             このファイル
     src/                  ソースコード
-    src/BirdsScript.html  Javascriptによるコンパイラ＆実行系の試作。それからメモ。
+    src/BirdsScript.html  HTMLによるコンパイラ(Yamasemi)＆実行系(Kawasemi)の呼び出しとテスト。それから仕様メモ。
+    src/Kawasemi.mini.js  Javascriptによる実行系の試作。
+    src/Yamasemi.mini.js  Javascriptによるコンパイラの試作。
 
 特徴：
 --------
