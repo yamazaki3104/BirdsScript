@@ -1,7 +1,8 @@
-<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="ja">
 <!--
 つい、カッ！となってLL言語を作りはじめてしまいました。名前は「BirdsScript」です。
-（2013/09/10 現在、未完成。）
+（2013/09/12 現在、未完成。）
 
 Source Layout
 =============
@@ -129,13 +130,14 @@ All rights reserved.
 
  -->
 <head>
-<meta charset="utf-8"/>
+<meta charset="UTF-8">
 <style> body { background-color:#cccccc; } </style>
 <script type="text/javascript" charset="utf-8" src="Yamasemi.mini.js"></script>
 <script type="text/javascript" charset="utf-8" src="Kawasemi.mini.js"></script>
 </head>
 <body>
-BirdsScript ver.0.01 (c) 2013/08/17 YAMAZAKI Satoshi. <br>
+BirdsScript ver.0.01 (c) 2013/08 YAMAZAKI Satoshi.<br>
+あー、すみません。Google Chrome でしか動作確認していないので、他のブラウザでは動かないかもしれません。ごめんなさい。<br>
 <textarea cols="60" rows="5" id="yamasemi">
 --- sample code 階乗(fact) の関数宣言
 fact : { _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 } ;
@@ -146,15 +148,14 @@ fact : { _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 } ;
 
 </textarea>
 <input type="button" id="BT1" value="コンパイル（中間コード生成）" onclick="
-document.getElementById('kawasemi').value='';
-on_yamasemi(document.getElementById('yamasemi').value, '-' )" Language="JavaScript">
+document.getElementById('kawasemi').value=on_yamasemi(document.getElementById('yamasemi').value, document.getElementById('debug_check').checked )" >
 <input type="checkbox" id="debug_check" >デバッグ情報埋め込み<br>
 <textarea cols="60" rows="5" id="kawasemi">
 コードを書いて[コンパイル（中間コード生成）]ボタンを押すと、ここに中間コードが生成されます・・・直接入力してもいいけどね
 </textarea>
 <input type="button" id="BT1" value="中間コード実行" onclick="
 document.getElementById('kawasemi_output').value ='';
-on_kawasemi(document.getElementById('kawasemi').value, '-' )" Language="JavaScript"><BR>
+on_kawasemi(document.getElementById('kawasemi').value, '-' )" ><br>
 <textarea cols="60" rows="5" id="kawasemi_output" >
 [中間コード実行]ボタンを押すと実行結果が表示されます
 </textarea><br>
@@ -174,77 +175,98 @@ on_kawasemi(document.getElementById('kawasemi').value, '-' )" Language="JavaScri
 // 必ず初期値が必用。空の変数や定数は存在しない（させない）ことで、バグが入り込まないようにする設計方針。
 // 定数 いわゆるC++の const。Scalaの val とも言う。値を変えることができません。
 
-    i : 0 ; ... 定数宣言 val
+</pre><script>
 
-    str_n : "string\n" ; ... エスケープ有りの文字列
+function birds_script( _in, _check1 )
+{
+    var s_list = on_yamasemi( _in, false ) ;
+    var bgc = ( _check1===s_list ) ? '#8B8' : '#D55' ;
+    document.write( '<pre style="background-color:'+bgc+'"><br>'+_in+'<br><br></pre>' ) ;
+}
 
-    str : 'string' ; ... エスケープ無しの文字列
+birds_script( "\
+    i : 0 ; ... 定数宣言. いわゆる Scala でいう val ですね。",
+    "(: i 0 )"
+) ;
+// birds_script( '\
+//     str : "string\n" ; ... 文字列型定数 ... エスケープ有りの文字列',
+//     "(: str 'string\n' )"
+// ) ;
+birds_script( "\
+    str : 'string' ; ... 文字列型定数  ... エスケープ無しの文字列",
+    "(: str 'string' )"
+) ;
+
+</script><pre>
 
 // ':' は const なので定数の宣言、上書きするには変数宣言 '::'。 いわゆる var。
 // 変数の方が制約が緩い（危険）なので、ハイコストにしています。上手に使ってください。
 
-    i :: 0 ; ... 変数宣言 var
+</pre><script>
 
-    str :: "string" ;
+birds_script( "\
+    i :: 0 ; ... 文字列型宣言. いわゆる Scala でいう var ですね。",
+    "(:: i 0 )"
+) ;
+birds_script( '\
+    str :: "string" ; ... 文字列型変数',
+    "(:: str 'string' )"
+) ;
 
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi( "i   : 0 ; ... 定数"         , "(: i 0 )"           ) + "<br>" +
-on_yamasemi( 'str : "string\n" ; ... 定数', "(: str 'string\n' )" ) + "<br>" +
-on_yamasemi( "str : 'string' ; ... 定数"  , "(: str 'string' )"  ) + "<br>" +
-on_yamasemi( "i   :: 0 ; ... 変数"        , "(:: i 0 )"          ) + "<br>" +
-on_yamasemi( 'str :: "string" ; ... 変数' , "(:: str 'string' )" ) + "<br>"
-);
-//--></script><pre>
+</script><pre>
 -----------------------------------------------------------------
 ■ if 文
 
 // 'if', 'else' という予約語はありません。C言語の三項演算子のような '??', '!!' を使います。
 
-    foo < 0 ?? foo = 0 ;
+</pre><script>
+birds_script( "\
+    foo　::　1 ;\n\
+    foo > 0 ?? foo = 0 ; ... if 文 ... = は代入文",
+    '(:: foo 1 ) (?? (> foo 0 ) { (= foo 0 ) } )'
+) ;
+birds_script( "\
+    foo :: 1 ;\n\
+    foo < 0 ?? foo = 0 !! foo = 1 ; ... if then else 文",
+    '(:: foo 1 ) (?? (< foo 0 ) { (= foo 0 ) } { (= foo 1 ) } )'
+) ;
+birds_script( "\
+    foo :: 1 ;\n\
+    boo : ( foo < 0 ?? 0 !! 1 ) ; ... スコープとの組み合わせ",
+    '(:: foo 1 ) (: boo ( (?? (< foo 0 ) { 0 } { 1 } ) ) )'
+) ;
+birds_script( "\
+    foo :: 1 ;\n\
+    boo : foo > 0 ?? 0 !! 1 ; ... スコープなしだと NG. define ':' が if '??' より先に評価されちゃいます" ,
+    'SyntaxError: const-define:boo'
+) ;
 
-    foo < 0 ?? foo = 0 !! foo = 1 ;
+</script><pre>
 
-    boo : ( foo < 0 ?? 0 !! 1 ) ; ... スコープとの組み合わせ
-
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi( "foo::1;foo < 0 ?? foo = 0 ; ... if 文",
-    '(:: foo 1 ) (?? (< foo 0 ) { (= foo 0 ) } )' ) + "<br>" +
-on_yamasemi( "foo::1;foo < 0 ?? foo = 0 !! foo = 1 ; ... if then else 文",
-    '(:: foo 1 ) (?? (< foo 0 ) { (= foo 0 ) } { (= foo 1 ) } )') + "<br>" +
-on_yamasemi( "foo::1;boo : ( foo < 0 ?? 0 !! 1 ) ; ... スコープとの組み合わせ",
-    '(:: foo 1 ) (: boo ( (?? (< foo 0 ) { 0 } { 1 } ) ) )' ) + "<br>" +
-on_yamasemi( "foo::1;boo : foo < 0 ?? 0 !! 1 ; ... スコープなしだと NG. difine ':' が if '??' より先に評価されちゃいます" ,
-    'SyntaxError: const-define:boo') + "<br>"
-);
-//--></script><pre>
 // ?? の前は必ず比較文であること。比較文以外はエラーになります。
-//  flag = true ?? ... のようなタイポを防ぐ理由もあります。
+// flag = true ?? ... のようなタイポを防ぐ理由があります。
 
-    is_ok ?? a=0 !! a=1 ; ... NG
-
-    is_ok == true ?? a=0 !! a=1 ; ... OK
-
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi( "is_ok::true;a::0; is_ok ?? a=0 !! a=1 ; ... NG"     ,
- 'SyntaxError: x:??') + "<br>" +
-on_yamasemi( "is_ok::true;a::0;is_ok==true ?? a=0 !! a=1 ; ... OK",
- '(:: is_ok true ) (:: a 0 ) (?? (== is_ok true ) { (= a 0 ) } { (= a 1 ) } )' ) + "<br>"
-);
-//--></script><pre>
+</pre><script>
+birds_script( "\
+    is_ok :: true ; a :: 0 ;\n\
+    is_ok ?? a=0 !! a=1 ; ... NG",
+    'SyntaxError: x:??'
+) ;
+birds_script( "\
+    is_ok :: true ; a :: 0 ;\n\
+    is_ok==true ?? a=0 !! a=1 ; ... OK",
+    '(:: is_ok true ) (:: a 0 ) (?? (== is_ok true ) { (= a 0 ) } { (= a 1 ) } )'
+) ;
+</script><pre>
 
 // 現在のところ else 文のみの書き方はNGになっています。メリットが感じられるようなら実装を検討します。
 
-    foo >= 0 !! foo = 0 ; ... NG
-
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi( "foo >= 0 !! foo = 0 ; ... NG"
-    ,'SyntaxError: x:!!') + "<br>"
-);
-//--></script><pre>
+</pre><script>
+birds_script( "\
+    foo >= 0 !! foo = 0 ; ... NG",
+    'SyntaxError: x:!!'
+) ;
+</script><pre>
 
 
 -----------------------------------------------------------------
@@ -253,75 +275,62 @@ on_yamasemi( "foo >= 0 !! foo = 0 ; ... NG"
 // いわゆるC言語の '{','}' ではなくて '(', ')' になります。
 // 変数/定数宣言のスコープが制限できるので上手に使ってください。
 
-    foo < 0
-    ?? ( foo = 0 ; boo = 0 ; woo = 0 ; )
-    !! ( foo = 1 ; boo = 1 ; woo = 1 ; )
-
-    foo < 0
-    ?? (
-        foo = 0 ;
-        boo = 0 ;
-        woo = 0 ;
-    )
-    !! (
-        foo = 1 ;
-        boo = 1 ;
-        woo = 1 ;
-    )
-
 // memo : ( ... ) は [ ... ].0 と意味的に同じにしたい。
 
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    "boo :: foo :: woo :: 1 ;" +
-    "foo < 0" +
-    "?? ( foo = 0 ; boo = 0 ; woo = 0 ; )" +
-    "!! ( foo = 1 ; boo = 1 ; woo = 1 ; )"
-,'(:: boo (:: foo (:: woo 1 ) ) ) (?? (< foo 0 ) { ( (= foo 0 ) (= boo 0 ) (= woo 0 ) ) } { ( (= foo 1 ) (= boo 1 ) (= woo 1 ) ) } )' ) + "<br>"
-);
-//--></script><pre>
-// スコープ'(',')'そのものに値を持たせることもできます。
+</pre><script>
+birds_script( "\
+    boo :: foo :: woo :: 1 ;\n\
+    foo < 0\n\
+    ?? ( foo = 0 ; boo = 0 ; woo = 0 ; )\n\
+    !! ( foo = 1 ; boo = 1 ; woo = 1 ; )",
+    '(:: boo (:: foo (:: woo 1 ) ) ) (?? (< foo 0 ) { ( (= foo 0 ) (= boo 0 ) (= woo 0 ) ) } { ( (= foo 1 ) (= boo 1 ) (= woo 1 ) ) } )'
+) ;
+birds_script( "\
+    boo :: foo :: woo :: 1 ;\n\
+    foo < 0\n\
+    ?? (\n\
+        foo = 0 ;\n\
+        boo = 0 ;\n\
+        woo = 0 ;\n\
+    )\n\
+    !! (\n\
+        foo = 1 ;\n\
+        boo = 1 ;\n\
+        woo = 1 ;\n\
+    )",
+    '(:: boo (:: foo (:: woo 1 ) ) ) (?? (< foo 0 ) { ( (= foo 0 ) (= boo 0 ) (= woo 0 ) ) } { ( (= foo 1 ) (= boo 1 ) (= woo 1 ) ) } )'
+) ;
+</script><pre>
+
+// スコープ'(',')'に値を持たせることができます。
 // 予約語は'out'。return文に似ているけど、処理は中断されないので注意。
 // すみません。out はまだ使わないでください。仕様検討中です。
 
-    a : (
-        foo = 1 ;
-        out : boo = 2 ;  ... この式が値が()の値になる
-        woo = 3 ;
-    ) ;
-    @.co << a ;          ... a : 2 になる。 @.co は C言語の stdout の意味で仮実装中。
+</pre><script>
 
-    b : (
-        foo = 1 ;
-        boo = 2 ;
-        woo = 3 ;
-        boo            ... outを書かなくても最後の';'を書かなければオッケー。
-    ) ;
-    @.co << b ;        ... b : 2 になる。
+birds_script( "\
+    boo :: foo :: woo :: 1 ;\n\
+    a : (\n\
+        foo = 1 ;\n\
+        out : boo = 2 ;  ... この式が値が()の値になる ... すみません out はまだ使わないでください\n\
+        woo = 3 ;\n\
+    ) ;\n\
+    @.co << a ;          ... a : 2 になる。",
+    '(:: boo (:: foo (:: woo 1 ) ) ) (: a ( (= foo 1 ) (: out (= boo 2 ) ) (= woo 3 ) ) ) (<< (. @ .co ) a )'
+) ;
+birds_script( "\
+    boo :: foo :: woo :: 1 ;\n\
+    b : (\n\
+        foo = 1 ;\n\
+        boo = 2 ;\n\
+        woo = 3 ;\n\
+        boo            ... outを書かなくても最後の';'を書かなければオッケー。\n\
+    ) ;\n\
+    @.co << b ;        ... b : 2 になる。",
+    '(:: boo (:: foo (:: woo 1 ) ) ) (: b ( (= foo 1 ) (= boo 2 ) (= woo 3 ) boo ) ) (<< (. @ .co ) b )'
+) ;
 
-
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    "boo :: foo :: woo :: 1 ;" +
-    "a : (" +
-    "    foo = 1 ;" +
-    "    out : boo = 2 ;  ... この式が値が()の値になる\n" +
-    "    woo = 3 ;" +
-    ") ; @.co << a ;      ... b : 2 になる。\n"
-,'(:: boo (:: foo (:: woo 1 ) ) ) (: a ( (= foo 1 ) (: out (= boo 2 ) ) (= woo 3 ) ) ) (<< (. @ .co ) a )' ) + "<br>" +
-on_yamasemi(
-    "boo :: foo :: woo :: 1 ;" +
-    "b : (" +
-    "    foo = 1 ;" +
-    "    boo = 2 ;" +
-    "    woo = 3 ;" +
-    "    boo            ... outを書かなくても最後の';'を書かなければオッケー。\n" +
-    ") ; @.co << b ;    ... b : 2 になる。"
-,'(:: boo (:: foo (:: woo 1 ) ) ) (: b ( (= foo 1 ) (= boo 2 ) (= woo 3 ) boo ) ) (<< (. @ .co ) b )') + "<br>"
-);
-//--></script><pre>
+</script><pre>
 -----------------------------------------------------------------
 ■ 繰り返し構文、for 文、each 文
 
@@ -332,54 +341,53 @@ on_yamasemi(
 // ちなみに無限ループではなくて、リミット上限に到達すると例外が発生してループを終わります。
 // break文が無いとワーニングの予定（未実装）。できる限り安全側に倒したい。
 
-    a : {{
+</pre><script>
 
-        break 10 ;    ... ループを抜ける。 out = 10 ; break ; と同じ。
+birds_script(　"\
+    a : {{\n\
+        \n\
+        break 10 ;    ... ループを抜ける。\n\
+        \n\
+        continue ;    ... ここは実行されないけどね\n\
+        \n\
+    }} ;\n\
+    @.co << a ;       ... a : 10 ;",
+    '(: a (loop noname { (break noname 10 ) (continue noname ) } ) ) (<< (. @ .co ) a )'
+) ;
 
-        continue ;    ... ここは実行されないけど。ループの先頭に戻る。
-
-    }} ;
-    @.co << a ; ... a : 10 ;
-
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    "a : {{" +
-    "    break 10 ;    ... ループを抜ける。\n" +
-    "    continue ;    ... ここは実行されないけどね\n" +
-    "}} ;  ... a : 10 ;"
-,'(: a (loop noname { (break noname 10 ) (continue noname ) } ) )' ) + "<br>"
-);
-//--></script><pre>
+</script><pre>
 
 // '.{{', '}}' は each, 'it' はループ内で使用できる変数（イテレータの意味：  it は予約語です）
 // 変数のイテレータであれば、上書き可能です。
 
-    5.{{ @.co << it << ', ' ; }}  ... 0, 1, 2, 3, 4
+    5.{{ @.co << it << ', ' ; }}  ... 0, 1, 2, 3, 4,
 
-    @.co << 5.{{ out << it << ', ' ; }}  ... 0, 1, 2, 3, 4
+    5.{{ @.co << it << ', ' ; }}  ... 0, 1, 2, 3, 4,
     ↓ 仕様の変更を検討中
-    @.co << 5.{{ it, }}  ... 0, 1, 2, 3, 4
+    @.co << 5.{{ it, }}  ... [ 0, 1, 2, 3, 4, ]
+
+    @.co << 5..7.{{ it, }}  ... [ 5, 6, 7, ]
 
     b : 10.{{
+        @.co << it << ', ' ;
         it == 5 ?? break 555 ;
     }} ;
     @.co << b ; ... b = 555
 
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    "5.{{ @.co << it << ', ' ; }}  ... 0, 1, 2, 3, 4"
-,"(each 5 { (<< (<< (. @ .co ) it ) ', ' ) } )" ) + "<br>"
-);
-document.write(
-on_yamasemi(
-    "b : 10.{{\n" +
-    "    it == 5 ?? break 555 ;\n" +
-    "}} ; @.co << b ; ... b = 555"
-,'(: b (each 10 { (?? (== it 5 ) { (break noname 555 ) } ) } ) ) (<< (. @ .co ) b )' ) + "<br>"
-);
-//--></script><pre>
+</pre><script>
+birds_script( "\
+    5.{{ @.co << it << ', ' ; }}  ... 0, 1, 2, 3, 4, ",
+    "(each 5 { (<< (<< (. @ .co ) it ) ', ' ) } )"
+) ;
+birds_script( "\
+    b : 10.{{\n\
+        @.co << it << ', ' ;\n\
+        it == 5 ?? break 555 ;\n\
+    }} ;\n\
+    @.co << b ; ... b = 555",
+    "(: b (each 10 { (<< (<< (. @ .co ) it ) ', ' ) (?? (== it 5 ) { (break noname 555 ) } ) } ) ) (<< (. @ .co ) b )"
+) ;
+</script><pre>
 
     c : 'String' ;
     d : c.{{
@@ -398,39 +406,31 @@ on_yamasemi(
     }} ;
     @.co << d ; ... d : [ 'S', 'T', 'R', 'I', 'N', 'G', ]
 
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    "c :: 'String' ;\n" +
-    "d : c.{{\n" +
-    "    it >= 'a' && it <= 'z'\n" +
-    "    ?? out << it - ( 'a' - 'A' ) ; ... out は変数なので上書き可能\n" +
-    "}} ; @.co << d ; ... d : 'STRING'\n"
-,"(:: c 'String' ) (: d (each c { (?? (&& (>= it 'a' ) (<= it 'z' ) ) { (<< out (- it ( (- 'a' 'A' ) ) ) ) } ) } ) ) (<< (. @ .co ) d )" ) + "<br>"
-);
-//--></script><pre>
+</pre><script>
+birds_script( "\
+    c :: 'String' ;\n\
+    d : c.{{\n\
+        it >= 'a' && it <= 'z'\n\
+        ?? out << it - ( 'a' - 'A' ) ; ... out は変数なので上書き可能\n\
+    }} ;\n\
+    @.co << d ; ... d : 'STRING'",
+    "(:: c 'String' ) (: d (each c { (?? (&& (>= it 'a' ) (<= it 'z' ) ) { (<< out (- it ( (- 'a' 'A' ) ) ) ) } ) } ) ) (<< (. @ .co ) d )"
+) ;
+</script><pre>
 
 // for ( int i=0 ; i<10 ; i++ ) ... をあえて書くなら
 
-    i :: 0 ;
-    {{
-        ...
-        i >= 10 ?? break ;
-        ++ i ; ... i ++ C言語などと異なり、先に実行されるのであえて前方のみにしました。
-    }}
-
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    "i :: 0 ;\n" +
-    "{{\n" +
-    "    ...\n" +
-    "    i >= 10 ?? break ;\n" +
-    "    ++ i ;\n" +
-    "}}"
-,'(:: i 0 ) (loop noname { (?? (>= i 10 ) { (break noname ) } ) (++ i ) } )' ) + "<br>"
-);
-//--></script><pre>
+</pre><script>
+birds_script( "\
+    i :: 0 ;\n\
+    {{\n\
+        ...\n\
+        i >= 10 ?? break ;\n\
+        ++ i ; ... C言語などの後方 i++ と異なり「先に実行される」のであえて前方のみにしました。\n\
+    }}",
+    '(:: i 0 ) (loop noname { (?? (>= i 10 ) { (break noname ) } ) (++ i ) } )'
+) ;
+</script><pre>
 
 // 以下、例外と同等な機能なので・・・実装検討中
 
@@ -474,16 +474,15 @@ on_yamasemi(
     )
 
 
-</pre><script type="text/JavaScript"><!--
-// document.write(
-// on_button(
+</pre><script>
+// // on_button(
 //     "    {{  label a ;\n" +
 //     "        ... \n" +
 //     "        {{\n" +
 //     "            break a ; ... label a のあるスコープの外へ飛ぶ\n" +
 //     "        }}\n" +
 //     "    }}  ... <- ここへ飛ぶ（外へ抜ける）\n"
-// ,'OK') + "<br>" +
+// ,'OK') ;
 // on_button(
 //     "    {{  label bb ; ... <- ここへ飛ぶ（ループを繰り返す）\n" +
 //     "        ...\n" +
@@ -491,47 +490,31 @@ on_yamasemi(
 //     "            continue bb ; ... label bb のあるスコープの最初に飛ぶ\n" +
 //     "        }}\n" +
 //     "    }}\n"
-// ,'OK') + "<br>"
+// ,'OK'
 // );
-//--></script><pre>
+</script><pre>
 
 -----------------------------------------------------------------------
 ■ class と関数の宣言は同じ '{', '}'。特に区別はしていない。同じものを場合によって呼び方を変えているだけ。
 
 // 予約語： dtor  デストラクタ
 
-    foo : {
-        ... ここにいろいろ書く
-    } ;
-
-    Woo : {
-        ... コンストラクタは普通に記述、関数と同じ
-
-        dtor : {
-            ... デストラクタも用意してみた。名前は final にするか悩み中。
-        }
-    } ;
-
-    ret : foo() ; ... 関数 foo の戻り値を ret に格納
-    ins : Woo() ; ... class Woo のインスタンス ins を生成
-
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    "foo : {\n" +
-    "    ... ここにいろいろ書く\n" +
-    "} ;\n" +
-    "Woo : {\n" +
-    "    ... コンストラクタ\n" +
-    "    dtor : {\n" +
-    "        ... デストラクタ\n" +
-    "    }\n" +
-    "} ;\n" +
-    "ret : foo() ; ... 関数 foo の戻り値を ret に格納\n" +
-    "ins : Woo() ; ... class Woo のインスタンス ins を生成\n"
-,'(: foo {  } ) (: Woo { (: dtor {  } ) } ) (: ret (call foo [  ] ) ) (: ins (call Woo [  ] ) )' ) + "<br>"
-);
-//--></script><pre>
+</pre><script>
+birds_script( "\
+    foo : {\n\
+        ... ここにいろいろ書く\n\
+    } ;\n\
+    Woo : {\n\
+        ... コンストラクタは普通に記述、関数と同じ\n\
+        dtor : {\n\
+            ... デストラクタ dtor は予約語です\n\
+        }\n\
+    } ;\n\
+    ret : foo() ; ... 関数 foo の戻り値を ret に格納\n\
+    ins : Woo() ; ... class Woo のインスタンス ins を生成\n",
+    '(: foo {  } ) (: Woo { (: dtor {  } ) } ) (: ret (call foo [  ] ) ) (: ins (call Woo [  ] ) )'
+) ;
+</script><pre>
 
 // 名無しの class ＆関数もおっけー。
 
@@ -549,18 +532,14 @@ on_yamasemi(
 
 // ちなみに、上書き可能な関数は↓。変数宣言の要領。
 
-    foo :: {   } ; ... 最初の関数はこれ。上書き可能な変数。
-
-    foo = {   } ; ... こっちの関数に置き換わる
-
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    "foo :: {   } ; ... 最初の関数はこれ。上書き可能な変数。\n" +
-    "foo = {   } ; ... こっちの関数に置き換わる\n"
-,'(:: foo { } ) (= foo { } )' ) + "<br>"
-);
-//--></script><pre>
+</pre><script>
+birds_script( "\
+    foo :: {   } ; ... 最初の関数はこれ。上書き可能な変数。\n\
+    \n\
+    foo = {   } ; ... こっちの関数に置き換わる",
+    '(:: foo { } ) (= foo { } )'
+) ;
+</script><pre>
 
 -----------------------------------------------------------------------
 ■ 関数呼び出しと引数
@@ -574,44 +553,30 @@ on_yamasemi(
 // f( a:0, x:1, y:2 ) と呼ぶと関数内に _a:0; _x:1; _y:2; が宣言されたのとほぼ同じ。
 // 予約語：  arg_size は引数の数
 
-    foo : {
-        @.co << _a ;       ... 第１引数
-        @.co << arg_size ; ... 1
-    } ;
-    foo( a:1 ) ; ... 引数はいわゆるSTLの map,  必ず名前が必要。
-
-    woo : {
-        @.co << _x ; ... 第１引数
-        @.co << _y ; ... 第２引数
-        @.co << _z ; ... 第３引数
-        @.co << arg_size ; ... 10
-    } ;
-    woo( x:1, y:2, z:3, a:4, b:5, c:6, d:7, e:8, f:9, g:10 ) ;
-
 // memo : 名前なしでも _0, _1, ... で参照可能にするアイデアもありましたが、可読性＆メンテナンス性を考えていまのところ却下です。
 
+</pre><script>
 
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    "foo : {\n" +
-    "    @.co << _a ; ... 第１引数\n" +
-    "    @.co << arg_size ; ... 1\n" +
-    "} ;\n" +
-    "foo( a:1 ) ; ... 引数は map"
-,'(: foo { (<< (. @ .co ) _a ) (<< (. @ .co ) arg_size ) } ) (call foo [ (: a 1 ) ] )' ) + "<br>" +
-on_yamasemi(
-    "woo : {" +
-    "    @.co << _x ; ... 第１引数\n" +
-    "    @.co << _y ; ... 第２引数\n" +
-    "    @.co << _z ; ... 第３引数\n" +
-    "    @.co << arg_size ; ... 10\n" +
-    "} ;" +
-    "woo( x:1, y:2, z:3, a:4, b:5, c:6, d:7, e:8, f:9, g:10, ) ;"
-,'(: woo { (<< (. @ .co ) _x ) (<< (. @ .co ) _y ) (<< (. @ .co ) _z ) (<< (. @ .co ) arg_size ) } ) (call woo [ (: x 1 ) (: y 2 ) (: z 3 ) (: a 4 ) (: b 5 ) (: c 6 ) (: d 7 ) (: e 8 ) (: f 9 ) (: g 10 ) ] )' ) + "<br>"
-);
+birds_script( "\
+    foo : {\n\
+        @.co << _a ;       ... 第１引数\n\
+        @.co << arg_size ; ... 1\n\
+    } ;\n\
+    foo( a:1 ) ; ... 引数は map",
+    '(: foo { (<< (. @ .co ) _a ) (<< (. @ .co ) arg_size ) } ) (call foo [ (: a 1 ) ] )'
+) ;
+birds_script( "\
+    woo : {\n\
+        @.co << _x ; ... 第１引数\n\
+        @.co << _y ; ... 第２引数\n\
+        @.co << _z ; ... 第３引数\n\
+        @.co << arg_size ; ... 10\n\
+    } ;\n\
+    woo( x:1, y:2, z:3, a:4, b:5, c:6, d:7, e:8, f:9, g:10, ) ;",
+    '(: woo { (<< (. @ .co ) _x ) (<< (. @ .co ) _y ) (<< (. @ .co ) _z ) (<< (. @ .co ) arg_size ) } ) (call woo [ (: x 1 ) (: y 2 ) (: z 3 ) (: a 4 ) (: b 5 ) (: c 6 ) (: d 7 ) (: e 8 ) (: f 9 ) (: g 10 ) ] )'
+) ;
 
-//--></script><pre>
+</script><pre>
 
 -----------------------------------------------------------------------
 ■ return と戻り値
@@ -640,22 +605,24 @@ on_yamasemi(
     r : foo() ;
     @.co << r.b ; ... 20
 
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    "return 123 ; ... 1つ\n" +
-    "return 123, 456 ;\n" +
-    "return x:123, y:456 ;\n"
-,'(return [ 123 ] ) (return [ 123 456 ] ) (return [ (: x 123 ) (: y 456 ) ] )') + "<br>" +
-on_yamasemi(
-    "foo : {\n" +
-    "    return a:10, b:20, c:30 ;\n" +
-    "} ;\n" +
-    "r : foo() ;\n" +
-    "@.co << r.b ; ... 20"
-,'(: foo { (return [ (: a 10 ) (: b 20 ) (: c 30 ) ] ) } ) (: r (call foo [  ] ) ) (<< (. @ .co ) (. r .b ) )' ) + "<br>"
-);
-//--></script><pre>
+</pre><script>
+birds_script( "\
+    return 123 ; ... 1つ\n\
+    \n\
+    return 123, 456 ;\n\
+    \n\
+    return x:123, y:456 ;",
+    '(return [ 123 ] ) (return [ 123 456 ] ) (return [ (: x 123 ) (: y 456 ) ] )'
+) ;
+birds_script( "\
+    foo : {\n\
+        return a:10, b:20, c:30 ;\n\
+    } ;\n\
+    r : foo() ;\n\
+    @.co << r.b ; ... 20",
+    '(: foo { (return [ (: a 10 ) (: b 20 ) (: c 30 ) ] ) } ) (: r (call foo [  ] ) ) (<< (. @ .co ) (. r .b ) )'
+) ;
+</script><pre>
 
     a == b ?? return ( c == b ?? 1 !! 2 ) ;
 
@@ -663,15 +630,16 @@ on_yamasemi(
 
     a == b ?? return x:1, y:2, z:3, ;
 
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    "a == b ?? return (c == b ?? 1 !! 2 ) ;\n" +
-    "a == b ?? return 1,2,3, ;\n" +
-    "a == b ?? return x:1, y:2, z:3, ;"
-,'(?? (== a b ) { (return [ ( (?? (== c b ) { 1 } { 2 } ) ) ] ) } ) (?? (== a b ) { (return [ 1 2 3 ] ) } ) (?? (== a b ) { (return [ (: x 1 ) (: y 2 ) (: z 3 ) ] ) } )' ) + "<br>"
-);
-//--></script><pre>
+</pre><script>
+birds_script( "\
+    a == b ?? return (c == b ?? 1 !! 2 ) ;\n\
+    \n\
+    a == b ?? return 1, 2, 3, ;\n\
+    \n\
+    a == b ?? return x:1, y:2, z:3, ;",
+    '(?? (== a b ) { (return [ ( (?? (== c b ) { 1 } { 2 } ) ) ] ) } ) (?? (== a b ) { (return [ 1 2 3 ] ) } ) (?? (== a b ) { (return [ (: x 1 ) (: y 2 ) (: z 3 ) ] ) } )'
+) ;
+</script><pre>
 
 -----------------------------------------------------------------------
 ■ class内メンバ
@@ -680,69 +648,43 @@ on_yamasemi(
 // 基本 privateになります。
 // publicにしたい（外から見せたい）場合は変数名の先頭に '.' をつける（記述コストで安全側に倒しています）
 
-    Foo : {
-        x  :: 123 ;  ... private
-        .y :: 456 ;  ... public
-    } ;
-
-    foo : Foo() ;
-    foo.x = 0 ;  ... NG
-    foo.y = 0 ;  ... OK
-
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    "Foo : {\n" +
-    "    x  :: 123 ;  ... private\n" +
-    "    .y :: 456 ;  ... public\n" +
-    "} ;\n" +
-
-    "foo : Foo() ;\n" +
-    "foo.x = 0 ;  ... NG\n" +
-    "foo.y = 0 ;  ... OK\n"
-,'(: Foo { (:: x 123 ) (:: .y 456 ) } ) (: foo (call Foo [  ] ) ) (= (. foo .x ) 0 ) (= (. foo .y ) 0 )' ) + "<br>"
-);
-//--></script><pre>
+</pre><script>
+birds_script( "\
+    Foo : {\n\
+        x  :: 123 ;  ... private\n\
+        .y :: 456 ;  ... public\n\
+    } ;\n\
+    \n\
+    foo : Foo() ;\n\
+    foo.x = 0 ;  ... NG\n\
+    foo.y = 0 ;  ... OK",
+    '(: Foo { (:: x 123 ) (:: .y 456 ) } ) (: foo (call Foo [  ] ) ) (= (. foo .x ) 0 ) (= (. foo .y ) 0 )'
+) ;
+</script><pre>
 
 // class 内メソッドの表記も同様（メソッドとclassの区別は無いですが）
-
-    Foo : {
-        x : {
-            ... private
-        } ;
-        .y : {
-            ... public
-        } ;
-    } ;
-
-    foo : Foo() ;
-    foo.x() ;  ... NG
-    foo.y() ;  ... OK
-
 
 // 記述のお作法として class は先頭文字を大文字、 メンバや関数は先頭文字を小文字でお願いします。
 // ラクダ記法も好きではないので、小文字の場合は _ を使ってください。
 // Class() ; member() ; function() ; get_list() ...
 
-
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    "Foo : {\n" +
-    "    x : {\n" +
-    "        ... private\n" +
-    "    } ;\n" +
-    "    .y : {\n" +
-    "        ... public\n" +
-    "    } ;\n" +
-    "} ;\n" +
-
-    "foo : Foo() ;\n" +
-    "foo.x() ;  ... NG\n" +
-    "foo.y() ;  ... OK\n"
-,'(: Foo { (: x {  } ) (: .y {  } ) } ) (: foo (call Foo [  ] ) ) (call (. foo .x ) [  ] ) (call (. foo .y ) [  ] )') + "<br>"
-);
-//--></script><pre>
+</pre><script>
+birds_script( "\
+    Foo : {\n\
+        x : {\n\
+            ... private\n\
+        } ;\n\
+        .y : {\n\
+            ... public\n\
+        } ;\n\
+    } ;\n\
+    \n\
+    foo : Foo() ;\n\
+    foo.x() ;  ... NG\n\
+    foo.y() ;  ... OK",
+    '(: Foo { (: x {  } ) (: .y {  } ) } ) (: foo (call Foo [  ] ) ) (call (. foo .x ) [  ] ) (call (. foo .y ) [  ] )'
+) ;
+</script><pre>
 
 -----------------------------------------------------------------------
 ■コンテナ '[', ']' JavaScript ではおなじみの概念。
@@ -768,20 +710,20 @@ on_yamasemi(
     @.co << list_b ; ... [ 1, ]
 
 
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    "int_list : [ 1, 2, 3, 4, 5, ] ;\n" +
-    "str_list : [ '1', '2', '3', ] ;\n" +
-    "str_map  : [ 1:'one', 2:'two', ] ;\n" +
+</pre><script>
 
-    "@.co << int_list[0] ; ... 1\n" +
-    "@.co << str_list[2] ; ... 2\n" +
-    "@.co << str_map[2] ; ... two\n"
+birds_script( "\
+    int_list : [ 1, 2, 3, 4, 5, ] ;\n\
+    str_list : [ '1', '2', '3', ] ;\n\
+    str_map  : [ 1:'one', 2:'two', ] ;\n\
+    \n\
+    @.co << int_list[0] ; ... 1\n\
+    @.co << str_list[2] ; ... 2\n\
+    @.co << str_map[2] ; ... two",
+    "(: int_list [ 1 2 3 4 5 ] ) (: str_list [ '1' '2' '3' ] ) (: str_map [ (: 1 'one' ) (: 2 'two' ) ] ) (<< (. @ .co ) (at int_list 0 ) ) (<< (. @ .co ) (at str_list 2 ) ) (<< (. @ .co ) (at str_map 2 ) )"
+) ;
 
-,"(: int_list [ 1 2 3 4 5 ] ) (: str_list [ '1' '2' '3' ] ) (: str_map [ (: 1 'one' ) (: 2 'two' ) ] ) (<< (. @ .co ) (at int_list 0 ) ) (<< (. @ .co ) (at str_list 2 ) ) (<< (. @ .co ) (at str_map 2 ) )" ) + "<br>"
-);
-//--></script><pre>
+</script><pre>
 
 //  ちょっと脱線
 // switch 文は無いので関数の map で実装。
@@ -814,44 +756,41 @@ on_yamasemi(
     i == 2 ?? @.co << 'two' !! @.co << i ;
 
 
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    "sw:[                          ... 固定テーブル（マップ）\n" +
-    "    1 : { @.co << 'one' },  ... func {} です。 () で書くと先に実行しちゃいます。\n" +
-    "    2 : { @.co << 'two' },\n" +
-    "    unmatch : { @.co << it },  ... 一致しなかった時に呼ばれる関数\n" +
-    "] ;\n" +
-    "@.co << sw[2]() ; ... 'two'"
-,"(: sw [ (: 1 { (<< (. @ .co ) 'one' ) } ) (: 2 { (<< (. @ .co ) 'two' ) } ) (: unmatch { (<< (. @ .co ) it ) } ) ] ) (<< (. @ .co ) (call (at sw 2 ) [  ] ) )" ) + "<br>"
-);
-document.write(
-on_yamasemi(
-    "sw::[] ; ... 可変テーブル（マップ）、後から追加・変更可能。\n" +
-    "sw[1] = { @.co << 'one' } ;\n" +
-    "sw[2] = { @.co << 'two' } ;\n" +
-    "sw[unmatch] = { @.co << it } ;  ... 一致しなかった時に呼ばれる関数\n" +
-    "@.co << sw[2]() ; ... 'two' "
-,"(:: sw [  ] ) (= (at sw 1 ) { (<< (. @ .co ) 'one' ) } ) (= (at sw 2 ) { (<< (. @ .co ) 'two' ) } ) (= (at sw unmatch ) { (<< (. @ .co ) it ) } ) (<< (. @ .co ) (call (at sw 2 ) [  ] ) )" ) + "<br>"
-);
-document.write(
-on_yamasemi(
-    "sw::[] ; ... 可変テーブル（マップ）、後から追加・変更可能。\n" +
-    "sw << ( 1 : { @.co << 'one' } ) ;\n" +
-    "sw << ( 2 : { @.co << 'two' } ) ;\n" +
-    "sw << ( unmatch : { @.co << it } ) ;  ... 一致しなかった時に呼ばれる関数\n" +
-    "@.co << sw[2]() ; ... 'two' "
-,"(:: sw [  ] ) (<< sw ( (: 1 { (<< (. @ .co ) 'one' ) } ) ) ) (<< sw ( (: 2 { (<< (. @ .co ) 'two' ) } ) ) ) (<< sw ( (: unmatch { (<< (. @ .co ) it ) } ) ) ) (<< (. @ .co ) (call (at sw 2 ) [  ] ) )" ) + "<br>"
-);
-document.write(
-on_yamasemi(
-    "i:0;\n" +
-    "    i == 1 ?? @.co << 'one' !!\n" +
-    "    i == 2 ?? @.co << 'two' !! @.co << i ;\n"
-,"(: i 0 ) (?? (== i 1 ) { (<< (. @ .co ) 'one' ) } { (?? (== i 2 ) { (<< (. @ .co ) 'two' ) } { (<< (. @ .co ) i ) } ) } )" ) + "<br>"
+</pre><script>
+
+birds_script( "\
+    sw:[                          ... 固定テーブル（マップ）\n\
+        1 : { @.co << 'one' },    ... func {} です。 () で書くと先に実行しちゃいます。\n\
+        2 : { @.co << 'two' },\n\
+        unmatch : { @.co << it },  ... 一致しなかった時に呼ばれる関数\n\
+    ] ;\n\
+    @.co << sw[2]() ; ... 'two'",
+    "(: sw [ (: 1 { (<< (. @ .co ) 'one' ) } ) (: 2 { (<< (. @ .co ) 'two' ) } ) (: unmatch { (<< (. @ .co ) it ) } ) ] ) (<< (. @ .co ) (call (at sw 2 ) [  ] ) )"
+) ;
+birds_script( "\
+    sw::[] ; ... 可変テーブル（マップ）、後から追加・変更可能。\n\
+    sw[1] = { @.co << 'one' } ;\n\
+    sw[2] = { @.co << 'two' } ;\n\
+    sw[unmatch] = { @.co << it } ;  ... 一致しなかった時に呼ばれる関数\n\
+    @.co << sw[2]() ; ... 'two' ",
+    "(:: sw [  ] ) (= (at sw 1 ) { (<< (. @ .co ) 'one' ) } ) (= (at sw 2 ) { (<< (. @ .co ) 'two' ) } ) (= (at sw unmatch ) { (<< (. @ .co ) it ) } ) (<< (. @ .co ) (call (at sw 2 ) [  ] ) )"
+) ;
+birds_script( "\
+    sw::[] ; ... 可変テーブル（マップ）、後から追加・変更可能。\n\
+    sw << ( 1 : { @.co << 'one' } ) ;\n\
+    sw << ( 2 : { @.co << 'two' } ) ;\n\
+    sw << ( unmatch : { @.co << it } ) ;  ... 一致しなかった時に呼ばれる関数\n\
+    @.co << sw[2]() ; ... 'two'",
+    "(:: sw [  ] ) (<< sw ( (: 1 { (<< (. @ .co ) 'one' ) } ) ) ) (<< sw ( (: 2 { (<< (. @ .co ) 'two' ) } ) ) ) (<< sw ( (: unmatch { (<< (. @ .co ) it ) } ) ) ) (<< (. @ .co ) (call (at sw 2 ) [  ] ) )"
+) ;
+birds_script( "\
+    i:0;\n\
+    i == 1 ?? @.co << 'one' !!\n\
+    i == 2 ?? @.co << 'two' !! @.co << i ;",
+    "(: i 0 ) (?? (== i 1 ) { (<< (. @ .co ) 'one' ) } { (?? (== i 2 ) { (<< (. @ .co ) 'two' ) } { (<< (. @ .co ) i ) } ) } )"
 ) ;
 
-//--></script><pre>
+</script><pre>
 
 このあたりから下は、検討中。未実装。
 
@@ -870,26 +809,25 @@ on_yamasemi(
     @.co << n ; ... "TWO"
     n = ZERO ;  ... NG
 
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    'NUM : [ ONE, TWO, ] ; ... NUM は型名になります\n' +
-    'n :: NUM.ONE ;' +
-    '@.co << n ; ... "ONE"\n' +
-    'n = NUM.TWO ;' +
-    '@.co << n ; ... "TWO"\n'
-,'(: NUM [ ONE TWO ] ) (:: n (. NUM .ONE ) ) (<< (. @ .co ) n ) (= n (. NUM .TWO ) ) (<< (. @ .co ) n )' ) + "<br>"
-);
-document.write(
-on_yamasemi(
-    'n :: [ ONE, TWO, ].ONE ; ... 型名無しでも利用できます\n' +
-    '@.co << n ; ... "ONE"\n' +
-    'n = TWO ;' +
-    '@.co << n ; ... "TWO"\n'
-,'(:: n (. [ ONE TWO ] ONE ) ) (<< (. @ .co ) n ) (= n TWO ) (<< (. @ .co ) n )' ) + "<br>"
-);
-//--></script><pre>
+</pre><script>
 
+birds_script( '\
+    NUM : [ ONE, TWO, ] ; ... NUM は型名になります\n\
+    n :: NUM.ONE ;\n\
+    @.co << n ; ... "ONE"\n\
+    n = NUM.TWO ;\n\
+    @.co << n ; ... "TWO"',
+    '(: NUM [ ONE TWO ] ) (:: n (. NUM .ONE ) ) (<< (. @ .co ) n ) (= n (. NUM .TWO ) ) (<< (. @ .co ) n )'
+) ;
+birds_script( '\
+    n :: [ ONE, TWO, ].ONE ; ... 型名無しでも利用できます\n\
+    @.co << n ; ... "ONE"\n\
+    n = TWO ;\
+    @.co << n ; ... "TWO"',
+    '(:: n (. [ ONE TWO ] ONE ) ) (<< (. @ .co ) n ) (= n TWO ) (<< (. @ .co ) n )'
+) ;
+
+</script><pre>
 
 // @.xxxxって書いたらグローバル ... の予定
 
@@ -944,17 +882,17 @@ on_yamasemi(
     f : { a:1 ; b:2 ; .c:3 ; return 4, 5, 6 ; }
     @.co << f( x:7, y:8, z:9 ) ; ... オブジェクトの中はどうなっている？？
 
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    'f : { a:1 ; b:2 ; .c:3 ; return 4, 5, 6 ; }\n' +
-    '@.co << f( x:7, y:8, z:9 ) ;\n'
-,'(: f { (: a 1 ) (: b 2 ) (: .c 3 ) (return [ 4 5 6 ] ) } ) (<< (. @ .co ) (call f [ (: x 7 ) (: y 8 ) (: z 9 ) ] ) )' ) + "<br>" +
+</pre><script>
+birds_script( '\
+    f : { a:1 ; b:2 ; .c:3 ; return 4, 5, 6 ; }\n\
+    @.co << f( x:7, y:8, z:9 ) ;',
+    '(: f { (: a 1 ) (: b 2 ) (: .c 3 ) (return [ 4 5 6 ] ) } ) (<< (. @ .co ) (call f [ (: x 7 ) (: y 8 ) (: z 9 ) ] ) )'
+) ;
 on_kawasemi(
-'(: f { (: a 1 ) (: b 2 ) (: .c 3 ) (return [ 4 5 6 ] ) } ) (<< (. @ .co ) (call f [ (: x 7 ) (: y 8 ) (: z 9 ) ] ) )'
-, 'OK' ) + '<br>'
-);
-//--></script><pre>
+    '(: f { (: a 1 ) (: b 2 ) (: .c 3 ) (return [ 4 5 6 ] ) } ) (<< (. @ .co ) (call f [ (: x 7 ) (: y 8 ) (: z 9 ) ] ) )',
+    'OK'
+) ;
+</script><pre>
 
 スコープの確認
 
@@ -963,20 +901,19 @@ on_kawasemi(
     @.co << ( ( 2 ) ) ;
     @.co << ( ( ( 3 ) ) ) ;
 
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    '@.co << 0 ;\n' +
-    '@.co << ( 1 ) ;\n' +
-    '@.co << ( ( 2 ) ) ;\n' +
-    '@.co << ( ( ( 3 ) ) ) ;\n'
-, '(<< (. @ .co ) 0 ) (<< (. @ .co ) ( 1 ) ) (<< (. @ .co ) ( ( 2 ) ) ) (<< (. @ .co ) ( ( ( 3 ) ) ) )' ) + '<br>' +
-on_kawasemi(
+</pre><script>
+birds_script( '\
+    @.co << 0 ;\n\
+    @.co << ( 1 ) ;\n\
+    @.co << ( ( 2 ) ) ;\n\
+    @.co << ( ( ( 3 ) ) ) ;',
     '(<< (. @ .co ) 0 ) (<< (. @ .co ) ( 1 ) ) (<< (. @ .co ) ( ( 2 ) ) ) (<< (. @ .co ) ( ( ( 3 ) ) ) )'
-    , 'OK' ) + '<br>'
 ) ;
-
-//--></script><pre>
+on_kawasemi(
+    '(<< (. @ .co ) 0 ) (<< (. @ .co ) ( 1 ) ) (<< (. @ .co ) ( ( 2 ) ) ) (<< (. @ .co ) ( ( ( 3 ) ) ) )',
+    'OK'
+) ;
+</script><pre>
 
 ... 階乗  ３パターン
 
@@ -989,107 +926,65 @@ on_kawasemi(
     fact3 : { _n <= 1 ?? 1 !! _n * fact3( n:_n-1 ).0 } ;
     @.co << fact3( n:3 ).0 ;
 
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    'fact : { return ( _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 ) ; }  ;\n' +
-    '@.co << fact( n:3 ).0 ;\n'
-    , '(: fact { (return [ ( (?? (<= _n 1 ) { 1 } { (* _n (. (call fact [ (: n (- _n 1 ) ) ] ) .0 ) ) } ) ) ] ) } ) (<< (. @ .co ) (. (call fact [ (: n 3 ) ] ) .0 ) )' ) + '<br>' +
-on_kawasemi(
+</pre><script>
+birds_script( '\
+    fact : { return ( _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 ) ; }  ;\n\
+    @.co << fact( n:3 ).0 ;',
     '(: fact { (return [ ( (?? (<= _n 1 ) { 1 } { (* _n (. (call fact [ (: n (- _n 1 ) ) ] ) .0 ) ) } ) ) ] ) } ) (<< (. @ .co ) (. (call fact [ (: n 3 ) ] ) .0 ) )'
-    , 'OK' ) + '<br>'
+) ;
+on_kawasemi(
+    '(: fact { (return [ ( (?? (<= _n 1 ) { 1 } { (* _n (. (call fact [ (: n (- _n 1 ) ) ] ) .0 ) ) } ) ) ] ) } ) (<< (. @ .co ) (. (call fact [ (: n 3 ) ] ) .0 ) )',
+    'OK'
 ) ;
 
-document.write(
-on_yamasemi(
-    'fact2 : { .r : ( _n <= 1 ?? 1 !! _n * fact2( n:_n-1 ).r ) ; } ;\n' +
-    '@.co << fact2( n:3 ).r ;\n'
-    , '(: fact2 { (: .r ( (?? (<= _n 1 ) { 1 } { (* _n (. (call fact2 [ (: n (- _n 1 ) ) ] ) .r ) ) } ) ) ) } ) (<< (. @ .co ) (. (call fact2 [ (: n 3 ) ] ) .r ) )' ) + '<br>' +
+birds_script( '\
+    fact2 : { .r : ( _n <= 1 ?? 1 !! _n * fact2( n:_n-1 ).r ) ; } ;\n\
+    @.co << fact2( n:3 ).r ;',
+    '(: fact2 { (: .r ( (?? (<= _n 1 ) { 1 } { (* _n (. (call fact2 [ (: n (- _n 1 ) ) ] ) .r ) ) } ) ) ) } ) (<< (. @ .co ) (. (call fact2 [ (: n 3 ) ] ) .r ) )'
+) ;
 on_kawasemi(
     '(: fact2 { (: .r ( (?? (<= _n 1 ) { 1 } { (* _n (. (call fact2 [ (: n (- _n 1 ) ) ] ) .r ) ) } ) ) ) } ) (<< (. @ .co ) (. (call fact2 [ (: n 3 ) ] ) .r ) )'
-    , 'OK' ) + '<br>'
+    , 'OK'
 ) ;
-document.write(
-on_yamasemi(
-    'fact3 : { _n <= 1 ?? 1 !! _n * fact3( n:_n-1 ).0 } ;\n' +
-    '@.co << fact3( n:3 ).0 ;\n'
-    , '(: fact3 { (?? (<= _n 1 ) { 1 } { (* _n (. (call fact3 [ (: n (- _n 1 ) ) ] ) .0 ) ) } ) } ) (<< (. @ .co ) (. (call fact3 [ (: n 3 ) ] ) .0 ) )' ) + '<br>' +
+birds_script( '\
+    fact3 : { _n <= 1 ?? 1 !! _n * fact3( n:_n-1 ).0 } ;\n\
+    @.co << fact3( n:3 ).0 ;\n'
+    , '(: fact3 { (?? (<= _n 1 ) { 1 } { (* _n (. (call fact3 [ (: n (- _n 1 ) ) ] ) .0 ) ) } ) } ) (<< (. @ .co ) (. (call fact3 [ (: n 3 ) ] ) .0 ) )'
+) ;
 on_kawasemi(
     '(: fact3 { (?? (<= _n 1 ) { 1 } { (* _n (. (call fact3 [ (: n (- _n 1 ) ) ] ) .0 ) ) } ) } ) (<< (. @ .co ) (. (call fact3 [ (: n 3 ) ] ) .0 ) )'
-    , 'OK' ) + '<br>'
+    , 'OK'
 ) ;
-//--></script><pre>
 
---- エラトステネスの篩
-    prime : {
-        .rtn :: '' ;
-        tabl :: [] ;
-        _n.{{ tabl << (flg::false) }} ;
-        tabl[0] = true ;
-        tabl[1] = true ;
-
-        _n.{{
-            i:it ;
-            tabl[i] == false ?? (
-                .rtn << i << ', ' ;
-                j::i ;
-                {{
-                    j += i ;
-                    j >= _n ?? break !! tabl[j] = true ;
-                }}
-            )
-        }}
-    } ;
-    @.co << prime( n:100 ).rtn ;
-
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi(
-    "--- エラトステネスの篩\n" +
-    "prime : {\n" +
-    "    .rtn :: '' ;\n" +
-    "    tabl :: [] ;\n" +
-    "    _n.{{ tabl << (flg::false) }} ;\n" +
-    "    tabl[0] = true ;\n" +
-    "    tabl[1] = true ;\n" +
-    "    _n.{{\n" +
-    "        i:it ;\n" +
-    "        tabl[i] == false ?? (\n" +
-    "            .rtn << i << ', ' ;\n" +
-    "            j::i ;\n" +
-    "            {{\n" +
-    "                j += i ;\n" +
-    "                j >= _n ?? break !! tabl[j] = true ;\n" +
-    "            }}\n" +
-    "        )\n" +
-    "    }}\n" +
-    "} ;\n" +
-    "@.co << prime( n:100 ).rtn ;\n"
+birds_script( "\
+    --- エラトステネスの篩\n\
+    prime : {\n\
+        .rtn :: '' ;\n\
+        tabl :: [] ;\n\
+        _n.{{ tabl << (flg::false) }} ;\n\
+        tabl[0] = true ;\n\
+        tabl[1] = true ;\n\
+        _n.{{\n\
+            i:it ;\n\
+            tabl[i] == false ?? (\n\
+                .rtn << i << ', ' ;\n\
+                j::i ;\n\
+                {{\n\
+                    j += i ;\n\
+                    j >= _n ?? break !! tabl[j] = true ;\n\
+                }}\n\
+            )\n\
+        }}\n\
+    } ;\n\
+    @.co << prime( n:100 ).rtn ;\n"
     ,
     "(: prime { (:: .rtn '' ) (:: tabl [  ] ) (each _n { (<< tabl ( (:: flg false ) ) ) } ) (= (at tabl 0 ) true ) (= (at tabl 1 ) true ) (each _n { (: i it ) (?? (== (at tabl i ) false ) { ( (<< (<< .rtn i ) ', ' ) (:: j i ) (loop noname { (+= j i ) (?? (>= j _n ) { (break noname ) } { (= (at tabl j ) true ) } ) } ) ) } ) } ) } ) (<< (. @ .co ) (. (call prime [ (: n 100 ) ] ) .rtn ) )"
-) + "<br>" +
+) ;
 on_kawasemi(
     "(: prime { (:: .rtn '' ) (:: tabl [  ] ) (each _n { (<< tabl ( (:: flag false ) ) ) } ) (= (at tabl 0 ) true ) (= (at tabl 1 ) true ) (each _n { (: i it ) (?? (== (at tabl i ) false ) { ( (<< (<< .rtn i ) ', ' ) (:: j i ) (loop noname { (+= j i ) (?? (>= j _n ) { (break noname ) } { (= (at tabl j ) true ) } ) } ) ) } ) } ) } ) (<< (. @ .co ) (. (call prime [ (: n 100 ) ] ) .rtn ) )"
-, 'OK' ) + '<br>'
+, 'OK'
 ) ;
-//--></script><pre>
-
-    --- フィボナッチ数列 ( Fibonacci series )
-    fib : {
-        a::0 ; b::1 ; r::[] ;
-        {{
-            a > _max ?? break ;
-            r << a ;
-            c:a+b ; a=b ; b=c ;
-        }}
-        .r : r ;
-    }
-
-    fib( max:2000 ).r.{{ @.co << it << ', ' }} ; ... 0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597
-
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi( "\
+birds_script( "\
     --- フィボナッチ数列 ( Fibonacci series )\n\
     fib : {\n\
         a::0 ; b::1 ; r::[] ;\n\
@@ -1100,33 +995,13 @@ on_yamasemi( "\
         }}\n\
         .r : r ;\n\
     }\n\
-\n\
-    fib( max:2000 ).r.{{ @.co << it << ', ' }} ; ... 0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597\n\
-", "\
-(: fib { (:: a 0 ) (:: b 1 ) (:: r [  ] ) (loop noname { (?? (> a _max ) { (break noname ) } ) (<< r a ) (: c (+ a b ) ) (= a b ) (= b c ) } ) (: .r r ) } ) (each (. (call fib [ (: max 2000 ) ] ) .r ) { (<< (<< (. @ .co ) it ) ', ' ) } )" ) + "<br>" +
-on_kawasemi("\
-(: fib { (:: a 0 ) (:: b 1 ) (:: r [  ] ) (loop noname { (?? (> a _max ) { (break noname ) } ) (<< r a ) (: c (+ a b ) ) (= a b ) (= b c ) } ) (: .r r ) } ) (each (. (call fib [ (: max 2000 ) ] ) .r ) { (<< (<< (. @ .co ) it ) ', ' ) } )", "OK"  ) + "<br>"
+    \n\
+    fib( max:2000 ).r.{{ @.co << it << ', ' }} ; ... 0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597",
+    "(: fib { (:: a 0 ) (:: b 1 ) (:: r [  ] ) (loop noname { (?? (> a _max ) { (break noname ) } ) (<< r a ) (: c (+ a b ) ) (= a b ) (= b c ) } ) (: .r r ) } ) (each (. (call fib [ (: max 2000 ) ] ) .r ) { (<< (<< (. @ .co ) it ) ', ' ) } )" ) ;
+on_kawasemi(
+    "(: fib { (:: a 0 ) (:: b 1 ) (:: r [  ] ) (loop noname { (?? (> a _max ) { (break noname ) } ) (<< r a ) (: c (+ a b ) ) (= a b ) (= b c ) } ) (: .r r ) } ) (each (. (call fib [ (: max 2000 ) ] ) .r ) { (<< (<< (. @ .co ) it ) ', ' ) } )", "OK"
 ) ;
-//--></script><pre>
-
-    --- 疑似乱数生成アルゴリズム xorshift(xor128)
-    xor128 : {                          ... unsigned long xor128() {
-        x::123456789 ; y::362436069 ;   ...   static unsigned long x=123456789, y=362436069,
-        z::521288629 ; w:: 88675123 ;   ...                        z=521288629, w=88675123;
-        .get : {
-            t:x^(x<<11) ;               ...   unsigned long t=(x^(x<<11}};
-            x=y; y=z; z=w;              ...   x=y; y=z; z=w;
-            return w = (w^(w>>19) )^(t^(t>>8) ) ; ...   return ( w=(w^(w>>19}}^(t^(t>>8}} );
-        }
-    }                                   ... }
-
-    xs : xor128() ;
-    20.{{ @.co << xs.get().0 << ', ' }} ; ... 20 time test
-
-
-</pre><script type="text/JavaScript"><!--
-document.write(
-on_yamasemi( "\
+birds_script( "\
     --- 疑似乱数生成アルゴリズム xorshift(xor128)\n\
     xor128 : {                          ... unsigned long xor128() {\n\
         x::123456789 ; y::362436069 ;   ...   static unsigned long x=123456789, y=362436069,\n\
@@ -1137,15 +1012,14 @@ on_yamasemi( "\
             return w = (w^(w>>19) )^(t^(t>>8) ) ; ...   return ( w=(w^(w>>19}}^(t^(t>>8}} );\n\
         }\n\
     }                                   ... }\n\
-\n\
+    \n\
     xs : xor128() ;\n\
-    20.{{ @.co << xs.get().0 << ', ' }} ; ... 20 time test\n\
-", "\
-(: xor128 { (:: x 123456789 ) (:: y 362436069 ) (:: z 521288629 ) (:: w 88675123 ) (: .get { (: t (^ x ( (<< x 11 ) ) ) ) (= x y ) (= y z ) (= z w ) (return [ (= w (^ ( (^ w ( (>> w 19 ) ) ) ) ( (^ t ( (>> t 8 ) ) ) ) ) ) ] ) } ) } ) (: xs (call xor128 [  ] ) ) (each 20 { (<< (<< (. @ .co ) (. (call (. xs .get ) [  ] ) .0 ) ) ', ' ) } )" ) + "<br>" +
-on_kawasemi("\
-(: xor128 { (:: x 123456789 ) (:: y 362436069 ) (:: z 521288629 ) (:: w 88675123 ) (: .get { (: t (^ x ( (<< x 11 ) ) ) ) (= x y ) (= y z ) (= z w ) (return [ (= w (^ ( (^ w ( (>> w 19 ) ) ) ) ( (^ t ( (>> t 8 ) ) ) ) ) ) ] ) } ) } ) (: xs (call xor128 [  ] ) ) (each 20 { (<< (<< (. @ .co ) (. (call (. xs .get ) [  ] ) .0 ) ) ', ' ) } )", "OK"  ) + "<br>"
+    20.{{ @.co << xs.get().0 << ', ' }} ; ... 20 time test",
+    "(: xor128 { (:: x 123456789 ) (:: y 362436069 ) (:: z 521288629 ) (:: w 88675123 ) (: .get { (: t (^ x ( (<< x 11 ) ) ) ) (= x y ) (= y z ) (= z w ) (return [ (= w (^ ( (^ w ( (>> w 19 ) ) ) ) ( (^ t ( (>> t 8 ) ) ) ) ) ) ] ) } ) } ) (: xs (call xor128 [  ] ) ) (each 20 { (<< (<< (. @ .co ) (. (call (. xs .get ) [  ] ) .0 ) ) ', ' ) } )" ) ;
+on_kawasemi(
+    "(: xor128 { (:: x 123456789 ) (:: y 362436069 ) (:: z 521288629 ) (:: w 88675123 ) (: .get { (: t (^ x ( (<< x 11 ) ) ) ) (= x y ) (= y z ) (= z w ) (return [ (= w (^ ( (^ w ( (>> w 19 ) ) ) ) ( (^ t ( (>> t 8 ) ) ) ) ) ) ] ) } ) } ) (: xs (call xor128 [  ] ) ) (each 20 { (<< (<< (. @ .co ) (. (call (. xs .get ) [  ] ) .0 ) ) ', ' ) } )", "OK"
 ) ;
-//--></script><pre>
+</script><pre>
 <!--
 
 --- 挿入ソート、選択ソート、バブルソート
