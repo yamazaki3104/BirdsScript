@@ -2,7 +2,7 @@
 <html lang="ja">
 <!--
 つい、カッ！となってLL言語を作りはじめてしまいました。名前は「BirdsScript」です。
-（2013/09/19 現在、未完成。）
+（2013/09/21 現在、未完成。JavaScriptによる試作中。）
 
 Source Layout
 =============
@@ -38,9 +38,9 @@ Source Layout
 
   ・空の変数は存在できない（変数の値が未定という状態は無い）
 
-  ・ブロックスコープで参照領域が区切られていて解放される。（不要になった変数が参照できてしまうのはバグを埋め込みやすいと考えて）
-
   ・カプセル化がデフォルト。メンバは private になる（デフォルトで隠蔽され、外部からのアクセス可能にするには手間（'.'の記述）が必要）
+
+  ・参照領域がブロックスコープで区切られていて必ず解放される（不要になった変数が参照できてしまうのはバグを埋め込みやすいと考えて）
 
   ・配列にも更新の可/不可がある。
 
@@ -57,9 +57,9 @@ Source Layout
 「大規模開発に耐えられる」
 --------
 
-  ・オブジェクトの概念がある。カプセル化の概念がある。クラスではなくプロトタイプを引き継ぐ形。
+  ・オブジェクトの概念がある。カプセル化の概念がある。クラス系ではなくプロトタイプ系。
 
-  ・STLのようなジェネリックな言語にしたい思いは強いです（希望＆未実装）。
+  ・STLのようなジェネリックな言語にしたい思いは強いです（現状、引数の型チェックはわざとしていない）。
 
   ・テストも重視。デバッグも重視。（未実装）
 
@@ -68,7 +68,7 @@ Source Layout
 「使って楽しい」
 --------
 
-  ・配列がある。C言語の配列ではなく、C++/STLでいうコンテナ。JavaやC#でいうコレクション。配列：listと 連想配列map の両方の機能を持つ。番号付連想配列のこと。
+  ・配列がある。C言語の配列ではなく、C++/STLでいうコンテナ。JavaやC#でいうコレクション。配列：listと 連想配列map の両方の機能を持つ。番号のつく連想配列のこと。
 
   ・each がある。最近の言語では当たり前ですね。
 
@@ -92,6 +92,7 @@ float やその他の型は外部のライブラリとして用意するつも�
 
 そしてテストとデバッグのしやすさを売りにしたいので test() や assert(), trace() とかを早めに実装したい。
 
+よろしくお願いします。
 
 
 The BSD 2-Clause License
@@ -132,7 +133,7 @@ All rights reserved.
 <body>
 BirdsScript ver.0.01 (c) 2013/08 YAMAZAKI Satoshi.<br>
 あー、すみません。Google Chrome でしか動作確認していないので、他のブラウザでは動かないかもしれません。ごめんなさい。<br>
-<textarea cols="60" rows="5" id="yamasemi">
+<textarea cols="60" rows="8" id="yamasemi">
 --- sample code 階乗(fact) の関数宣言
 fact : { _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 } ;
 
@@ -170,7 +171,7 @@ document.getElementById('kawasemi_output').value=on_kawasemi( document.getElemen
 
 </pre><script>
 
-function birds_script( _in, _check1, _flg1, _check2, _flg2 )
+function birds_script( _in, _check1, _flg1, _check2 )
 {
     var yama_list = on_yamasemi( _in, false ) ;
     var bgc1 = ( _check1===yama_list ) ? '#9D9' : '#D55' ;
@@ -191,7 +192,7 @@ function birds_script( _in, _check1, _flg1, _check2, _flg2 )
 
 birds_script( "\
     i : 0 ;  ... 定数宣言. いわゆる Scala でいう val ですね\n\
-    i = 99 ; ... NG 代入は失敗します",
+    i = 99 ; ... NG 代入（上書き）は失敗します",
     "(: i 0 ) (= i 99 )",
     'NG', "syntax-error : cannot be set to a constant.: i:0\n", 'OK'
 ) ;
@@ -200,9 +201,10 @@ birds_script( "\
 //     "(: str 'string\n' )"
 // ) ;
 birds_script( "\
-    str : 'string' ; ... 文字列型定数  ... エスケープ無しの文字列",
-    "(: str 'string' )",
-    'OK', ''
+    str : 'string' ; ... 文字列型定数 ... エスケープ無しの文字列\n\
+    str = 'STRING' ; ... NG 代入（上書き）は失敗します",
+    "(: str 'string' ) (= str 'STRING' )",
+    'NG', 'syntax-error : cannot be set to a constant.: string'
 ) ;
 
 </script><pre>
@@ -215,14 +217,30 @@ birds_script( "\
 birds_script( "\
     i :: 0 ;    ... 文字列型宣言. いわゆる Scala でいう var ですね。\n\
     i = 99 ;    ... OK 代入は成功します\n\
+    \n\
     @.co << i ; ... i を表示してみる",
     "(:: i 0 ) (= i 99 ) (<< (. @ .co ) i )",
     'OK', '99'
 ) ;
-birds_script( '\
-    str :: "string" ; ... 文字列型変数',
-    "(:: str 'string' )",
-    'OK', ''
+birds_script( "\
+    str :: 'string' ; ... 文字列型変数\n\
+    str = 'STRING' ;  ... OK 代入は成功します\n\
+    \n\
+    @.co << str ;     ... str を表示してみる",
+    "(:: str 'string' ) (= str 'STRING' ) (<< (. @ .co ) str )",
+    'OK', 'STRING'
+) ;
+birds_script( "\
+    i :: 0 ;       ... 文字列型宣言. いわゆる Scala でいう var ですね。\n\
+    i = 'string' ; ... NG 型が違うので代入は失敗します",
+    "(:: i 0 ) (= i 'string' )",
+    'NG', "syntax-error : unmatch types.: 'int:i' != 'str'"
+) ;
+birds_script( "\
+    str :: 'string' ; ... 文字列型変数\n\
+    str = 99 ;        ... NG 型が違うので代入は失敗します",
+    "(:: str 'string' ) (= str 99 )",
+    'NG', "syntax-error : unmatch types.: 'str:str' != 'int'"
 ) ;
 
 </script><pre>
@@ -235,6 +253,7 @@ birds_script( '\
 birds_script( "\
     foo ::　1 ;\n\
     foo > 0 ?? foo = 0 ; ... if 文 ... = は代入文\n\
+    \n\
     @.co << foo ;        ... foo を表示してみる",
     '(:: foo 1 ) (?? (> foo 0 ) { (= foo 0 ) } ) (<< (. @ .co ) foo )',
     'OK', '0'
@@ -242,6 +261,7 @@ birds_script( "\
 birds_script( "\
     foo :: 1 ;\n\
     foo > 0 ?? foo = 0 !! foo = 1 ; ... if then else 文\n\
+    \n\
     @.co << foo ; ... foo を表示してみる",
     '(:: foo 1 ) (?? (> foo 0 ) { (= foo 0 ) } { (= foo 1 ) } ) (<< (. @ .co ) foo )',
     'OK', '0'
@@ -249,6 +269,7 @@ birds_script( "\
 birds_script( "\
     foo :: 1 ;\n\
     boo : ( foo > 0 ?? 0 !! 1 ) ; ... スコープとの組み合わせ\n\
+    \n\
     @.co << foo << ', ' ; ... foo を表示してみる\n\
     @.co << boo ;         ... boo を表示してみる",
     "(:: foo 1 ) (: boo ( (?? (> foo 0 ) { 0 } { 1 } ) ) ) (<< (<< (. @ .co ) foo ) ', ' ) (<< (. @ .co ) boo )",
@@ -276,6 +297,7 @@ birds_script( "\
 birds_script( "\
     is_ok :: true ; a :: 0 ;\n\
     is_ok == true ?? a=1 !! a=2 ; ... OK\n\
+    \n\
     @.co << a ;                   ... a を表示してみる",
     '(:: is_ok true ) (:: a 0 ) (?? (== is_ok true ) { (= a 1 ) } { (= a 2 ) } ) (<< (. @ .co ) a )',
     'OK', '1'
@@ -306,9 +328,11 @@ birds_script( "\
     boo :: foo :: woo :: 1 ;\n\
     foo < 0\n\
     ?? ( foo = 0 ; boo = 0 ; woo = 0 ; )\n\
-    !! ( foo = 1 ; boo = 1 ; woo = 1 ; )",
-    '(:: boo (:: foo (:: woo 1 ) ) ) (?? (< foo 0 ) { ( (= foo 0 ) (= boo 0 ) (= woo 0 ) ) } { ( (= foo 1 ) (= boo 1 ) (= woo 1 ) ) } )',
-    'OK', ''
+    !! ( foo = 1 ; boo = 1 ; woo = 1 ; )\n\
+    \n\
+    @.co << foo << ', ' << boo << ', ' << woo ; ... foo, boo, woo を表示してみる",
+    "(:: boo (:: foo (:: woo 1 ) ) ) (?? (< foo 0 ) { ( (= foo 0 ) (= boo 0 ) (= woo 0 ) ) } { ( (= foo 1 ) (= boo 1 ) (= woo 1 ) ) } ) (<< (<< (<< (<< (<< (. @ .co ) foo ) ', ' ) boo ) ', ' ) woo )",
+    'OK', "1, 1, 1"
 ) ;
 birds_script( "\
     boo :: foo :: woo :: 1 ;\n\
@@ -322,9 +346,11 @@ birds_script( "\
         foo = 1 ;\n\
         boo = 1 ;\n\
         woo = 1 ;\n\
-    )",
-    '(:: boo (:: foo (:: woo 1 ) ) ) (?? (< foo 0 ) { ( (= foo 0 ) (= boo 0 ) (= woo 0 ) ) } { ( (= foo 1 ) (= boo 1 ) (= woo 1 ) ) } )',
-    'OK', ''
+    )\n\
+    \n\
+    @.co << foo << ', ' << boo << ', ' << woo ; ... foo, boo, woo を表示してみる",
+    "(:: boo (:: foo (:: woo 1 ) ) ) (?? (< foo 0 ) { ( (= foo 0 ) (= boo 0 ) (= woo 0 ) ) } { ( (= foo 1 ) (= boo 1 ) (= woo 1 ) ) } ) (<< (<< (<< (<< (<< (. @ .co ) foo ) ', ' ) boo ) ', ' ) woo )",
+    'OK', "1, 1, 1"
 ) ;
 </script><pre>
 
@@ -341,6 +367,7 @@ birds_script( "\
         out : boo = 2 ;  ... この式が値が()の値になる ... すみません out はまだ使わないでください\n\
         woo = 3 ;\n\
     ) ;\n\
+    \n\
     @.co << a ;          ... a : 2 になる。",
     '(:: boo (:: foo (:: woo 1 ) ) ) (: a ( (= foo 1 ) (: out (= boo 2 ) ) (= woo 3 ) ) ) (<< (. @ .co ) a )',
     'OK', '2'
@@ -353,12 +380,133 @@ birds_script( "\
         woo = 3 ;\n\
         boo            ... outを書かなくても最後の';'を書かなければオッケー。\n\
     ) ;\n\
+    \n\
     @.co << b ;        ... b : 2 になる。",
     '(:: boo (:: foo (:: woo 1 ) ) ) (: b ( (= foo 1 ) (= boo 2 ) (= woo 3 ) boo ) ) (<< (. @ .co ) b )',
     'OK', '2'
 ) ;
 
 </script><pre>
+
+-----------------------------------------------------------------------
+■配列 '[', ']' STLでいうコンテナ。 JavaScript ではおなじみの概念。
+
+// STLの std::vector, std::map  が混在している高機能なコンテナ
+
+</pre><script>
+
+birds_script( "\
+    int_list : [ 1, 2, 3, 4, 5, ] ;\n\
+    str_list : [ '1', '2', '3', ] ;\n\
+    \n\
+    @.co << int_list[0] << ', ' ; ... 1, \n\
+    @.co << str_list[2] << ', ' ; ... 3, \n\
+    \n\
+    @.co << int_list << ', ' ; ... 配列そのものを表示してみる\n\
+    @.co << str_list ;",
+    "(: int_list [ 1 2 3 4 5 ] ) (: str_list [ '1' '2' '3' ] ) (<< (<< (. @ .co ) (at int_list 0 ) ) ', ' ) (<< (<< (. @ .co ) (at str_list 2 ) ) ', ' ) (<< (<< (. @ .co ) int_list ) ', ' ) (<< (. @ .co ) str_list )",
+    'OK', "1, 3, [ .0:1, .1:2, .2:3, .3:4, .4:5, ], [ .0:'1', .1:'2', .2:'3', ]"
+) ;
+
+birds_script( "\
+    str_map1 : [ 1:'one', 2:'two', ] ;\n\
+    str_map2 : [ a:'one', b:'two', ] ;\n\
+    \n\
+    @.co << str_map1[2] << ', ' ; ... two, \n\
+    @.co << str_map2.b  << ', ' ; ... two, \n\
+    \n\
+    @.co << str_map1 << ', ' ; ... 配列そのものを表示してみる\n\
+    @.co << str_map2 ;",
+    "(: str_map1 [ (: 1 'one' ) (: 2 'two' ) ] ) (: str_map2 [ (: a 'one' ) (: b 'two' ) ] ) (<< (<< (. @ .co ) (at str_map1 2 ) ) ', ' ) (<< (<< (. @ .co ) (. str_map2 .b ) ) ', ' ) (<< (<< (. @ .co ) str_map1 ) ', ' ) (<< (. @ .co ) str_map2 )",
+    'OK', "two, two, [ .1:'one', .2:'two', ], [ .a:'one', .b:'two', ]"
+) ;
+
+</script><pre>
+
+// 追加可能の有無も宣言の違いがあります。
+
+</pre><script>
+
+birds_script( "\
+    list_a : [] ; ... 追加不可な配列\n\
+    \n\
+    list_a << 1 ;  ...  NG",
+    "(: list_a [  ] ) (<< list_a 1 )",
+    'NG', 'syntax-error : cannot be set to a constant.: list_a'
+) ;
+
+birds_script( "\
+    list_b :: [] ; ... 追加可能な配列\n\
+    \n\
+    list_b << 1 ;  ...  OK\n\
+    \n\
+    @.co << list_b ; ... [ .0:1, ]",
+    "(:: list_b [  ] ) (<< list_b 1 ) (<< (. @ .co ) list_b )",
+    'OK', '[ .0:1, ]'
+) ;
+
+</script><pre>
+
+//  ちょっと脱線
+// switch 文は無いので関数の配列 map で実装。
+
+</pre><script>
+
+birds_script( "\
+    sw : [                          ... 固定テーブル（マップ）\n\
+        1 : { @.co << 'one, ' },    ... 関数{} を指定します。 ブロック() で書くと先に実行しちゃいます。\n\
+        2 : { @.co << 'two, ' },\n\
+        unmatch : { @.co << 'unmatch' }, ... 一致しなかった時に呼ばれる関数 ... unmatch は予約語です。\n\
+    ] ;\n\
+    \n\
+    @.co << sw << ', ' ; ... [ .1:{}, .2:{}, .unmatch:{}, ]\n\
+    sw[2]()  ;           ... two,\n\
+    sw[99]() ;           ... unmatch",
+    "(: sw [ (: 1 { (<< (. @ .co ) 'one, ' ) } ) (: 2 { (<< (. @ .co ) 'two, ' ) } ) (: unmatch { (<< (. @ .co ) 'unmatch' ) } ) ] ) (<< (<< (. @ .co ) sw ) ', ' ) (call (at sw 2 ) [  ] ) (call (at sw 99 ) [  ] )",
+    'OK', "[ .1:{}, .2:{}, .unmatch:{}, ], two, unmatch"
+) ;
+// ↓これは存在しない sw[1] に代入ってのはちょっと無謀だよね。エラーでいいと思う。
+// birds_script( "\
+//     sw :: [] ; ... 可変テーブル（マップ）、後から追加・変更可能。\n\
+//     sw[1] = { @.co << 'one' } ;\n\
+//     sw[2] = { @.co << 'two' } ;\n\
+//     sw[unmatch] = { @.co << it } ;  ... 一致しなかった時に呼ばれる関数\n\
+//     @.co << sw[2]() ; ... 'two' ",
+//     "(:: sw [  ] ) (= (at sw 1 ) { (<< (. @ .co ) 'one' ) } ) (= (at sw 2 ) { (<< (. @ .co ) 'two' ) } ) (= (at sw unmatch ) { (<< (. @ .co ) it ) } ) (<< (. @ .co ) (call (at sw 2 ) [  ] ) )",
+//     'OK', ''
+// ) ;
+birds_script( "\
+    sw :: [] ; ... 可変テーブル（マップ）、後から追加・変更可能。\n\
+    sw << ( 1 : { @.co << 'one, ' } ) ;\n\
+    sw << ( 2 : { @.co << 'two, ' } ) ;\n\
+    sw << ( unmatch : { @.co << 'unmatch' } ) ;  ... 一致しなかった時に呼ばれる関数\n\
+    \n\
+    @.co << sw << ', ' ; ... [ .1:{}, .2:{}, .unmatch:{}, ]\n\
+    sw[2]()  ;           ... two,\n\
+    sw[99]() ;           ... unmatch",
+    "(:: sw [  ] ) (<< sw ( (: 1 { (<< (. @ .co ) 'one, ' ) } ) ) ) (<< sw ( (: 2 { (<< (. @ .co ) 'two, ' ) } ) ) ) (<< sw ( (: unmatch { (<< (. @ .co ) 'unmatch' ) } ) ) ) (<< (<< (. @ .co ) sw ) ', ' ) (call (at sw 2 ) [  ] ) (call (at sw 99 ) [  ] )",
+    'OK', "[ .1:{}, .2:{}, .unmatch:{}, ], two, unmatch"
+) ;
+
+</script><pre>
+
+// switch の代わりに if 文の羅列でもいいんじゃないかと、個人的には思う。
+
+</pre><script>
+birds_script( "\
+    sw : {\n\
+        _in == 1 ?? @.co << 'one, ' !!\n\
+        _in == 2 ?? @.co << 'two, ' !!\n\
+        @.co << 'unmatch' ;\n\
+    } ;\n\
+    \n\
+    sw( in:2 )  ;   ... two,\n\
+    sw( in:99 ) ;   ... unmatch",
+    "(: sw { (?? (== _in 1 ) { (<< (. @ .co ) 'one, ' ) } { (?? (== _in 2 ) { (<< (. @ .co ) 'two, ' ) } { (<< (. @ .co ) 'unmatch' ) } ) } ) } ) (call sw [ (: in 2 ) ] ) (call sw [ (: in 99 ) ] )",
+    'OK', 'two, unmatch'
+) ;
+</script><pre>
+
 -----------------------------------------------------------------
 ■ 繰り返し構文、for 文、each 文
 
@@ -379,6 +527,7 @@ birds_script(　"\
         continue ;    ... ここは実行されないけどね\n\
         \n\
     }} ;\n\
+    \n\
     @.co << a ;       ... a : 10 ;",
     '(: a (loop noname { (break noname 10 ) (continue noname ) } ) ) (<< (. @ .co ) a )',
     'OK', '10'
@@ -432,6 +581,7 @@ birds_script( "\
     @.co << d ; ... d : [ 'S', 'T', 'R', 'I', 'N', 'G', ]
 
 </pre><script>
+
 birds_script( "\
     c :: 'String' ;\n\
     d : c.{{\n\
@@ -442,6 +592,7 @@ birds_script( "\
     "(:: c 'String' ) (: d (each c { (?? (&& (>= it 'a' ) (<= it 'z' ) ) { (<< out (- it ( (- 'a' 'A' ) ) ) ) } { (<< out it ) } ) } ) ) (<< (. @ .co ) d )",
     'OK', 'STRING'
 ) ;
+
 </script><pre>
 
 // for ( int i=0 ; i<10 ; i++ ) ... をあえて書くなら
@@ -450,13 +601,14 @@ birds_script( "\
 birds_script( "\
     i :: 0 ;\n\
     {{\n\
-        @.co << i << ', ' ; ... i を表示してみる\n\
-        i >= 10 ?? break ;\n\
-        ++ i ; ... C言語などの後方 i++ と異なり「先に実行される」のであえて前方のみにしました。\n\
+        @.co << i << ', ' ;  ... i を表示してみる\n\
+        \n\
+        ++i >= 10 ?? break ; ... C言語などの後方 i++ と異なり「先に実行される」のであえて前方のみにしました。\n\
     }}",
-    "(:: i 0 ) (loop noname { (<< (<< (. @ .co ) i ) ', ' ) (?? (>= i 10 ) { (break noname ) } ) (++ i ) } )",
-    'OK', '0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, '
+    "(:: i 0 ) (loop noname { (<< (<< (. @ .co ) i ) ', ' ) (?? (>= (++ i ) 10 ) { (break noname ) } ) } )",
+    'OK', '0, 1, 2, 3, 4, 5, 6, 7, 8, 9, '
 ) ;
+
 </script><pre>
 
 // 以下、例外と同等な機能なので・・・実装検討中
@@ -522,7 +674,7 @@ birds_script( "\
 </script><pre>
 
 -----------------------------------------------------------------------
-■ class と関数の宣言は同じ '{', '}'。特に区別はしていない。同じものを場合によって呼び方を変えているだけ。
+■ 関数とオブジェクトの宣言は同じ '{', '}'。特に区別はしていない。同じものを場合によって呼び方を変えているだけ。
 
 // 予約語： dtor  デストラクタ
 
@@ -539,14 +691,14 @@ birds_script( "\
             }\n\
         } ;\n\
         ret : foo() ; ... 関数 foo の戻り値を ret に格納\n\
-        ins : Woo() ; ... class Woo のインスタンス ins を生成\n\
+        obj : Woo() ; ... Woo のインスタンス obj を生成\n\
     )",
-    '( (: foo { (<< (. @ .co ) 111 ) } ) (: Woo { (<< (. @ .co ) 222 ) (: dtor { (<< (. @ .co ) 333 ) } ) } ) (: ret (call foo [  ] ) ) (: ins (call Woo [  ] ) ) )',
+    '( (: foo { (<< (. @ .co ) 111 ) } ) (: Woo { (<< (. @ .co ) 222 ) (: dtor { (<< (. @ .co ) 333 ) } ) } ) (: ret (call foo [  ] ) ) (: obj (call Woo [  ] ) ) )',
     'OK', '111222333'
 ) ;
 </script><pre>
 
-// 名無しの class ＆関数もおっけー。
+// 名無しの関数やオブジェクトもおっけー。
 
 </pre><script>
 birds_script( "\
@@ -555,14 +707,14 @@ birds_script( "\
             @.co << 111 ; ... ここにいろいろ書く\n\
         }() ;             ... 無名関数をその場で呼び出す\n\
         \n\
-        ins : {           ... 無名関数の戻り値を定数 ins に設定\n\
+        obj : {           ... 無名関数の戻り値を定数 obj に設定\n\
             @.co << 222 ; ... コンストラクタは普通に記述、関数と同じ\n\
             dtor : {\n\
                 @.co << 333 ; ... デストラクタ dtor は予約語です\n\
             }\n\
         }() ;             ... 無名関数をその場で呼び出す\n\
     )",
-    '( (: ret (call { (<< (. @ .co ) 111 ) } [  ] ) ) (: ins (call { (<< (. @ .co ) 222 ) (: dtor { (<< (. @ .co ) 333 ) } ) } [  ] ) ) )',
+    '( (: ret (call { (<< (. @ .co ) 111 ) } [  ] ) ) (: obj (call { (<< (. @ .co ) 222 ) (: dtor { (<< (. @ .co ) 333 ) } ) } [  ] ) ) )',
     'OK', '111222333'
 );
 </script><pre>
@@ -583,6 +735,7 @@ birds_script( "\
 
 -----------------------------------------------------------------------
 ■ 関数呼び出しと引数
+
 // 関数呼び出しは、定数宣言と同様に名前を付ける必要があります。
 // f( 0, 1, 2 ) ; ... NG
 // f( a:0, x:1, y:2 ) ; ... OK
@@ -695,9 +848,9 @@ birds_script( "\
 </script><pre>
 
 -----------------------------------------------------------------------
-■ class内メンバ
+■ オブジェクト内メンバ
 
-// class 内メンバの表記
+// オブジェクト内メンバの表記
 // 基本 privateになります。
 // publicにしたい（外から見せたい）場合は変数名の先頭に '.' をつける（記述コストで安全側に倒しています）
 
@@ -716,11 +869,7 @@ birds_script( "\
 ) ;
 </script><pre>
 
-// class 内メソッドの表記も同様（メソッドとclassの区別は無いですが）
-
-// 記述のお作法として class は先頭文字を大文字、 メンバや関数は先頭文字を小文字でお願いします。
-// ラクダ記法も好きではないので、小文字の場合は _ を使ってください。
-// Class() ; member() ; function() ; get_list() ...
+// オブジェクト内メソッドの表記も同様（メソッドとオブジェクトの区別は無いですが）
 
 </pre><script>
 birds_script( "\
@@ -739,131 +888,6 @@ birds_script( "\
     '(: Foo { (: x {  } ) (: .y {  } ) } ) (: foo (call Foo [  ] ) ) (call (. foo .x ) [  ] ) (call (. foo .y ) [  ] )',
     'NG','undefined variable.: .x'
 ) ;
-</script><pre>
-
------------------------------------------------------------------------
-■配列 STLでいうコンテナ '[', ']' JavaScript ではおなじみの概念。
-
-// STLの std::vector, std::map  が混在しているコンテナ
-
-</pre><script>
-
-birds_script( "\
-    int_list : [ 1, 2, 3, 4, 5, ] ;\n\
-    str_list : [ '1', '2', '3', ] ;\n\
-    str_map  : [ 1:'one', 2:'two', ] ;\n\
-    \n\
-    @.co << int_list[0] << ', ' ; ... 1, \n\
-    @.co << str_list[2] << ', ' ; ... 3, \n\
-    @.co << str_map[2]  << ', ' ; ... two, \n\
-    \n\
-    @.co << int_list << ', ' ;\n\
-    @.co << str_list << ', ' ;\n\
-    @.co << str_map  ;",
-    "(: int_list [ 1 2 3 4 5 ] ) (: str_list [ '1' '2' '3' ] ) (: str_map [ (: 1 'one' ) (: 2 'two' ) ] ) (<< (<< (. @ .co ) (at int_list 0 ) ) ', ' ) (<< (<< (. @ .co ) (at str_list 2 ) ) ', ' ) (<< (<< (. @ .co ) (at str_map 2 ) ) ', ' ) (<< (<< (. @ .co ) int_list ) ', ' ) (<< (<< (. @ .co ) str_list ) ', ' ) (<< (. @ .co ) str_map )",
-    'OK', '1, 3, two, '
-) ;
-
-</script><pre>
-
-// 追加可能の有無も宣言の違いがあります。
-
-</pre><script>
-
-birds_script( "\
-    list_a :  [] ; ... 追加不可なコンテナ\n\
-    \n\
-    list_a << 1 ;  ...  NG",
-    "(: list_a [  ] ) (<< list_a 1 )",
-    'NG', 'syntax-error : cannot be set to a constant.: list_a'
-) ;
-
-</script><pre>
-
-</pre><script>
-
-birds_script( "\
-    list_b :: [] ; ... 追加可能なコンテナ\n\
-    \n\
-    list_b << 1 ;  ...  OK\n\
-    \n\
-    @.co << list_b ; ... [ 1, ]",
-    "(:: list_b [  ] ) (<< list_b 1 ) (<< (. @ .co ) list_b )",
-    'OK', '[ .0:1, ]'
-) ;
-
-</script><pre>
-
-
-//  ちょっと脱線
-// switch 文は無いので関数の map で実装。
-
-    sw : [                      ... 固定テーブル（マップ）
-        1 : { @.co << "one" },  ... func {} です。 () で書くと先に実行しちゃいます。
-        2 : { @.co << "two" },
-        unmatch : { @.co << it },  ... 一致しなかった時に呼ばれる関数（unmatchは予約語です）
-    ] ;
-    @.co << sw[2]() ; ... two ここで実行されます。
-
-
-    sw :: [] ; ... 可変テーブル（マップ）、後から追加・変更可能。
-    sw[1] = { @.co << 'one' } ;
-    sw[2] = { @.co << 'two' } ;
-    sw[unmatch] = { @.co << it } ;  ... 一致しなかった時に呼ばれる関数
-    @.co << sw[2]() ; ... 'two'
-
-
-    sw :: [] ; ... 可変テーブル（マップ）、後から追加・変更可能。
-    sw << ( 1 : { @.co << 'one' } ) ;
-    sw << ( 2 : { @.co << 'two' } ) ;
-    sw << ( unmatch : { @.co << it } ) ;  ... 一致しなかった時に呼ばれる関数
-    @.co << sw[2]() ; ... 'two'
-
-
-// if 文でもいいんじゃないかな。
-
-    i == 1 ?? @.co << 'one' !!
-    i == 2 ?? @.co << 'two' !! @.co << i ;
-
-
-</pre><script>
-
-birds_script( "\
-    sw:[                          ... 固定テーブル（マップ）\n\
-        1 : { @.co << 'one' },    ... func {} です。 () で書くと先に実行しちゃいます。\n\
-        2 : { @.co << 'two' },\n\
-        unmatch : { @.co << it },  ... 一致しなかった時に呼ばれる関数\n\
-    ] ;\n\
-    @.co << sw[2]() ; ... 'two'",
-    "(: sw [ (: 1 { (<< (. @ .co ) 'one' ) } ) (: 2 { (<< (. @ .co ) 'two' ) } ) (: unmatch { (<< (. @ .co ) it ) } ) ] ) (<< (. @ .co ) (call (at sw 2 ) [  ] ) )",
-    'OK', ''
-) ;
-birds_script( "\
-    sw::[] ; ... 可変テーブル（マップ）、後から追加・変更可能。\n\
-    sw[1] = { @.co << 'one' } ;\n\
-    sw[2] = { @.co << 'two' } ;\n\
-    sw[unmatch] = { @.co << it } ;  ... 一致しなかった時に呼ばれる関数\n\
-    @.co << sw[2]() ; ... 'two' ",
-    "(:: sw [  ] ) (= (at sw 1 ) { (<< (. @ .co ) 'one' ) } ) (= (at sw 2 ) { (<< (. @ .co ) 'two' ) } ) (= (at sw unmatch ) { (<< (. @ .co ) it ) } ) (<< (. @ .co ) (call (at sw 2 ) [  ] ) )",
-    'OK', ''
-) ;
-birds_script( "\
-    sw::[] ; ... 可変テーブル（マップ）、後から追加・変更可能。\n\
-    sw << ( 1 : { @.co << 'one' } ) ;\n\
-    sw << ( 2 : { @.co << 'two' } ) ;\n\
-    sw << ( unmatch : { @.co << it } ) ;  ... 一致しなかった時に呼ばれる関数\n\
-    @.co << sw[2]() ; ... 'two'",
-    "(:: sw [  ] ) (<< sw ( (: 1 { (<< (. @ .co ) 'one' ) } ) ) ) (<< sw ( (: 2 { (<< (. @ .co ) 'two' ) } ) ) ) (<< sw ( (: unmatch { (<< (. @ .co ) it ) } ) ) ) (<< (. @ .co ) (call (at sw 2 ) [  ] ) )",
-    'OK', ''
-) ;
-birds_script( "\
-    i:0;\n\
-    i == 1 ?? @.co << 'one' !!\n\
-    i == 2 ?? @.co << 'two' !! @.co << i ;",
-    "(: i 0 ) (?? (== i 1 ) { (<< (. @ .co ) 'one' ) } { (?? (== i 2 ) { (<< (. @ .co ) 'two' ) } { (<< (. @ .co ) i ) } ) } )",
-    'OK', '0'
-) ;
-
 </script><pre>
 
 このあたりから下は、検討中。未実装。
@@ -1012,7 +1036,7 @@ birds_script( "\
     prime : {\n\
         .rtn :: '' ;\n\
         tabl :: [] ;\n\
-        _n.{{ tabl << (flg::false) }} ;\n\
+        _n.{{ tabl << false }} ;\n\
         tabl[0] = true ;\n\
         tabl[1] = true ;\n\
         _n.{{\n\
@@ -1028,7 +1052,7 @@ birds_script( "\
         }}\n\
     } ;\n\
     @.co << prime( n:100 ).rtn ;\n",
-    "(: prime { (:: .rtn '' ) (:: tabl [  ] ) (each _n { (<< tabl ( (:: flg false ) ) ) } ) (= (at tabl 0 ) true ) (= (at tabl 1 ) true ) (each _n { (: i it ) (?? (== (at tabl i ) false ) { ( (<< (<< .rtn i ) ', ' ) (:: j i ) (loop noname { (+= j i ) (?? (>= j _n ) { (break noname ) } { (= (at tabl j ) true ) } ) } ) ) } ) } ) } ) (<< (. @ .co ) (. (call prime [ (: n 100 ) ] ) .rtn ) )",
+    "(: prime { (:: .rtn '' ) (:: tabl [  ] ) (each _n { (<< tabl false ) } ) (= (at tabl 0 ) true ) (= (at tabl 1 ) true ) (each _n { (: i it ) (?? (== (at tabl i ) false ) { ( (<< (<< .rtn i ) ', ' ) (:: j i ) (loop noname { (+= j i ) (?? (>= j _n ) { (break noname ) } { (= (at tabl j ) true ) } ) } ) ) } ) } ) } ) (<< (. @ .co ) (. (call prime [ (: n 100 ) ] ) .rtn ) )",
     'OK', '2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, '
 ) ;
 
@@ -1055,16 +1079,16 @@ birds_script( "\
         x::123456789 ; y::362436069 ;   ...   static unsigned long x=123456789, y=362436069,\n\
         z::521288629 ; w:: 88675123 ;   ...                        z=521288629, w=88675123;\n\
         .get : {\n\
-            t:x^(x<<11) ;               ...   unsigned long t=(x^(x<<11}};\n\
+            t:x^(x<<11) ;               ...   unsigned long t=(x^(x<<11));\n\
             x=y; y=z; z=w;              ...   x=y; y=z; z=w;\n\
-            return w = (w^(w>>19) )^(t^(t>>8) ) ; ...   return ( w=(w^(w>>19}}^(t^(t>>8}} );\n\
+            return w = (w^(w>>19) )^(t^(t>>8) ) ; ...   return ( w=(w^(w>>19))^(t^(t>>8)) );\n\
         }\n\
     }                                   ... }\n\
     \n\
     xs : xor128() ;\n\
-    20.{{ @.co << xs.get().0 << ', ' }} ; ... 20 time test",
-    "(: xor128 { (:: x 123456789 ) (:: y 362436069 ) (:: z 521288629 ) (:: w 88675123 ) (: .get { (: t (^ x ( (<< x 11 ) ) ) ) (= x y ) (= y z ) (= z w ) (return [ (= w (^ ( (^ w ( (>> w 19 ) ) ) ) ( (^ t ( (>> t 8 ) ) ) ) ) ) ] ) } ) } ) (: xs (call xor128 [  ] ) ) (each 20 { (<< (<< (. @ .co ) (. (call (. xs .get ) [  ] ) .0 ) ) ', ' ) } )",
-    'OK','597902826, 458295558, 1779455562, 663552176, 507026878, 1924316742, 1710756956, 708776147, 254848327, 395797097, 1298714163, 1610872517, 366163223, 1190894062, 1307172436, 841202930, 1104432172, 612014353, 660797620, 143201414, '
+    5.{{ @.co << xs.get().0 << ', ' }} ; ... 5 time test",
+    "(: xor128 { (:: x 123456789 ) (:: y 362436069 ) (:: z 521288629 ) (:: w 88675123 ) (: .get { (: t (^ x ( (<< x 11 ) ) ) ) (= x y ) (= y z ) (= z w ) (return [ (= w (^ ( (^ w ( (>> w 19 ) ) ) ) ( (^ t ( (>> t 8 ) ) ) ) ) ) ] ) } ) } ) (: xs (call xor128 [  ] ) ) (each 5 { (<< (<< (. @ .co ) (. (call (. xs .get ) [  ] ) .0 ) ) ', ' ) } )",
+    'OK','597902826, 458295558, 1779455562, 663552176, 507026878, '
 ) ;
 
 </script><pre>
