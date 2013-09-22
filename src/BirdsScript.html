@@ -129,7 +129,7 @@ All rights reserved.
 <style> body { background-color:#cccccc; } </style>
 <script type="text/javascript" charset="utf-8" src="Yamasemi.mini.js"></script>
 <script type="text/javascript" charset="utf-8" src="Kawasemi.mini.js"></script>
-</pre><script>
+<script>
 
 function birds_script( _in, _check1, _check2 )
 {
@@ -151,7 +151,7 @@ function birds_script( _in, _check1, _check2 )
     }
 }
 
-</script><pre>
+</script>
 </head>
 <body>
 BirdsScript ver.0.01 (c) 2013/08 YAMAZAKI Satoshi.<br>
@@ -207,8 +207,12 @@ birds_script( "\
 ■ 定数/変数宣言
 
 // 予約語は ':', '::'
+
 // 必ず初期値が必用。空の変数や定数は存在しない（させない）ことで、バグが入り込まないようにする設計方針。
-// 定数 いわゆるC++の const 。 Scalaの val 。 一度設定した値を上書きすることはできません。
+// 定数 いわゆる C/C++の const、Javaの final、Scalaの val 。 一度設定した値を上書きすることはできません。
+
+// 古いC言語や Pascal のように、スコープの先頭のみという制限はありません。好きなところで宣言できます。
+// なるべく直前で定義して、素早く片づけることがよいコードになると思っています。
 
 </pre><script>
 
@@ -310,6 +314,8 @@ birds_script( "\
 // ?? の前は必ず比較文であること。比較文以外はエラーになります。
 // flag = true ?? ... のようなタイポを防ぐ理由があります。
 
+// true, false は予約語です。true, false の型は enum になる予定。
+
 </pre><script>
 birds_script( "\
     is_ok :: true ; a :: 0 ;\n\
@@ -341,10 +347,9 @@ birds_script( "\
 -----------------------------------------------------------------
 ■ スコープ（ブロックスコープ）
 
-// いわゆるC言語の '{','}' ではなくて '(', ')' になります。
-// 変数/定数宣言のスコープが制限できるので上手に使ってください。
+// いわゆるC言語の '{','}' ですが、表示は '(', ')' になります。注意してください。
 
-// memo : ( ... ) は [ ... ].0 と意味的に同じにしたい。
+// 変数/定数宣言のスコープが制限できるので上手に使ってください。
 
 </pre><script>
 birds_script( "\
@@ -377,9 +382,10 @@ birds_script( "\
 ) ;
 </script><pre>
 
-// スコープ'(',')'に値を持たせることができます。
-// 予約語は'out'。return文に似ているけど、処理は中断されないので注意。
-// すみません。out はまだ使わないでください。仕様検討中です。
+// スコープ'(',')'には１つだけ値を持たせることができます。
+
+// すみません。out ↓はまだ使わないでください。仕様を再検討中です。
+// 予約語は'out'。return文に似ているけど処理は中断されないので注意。
 
 </pre><script>
 
@@ -412,9 +418,12 @@ birds_script( "\
 </script><pre>
 
 -----------------------------------------------------------------------
-■配列 '[', ']' STLでいうコンテナ。 JavaScript ではおなじみの概念。
+■配列 '[', ']'。
 
-// STLの std::vector, std::map  が混在している高機能なコンテナ
+// ここ BirdsScript では「リストオブジェクト(list-object)と呼ぶことにしました。 
+// 配列でもあり、連想配列でもあり、オブジェクトでもある汎用的な入れ物なので。
+
+// STLの std::vector, std::map の両方の機能が混在しているコンテナ。
 
 </pre><script>
 
@@ -425,7 +434,7 @@ birds_script( "\
     @.co << int_list[0] << ', ' ; ... 1, \n\
     @.co << str_list[2] << ', ' ; ... 3, \n\
     \n\
-    @.co << int_list << ', ' ; ... 配列そのものを表示してみる\n\
+    @.co << int_list << ', ' ; ... 配列(list-object)そのものを表示してみる\n\
     @.co << str_list ;",
     "(: int_list [ 1 2 3 4 5 ] ) (: str_list [ '1' '2' '3' ] ) (<< (<< (. @ .co ) (at int_list 0 ) ) ', ' ) (<< (<< (. @ .co ) (at str_list 2 ) ) ', ' ) (<< (<< (. @ .co ) int_list ) ', ' ) (<< (. @ .co ) str_list )",
      "1, 3, [ .0:1, .1:2, .2:3, .3:4, .4:5, ], [ .0:'1', .1:'2', .2:'3', ]"
@@ -438,7 +447,7 @@ birds_script( "\
     @.co << str_map1[2] << ', ' ; ... two, \n\
     @.co << str_map2.b  << ', ' ; ... two, \n\
     \n\
-    @.co << str_map1 << ', ' ; ... 配列そのものを表示してみる\n\
+    @.co << str_map1 << ', ' ; ... 配列(list-object)そのものを表示してみる\n\
     @.co << str_map2 ;",
     "(: str_map1 [ (: 1 'one' ) (: 2 'two' ) ] ) (: str_map2 [ (: a 'one' ) (: b 'two' ) ] ) (<< (<< (. @ .co ) (at str_map1 2 ) ) ', ' ) (<< (<< (. @ .co ) (. str_map2 .b ) ) ', ' ) (<< (<< (. @ .co ) str_map1 ) ', ' ) (<< (. @ .co ) str_map2 )",
      "two, two, [ .1:'one', .2:'two', ], [ .a:'one', .b:'two', ]"
@@ -446,7 +455,7 @@ birds_script( "\
 
 </script><pre>
 
-// 追加可能の有無も宣言の違いがあります。
+// 配列も、宣言の違いで、追加可能/不可能が変わります。
 
 </pre><script>
 
@@ -470,8 +479,36 @@ birds_script( "\
 
 </script><pre>
 
-//  ちょっと脱線
-// switch 文は無いので関数の配列 map で実装。
+// ２次元配列も、木構造も、作れます。
+
+</pre><script>
+
+birds_script( "\
+    list_a : [ [ 1, 2, ], [ 10, 20, ], [ 100, 200, ],   ] ; ... ２次元配列\n\
+    \n\
+    list_a.{{ it.{{ @.co << it << ', ' }} }} ; ... it は予約語です。詳細は後ほど。",
+    "(: list_a [ [ 1 2 ] [ 10 20 ] [ 100 200 ] ] ) (each list_a { (each it { (<< (<< (. @ .co ) it ) ', ' ) } ) } )",
+    "1, 2, 10, 20, 100, 200, "
+) ;
+
+birds_script( "\
+    list_a : [ [ 1, 2 ], [ 10, [ 20, 21 ], 30 ], [ 100 ] ] ; ... 最後の要素の ',' は無くても動きますがバグを呼ぶのでなるべく書きましょう。うーん、コンパイルエラーにすべきか・・・悩み中\n\
+    \n\
+    put_tree : {                    ... 型がリストオブジェクト'list' の場合に再帰する木構造表示用関数を作成\n\
+        _v.type == 'list'           ... .type は予約語です。詳細は後ほど。\n\
+        ?? _v.{{ put_tree( v:it ) }}\n\
+        !! @.co << _v << ', '\n\
+    }\n\
+    \n\
+    put_tree( v:list_a ) ;",
+    "(: list_a [ [ 1 2 ] [ 10 [ 20 21 ] 30 ] [ 100 ] ] ) (: put_tree { (?? (== (. _v .type ) 'list' ) { (each _v { (call put_tree [ (: v it ) ] ) } ) } { (<< (<< (. @ .co ) _v ) ', ' ) } ) } ) (call put_tree [ (: v list_a ) ] )",
+    "1, 2, 10, 20, 21, 30, 100, "
+) ;
+
+</script><pre>
+
+// ちょっと脱線
+// switch 文は無いので関数の配列(list-object)で実装。
 
 </pre><script>
 
@@ -621,6 +658,38 @@ birds_script( "\
     5.{{ @.co << it << ', ' }}  ... 0, 1, 2, 3, 4, ",
     "(each 5 { (<< (<< (. @ .co ) it ) ', ' ) } )",
     '0, 1, 2, 3, 4, '
+) ;
+
+</script><pre>
+
+// 配列(list-object)と each の組み合わせ
+
+</pre><script>
+
+birds_script( "\
+    pi : [ 3, 1, 4, 1, 5, 9, 2, ] ;\n\
+    pi.{{\n\
+        @.co << it << ', ' ;   ... 3, 1, 4, 1, 5, 9, 2, \n\
+    }} ;",
+    "(: pi [ 3 1 4 1 5 9 2 ] ) (each pi { (<< (<< (. @ .co ) it ) ', ' ) } )",
+    '3, 1, 4, 1, 5, 9, 2, '
+) ;
+
+birds_script( "\
+    [ 3, 1, 4, 1, 5, 9, 2, ].{{\n\
+        @.co << it << ', ' ;   ... 3, 1, 4, 1, 5, 9, 2, \n\
+    }} ;",
+    "(each [ 3 1 4 1 5 9 2 ] { (<< (<< (. @ .co ) it ) ', ' ) } )",
+    '3, 1, 4, 1, 5, 9, 2, '
+) ;
+
+birds_script( "\
+    hw : [ h:'Hello', w:'World', ] ;  ... 連想配列も each できるのだけど key の扱いをどうしたものか考え中。\n\
+    hw.{{\n\
+        @.co << it << ', ' ;   ... Hello, World, \n\
+    }} ;",
+    "(: hw [ (: h 'Hello' ) (: w 'World' ) ] ) (each hw { (<< (<< (. @ .co ) it ) ', ' ) } )",
+    'Hello, World, '
 ) ;
 
 </script><pre>
@@ -823,7 +892,7 @@ birds_script( "\
         @.co << _a << ', ' ;  ... 第１引数\n\
         @.co << arg_size ;    ... 1\n\
     } ;\n\
-    foo( a:1 ) ; ... 引数は map",
+    foo( a:1 ) ; ... 引数は連想配列(list-object)で指定",
     "(: foo { (<< (<< (. @ .co ) _a ) ', ' ) (<< (. @ .co ) arg_size ) } ) (call foo [ (: a 1 ) ] )",
     '1, 1'
 ) ;
@@ -855,7 +924,7 @@ birds_script( "\
 </pre><script>
 birds_script( "\
     foo1 : {\n\
-        return x:123, y:456 ; ... 基本（引数と同じく） 連想配列 map として名前付きで返す （推奨）\n\
+        return x:123, y:456 ; ... 基本（引数と同じく） 連想配列(list-object)として名前付きで返す （推奨）\n\
     }\n\
     foo2 : {\n\
         return 123 ; ... 1つの場合でも配列 list として返す\n\
@@ -933,7 +1002,7 @@ birds_script( "\
     foo.x = 0 ;  ... NG\n\
     foo.y = 0 ;  ... OK",
     '(: Foo { (:: x 123 ) (:: .y 456 ) } ) (: foo (call Foo [  ] ) ) (= (. foo .x ) 0 ) (= (. foo .y ) 0 )',
-    "undefined variable.: .x\n"
+    "undefined variable.: foo.x\n"
 ) ;
 </script><pre>
 
@@ -954,8 +1023,48 @@ birds_script( "\
     foo.x() ;  ... NG\n\
     foo.y() ;  ... OK",
     '(: Foo { (: x {  } ) (: .y {  } ) } ) (: foo (call Foo [  ] ) ) (call (. foo .x ) [  ] ) (call (. foo .y ) [  ] )',
-    "undefined variable.: .x\n"
+    "undefined variable.: foo.x\n"
 ) ;
+</script><pre>
+
+-----------------------------------------------------------------------
+■ 型 .type
+
+// ここでは型の説明をします。
+
+BirdsScript では、強い型付け（コンパイル時に型が決まり、型のチェックをする）を目指しています。
+
+また、すべての変数や定数、そして関数や配列も型を持っています。
+
+それぞれの型を確認するには .type を使います。
+
+</pre><script>
+
+birds_script( "\
+    i : 100 ;\n\
+    s : 'Hello' ;\n\
+    f : {} ;\n\
+    l : [] ;\n\
+    m : [ a:1, b:2, ] ;  ... 連想配列も list になります。区別はしていません。\n\
+    \n\
+    @.co << i.type << ', ' ; ... int, \n\
+    @.co << s.type << ', ' ; ... str, \n\
+    @.co << f.type << ', ' ; ... func, \n\
+    @.co << l.type << ', ' ; ... list, \n\
+    @.co << m.type  ;        ... list",
+    "(: i 100 ) (: s 'Hello' ) (: f { } ) (: l [  ] ) (: m [ (: a 1 ) (: b 2 ) ] ) (<< (<< (. @ .co ) (. i .type ) ) ', ' ) (<< (<< (. @ .co ) (. s .type ) ) ', ' ) (<< (<< (. @ .co ) (. f .type ) ) ', ' ) (<< (<< (. @ .co ) (. l .type ) ) ', ' ) (<< (. @ .co ) (. m .type ) )",
+    "int, str, func, list, list"
+) ;
+birds_script( "\
+    @.co << 100.type     << ', ' ; ... int, \n\
+    @.co << 'World'.type << ', ' ; ... str, \n\
+    @.co << {}.type      << ', ' ; ... func, \n\
+    @.co << [].type      << ', ' ; ... list, \n\
+    @.co << [ a:1, b:2, ].type  ;  ... list",
+    "(<< (<< (. @ .co ) (. 100 .type ) ) ', ' ) (<< (<< (. @ .co ) (. 'World' .type ) ) ', ' ) (<< (<< (. @ .co ) (. { } .type ) ) ', ' ) (<< (<< (. @ .co ) (. [  ] .type ) ) ', ' ) (<< (. @ .co ) (. [ (: a 1 ) (: b 2 ) ] .type ) )",
+    "int, str, func, list, list"
+) ;
+
 </script><pre>
 
 -----------------------------------------------------------------------
@@ -980,22 +1089,24 @@ birds_script( "\
 
 </pre><script>
 
-birds_script( '\
+birds_script( "\
     NUM : [ ONE, TWO, ] ; ... NUM は型名になります\n\
     n :: NUM.ONE ;\n\
-    @.co << n ; ... "ONE"\n\
+    @.co << n << ', ' ; ... ONE\n\
     n = NUM.TWO ;\n\
-    @.co << n ; ... "TWO"',
-    '(: NUM [ ONE TWO ] ) (:: n (. NUM .ONE ) ) (<< (. @ .co ) n ) (= n (. NUM .TWO ) ) (<< (. @ .co ) n )',
-    ''
+    @.co << n << ', ' ; ... TWO\n\
+    n = NUM.ZERO ;      ... NG undefined",
+    "(: NUM [ ONE TWO ] ) (:: n (. NUM .ONE ) ) (<< (<< (. @ .co ) n ) ', ' ) (= n (. NUM .TWO ) ) (<< (<< (. @ .co ) n ) ', ' ) (= n (. NUM .ZERO ) )",
+    ""
 ) ;
-birds_script( '\
+birds_script( "\
     n :: [ ONE, TWO, ].ONE ; ... 型名無しでも利用できます\n\
-    @.co << n ; ... "ONE"\n\
-    n = TWO ;\
-    @.co << n ; ... "TWO"',
-    '(:: n (. [ ONE TWO ] ONE ) ) (<< (. @ .co ) n ) (= n TWO ) (<< (. @ .co ) n )',
-    ''
+    @.co << n << ', ' ; ... ONE\n\
+    n = TWO ;\n\
+    @.co << n << ', ' ; ... TWO\n\
+    n = ZERO ;          ... NG undefined",
+    "(:: n (. [ ONE TWO ] .ONE ) ) (<< (<< (. @ .co ) n ) ', ' ) (= n TWO ) (<< (<< (. @ .co ) n ) ', ' ) (= n ZERO )",
+    ""
 ) ;
 
 </script><pre>
@@ -1084,18 +1195,21 @@ birds_script( '\
 </pre><script>
 
 birds_script( '\
+    --- １、return を使うパターン\n\
     fact : { return ( _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 ) ; }  ;\n\
     @.co << fact( n:3 ).0 ;',
     '(: fact { (return [ ( (?? (<= _n 1 ) { 1 } { (* _n (. (call fact [ (: n (- _n 1 ) ) ] ) .0 ) ) } ) ) ] ) } ) (<< (. @ .co ) (. (call fact [ (: n 3 ) ] ) .0 ) )',
     '6'
 ) ;
 birds_script( '\
+    --- ２、public member を使うパターン\n\
     fact2 : { .r : ( _n <= 1 ?? 1 !! _n * fact2( n:_n-1 ).r ) ; } ;\n\
     @.co << fact2( n:3 ).r ;',
     '(: fact2 { (: .r ( (?? (<= _n 1 ) { 1 } { (* _n (. (call fact2 [ (: n (- _n 1 ) ) ] ) .r ) ) } ) ) ) } ) (<< (. @ .co ) (. (call fact2 [ (: n 3 ) ] ) .r ) )',
     '6'
 ) ;
 birds_script( '\
+    --- ３、戻り値を直接使うパターン\n\
     fact3 : { _n <= 1 ?? 1 !! _n * fact3( n:_n-1 ).0 } ;\n\
     @.co << fact3( n:3 ).0 ;',
     '(: fact3 { (?? (<= _n 1 ) { 1 } { (* _n (. (call fact3 [ (: n (- _n 1 ) ) ] ) .0 ) ) } ) } ) (<< (. @ .co ) (. (call fact3 [ (: n 3 ) ] ) .0 ) )',
@@ -1286,23 +1400,52 @@ heap_sort : {
 
 ... 以下優先度順対応項目
 
-... ループ内のundefined が止まらない。throwすればいい？
-
 ... a : [] ; b :: a ; で a が更新されるのを阻止する。::はコピーなんだよ。
 
 ... pair ( range ) のサポート   1..10 とかね。
 
 ... +, -, ?, ! の４文字はシンボル（英数字）として認識。
 
-... 引数のデフォルト値、サポート。
-... a : ( _a == undefined ? 0 : _a ) ;
-... a : _a || 0 ; ... この書き方はいまひとつ好きになれない。
+... 例外処理 catch throw, ->, <- で書いてみる？
+
+　aaa -> {}   ... catch
+
+ aaa <- []   ... throw
+
+型付けモデルは？
+
+-> 強い型付け(strong typing)　Java
+   弱い型付け(weak typing) C, PHP
+
+-> 静的型付け(static typing) コンパイル時に型が決まる C++, Java
+   動的型付け(dynamic typing) 実行時に型が決まる Ruby, PHP
+
+プログラミングモデルは？
+
+   オブジェクト指向（クラスベース） C++, Java, C#, Ruby, PHP, Python, Scala
+-> オブジェクト指向（プロトタイプベース） JavaScript, Io, Lua, Self
+-> ダックタイピング Ruby, Python, Smalltalk, C++/template
+
+   関数型 Scala, Erlang, Clojure, Haskell, Scheme, Lisp
+-> 手続き型 Basic, C, Fortran, Pascal
+   論理ベース Plolog
+   ハイブリッド
+
+-> コンパイラ C, C++, Fortran, Pascal
+-> インタプリタ(JIT) Java, Ruby, JavaScript, Perl, PHP, Basic
+
+
+
 
 ... "\n" サポート
 
 ... 文字列エスケープシーケンス、シンタックスシュガー"{aaa}" -> ''+aaa+'' サポート(evalではない)
 
 ... test(), assert(), trace() のサポート
+
+... 引数のデフォルト値、サポート。
+... a : ( _a == undefined ? 0 : _a ) ;
+... a : _a || 0 ; ... この書き方はいまひとつ好きになれない。
 
 ... float 演算サポート
 
@@ -1313,8 +1456,6 @@ heap_sort : {
 ... コールスタックの限界超え例外のサポート。
 
 
-
-
 ... heap_sort( a:p, n::14 ) ; @.co << p ;
 ... あれ？ 0 が残っている
 
@@ -1322,6 +1463,8 @@ quick_sort( a:p, first:0, last:14 ) ; @.co << p ; ... @.co << p.sort()  って�
 ... 基底クラス list のメソッド拡張。こんな感じ→ list << ( .sort : { quick_sort( a:_, first:0, last:_.length ) } ) ;
 
 ... list.test : { @.co << _ ; } ; [ 1, 2, 3, ].test() ; ... [ 1, 2, 3, ]
+
+... .test : { @.co << _ ; } ; [ 1, 2, 3, ].test() ; ... [ 1, 2, 3, ]
 
  -->
 
