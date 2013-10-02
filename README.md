@@ -1,5 +1,5 @@
 つい、カッ！となってLL言語を作りはじめてしまいました。名前は「BirdsScript」です。
-（2013/09/10 現在、未完成。）
+（2013/10/02 現在、未完成。JavaScriptによる試作中。）
 
 Source Layout
 =============
@@ -35,27 +35,28 @@ Source Layout
 
   ・空の変数は存在できない（変数の値が未定という状態は無い）
 
-  ・コンテナにも更新の可、不可がある。
-  （STLでいうコンテナ。JavaやC#でいうコレクション。配列：listと 連想配列map の両方の機能を持つ）
-
   ・カプセル化がデフォルト。メンバは private になる（デフォルトで隠蔽され、外部からのアクセス可能にするには手間（'.'の記述）が必要）
+
+  ・参照領域がブロックスコープで区切られていて必ず解放される（不要になった変数が参照できてしまうのはバグを埋め込みやすいと考えて）
+
+  ・配列にも更新の可/不可がある。
 
   ・ポインタは存在しない（ポインタはバグの温床という考え）
 
-  ・class継承は存在しない。代わりにprototype系のオブジェクト継承を考えています。（実装の継承は過度に隠ぺいされて可読性、メンテナンス性・保守性が悪いと考えて）
+  ・class継承は存在しない。代わりにprototype系の継承がある。（実装の継承は過度に隠ぺいされて可読性、メンテナンス性・保守性が悪いと考えて）
 
-  ・GCではなく、ブロックスコープで解放され、デストラクタが走ります（GCは処理が重いときに走り始めるので嫌いです）
+  ・GCはない。ブロックスコープの単位でデストラクタが走りリソースが解放されます（GCは処理が重いときに走り始めるので嫌いです）
+
+  ・タイプセーフ（静的型付け）な言語にしたい思いは強い（インターフェースが一致しない、型が一致しない場合はエラー。予定＆希望＆未実装）
 
   ・例外を多数実装。無限ループする前に例外が発生してループを抜けます。（未実装ですが、ゼロ除算、最大最小値超え、範囲外アクセス、スタックメモリ枯渇、などなど）
-
-  ・タイプセーフ（静的型付け）な言語にしたい思いは強い（インターフェースが一致しない、型が一致しない場合はコンパイルエラー。予定＆希望＆未実装）
 
 「大規模開発に耐えられる」
 --------
 
-  ・オブジェクト指向（クラスとか、オブジェクトとか、カプセル化とか）の概念は入っている
+  ・オブジェクトの概念がある。カプセル化の概念がある。クラス系ではなくプロトタイプ系。
 
-  ・STLのようなジェネリックな言語にしたい思いは強いです（希望＆未実装）。
+  ・STLのようなジェネリックな言語にしたい思いは強いです（現状、引数の型チェックはわざとしていない）。
 
   ・テストも重視。デバッグも重視。（未実装）
 
@@ -64,13 +65,11 @@ Source Layout
 「使って楽しい」
 --------
 
-  ・コンテナがある。
+  ・配列がある。C言語の配列ではなく、C++/STLでいうコンテナ。JavaやC#でいうコレクション。配列：listと 連想配列map の両方の機能を持つ。番号のつく連想配列のこと。
 
-  ・each がある。
+  ・each がある。最近の言語では当たり前ですね。
 
-  ・関数とクラスは同じ記述、同じ実装。
-
-  ・無名関数がある。無名クラスがある。
+  ・無名関数がある。
 
   ・クロージャーも・・・？
 
@@ -88,13 +87,9 @@ Source Layout
 型は現在、整数型(int)と文字列型(str)しかありません。早めに、bool, enum（シンボル？）はサポートしたいと思っています。
 float やその他の型は外部のライブラリとして用意するつもり。（言語そのもののの実装を軽くしたいので。）
 
-クラスやオブジェクトのようなものは JavaScript と同じようなプロトタイプで用意する方向です。
-継承（実装の継承は可読性とメンテナンス性が悪い）は嫌いなので、おそらく永遠にサポートされないでしょう。
-
-逆に STL のようなジェネリックプログラミングは優先度高めでサポートします。
-
 そしてテストとデバッグのしやすさを売りにしたいので test() や assert(), trace() とかを早めに実装したい。
 
+よろしくお願いします。
 
 
 The BSD 2-Clause License
@@ -105,8 +100,8 @@ All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
-　Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-　Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
