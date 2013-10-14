@@ -2,7 +2,7 @@
 <html lang="ja">
 <!--
 つい、カッ！となってLL言語を作りはじめてしまいました。名前は「BirdsScript」です。
-（2013/10/02 現在、未完成。JavaScriptによる試作中。）
+（2013/10/07 現在、未完成。JavaScriptによる試作中。）
 
 Source Layout
 =============
@@ -91,6 +91,33 @@ Source Layout
 float やその他の型は外部のライブラリとして用意するつもり。（言語そのもののの実装を軽くしたいので。）
 
 そしてテストとデバッグのしやすさを売りにしたいので test() や assert(), trace() とかを早めに実装したい。
+
+■ 型付けモデルは？
+
+-> 強い型付け(strong typing) Java
+   弱い型付け(weak typing) C, PHP
+
+-> 静的型付け(static typing) コンパイル時に型が決まる C++, Java
+   動的型付け(dynamic typing) 実行時に型が決まる Ruby, PHP
+
+
+■ オブジェクト指向は？
+-> カプセル化 (いわゆる構造化と隠蔽 private)
+   継承
+        クラスベース C++, Java, C#, Ruby, PHP, Python, Scala
+->      プロトタイプベース JavaScript, Io, Lua, Self
+-> 多態性（ダックタイピング） Ruby, Python, Smalltalk, C++/template
+
+
+■ プログラミングモデルは？
+
+   関数型 Scala, Erlang, Clojure, Haskell, Scheme, Lisp
+-> 手続き型 Basic, C, Fortran, Pascal
+   論理ベース Plolog
+
+   コンパイラ C, C++, Fortran, Pascal
+-> インタプリタ(JIT) Java, Ruby, JavaScript, Perl, PHP, Basic
+
 
 よろしくお願いします。
 
@@ -385,7 +412,7 @@ birds_script( "\
 ) ;
 </script><pre>
 
-// スコープ'(',')'には１つだけ値を持たせることができます。
+// スコープ'(',')'にも値を持たせることができます。
 
 // すみません。out ↓はまだ使わないでください。仕様を再検討中です。
 // 予約語は'out'。return 文に似ているけど処理は中断されないので注意。
@@ -423,10 +450,10 @@ birds_script( "\
 -----------------------------------------------------------------------
 ■配列 '[', ']'。
 
-// ここ BirdsScript では「リストオブジェクト(list-object)と呼ぶことにしました。
+// BirdsScript でサポートしている配列は「リストオブジェクト(list-object)」と呼ぶことにしました。
 // 配列でもあり、連想配列でもあり、オブジェクトでもある汎用的な入れ物なので。
 
-// STLの std::vector, std::map の両方の機能が混在しているコンテナ。
+// STLの std::vector, std::map の両方の機能が混在しているコンテナになります。
 
 </pre><script>
 
@@ -522,7 +549,7 @@ birds_script( "\
         unmatch : { @.co << 'unmatch' }, ... 一致しなかった時に呼ばれる関数 ... unmatch は予約語です。\n\
     ] ;\n\
     \n\
-    @.co << sw << ', ' ; ... [ .1:{}, .2:{}, .unmatch:{}, ]\n\
+    @.co << sw << ', ' ; ... [ {}, {}, {}, ]\n\
     sw[2]()  ;           ... two,\n\
     sw[99]() ;           ... unmatch",
     "(: sw [ (: 1 { (<< (. @ .co ) 'one, ' ) } ) (: 2 { (<< (. @ .co ) 'two, ' ) } ) (: unmatch { (<< (. @ .co ) 'unmatch' ) } ) ] ) (<< (<< (. @ .co ) sw ) ', ' ) (call (at sw 2 ) [  ] ) (call (at sw 99 ) [  ] )",
@@ -544,7 +571,7 @@ birds_script( "\
     sw << ( 2 : { @.co << 'two, ' } ) ;\n\
     sw << ( unmatch : { @.co << 'unmatch' } ) ;  ... 一致しなかった時に呼ばれる関数\n\
     \n\
-    @.co << sw << ', ' ; ... [ .1:{}, .2:{}, .unmatch:{}, ]\n\
+    @.co << sw << ', ' ; ... [ {}, {}, {}, ]\n\
     sw[2]()  ;           ... two,\n\
     sw[99]() ;           ... unmatch",
     "(:: sw [  ] ) (<< sw ( (: 1 { (<< (. @ .co ) 'one, ' ) } ) ) ) (<< sw ( (: 2 { (<< (. @ .co ) 'two, ' ) } ) ) ) (<< sw ( (: unmatch { (<< (. @ .co ) 'unmatch' ) } ) ) ) (<< (<< (. @ .co ) sw ) ', ' ) (call (at sw 2 ) [  ] ) (call (at sw 99 ) [  ] )",
@@ -582,11 +609,10 @@ birds_script( "\
 // ちなみに無限ループではなくて、リミット上限に到達すると例外が発生してループを終わります。
 // break[] 文が無いとワーニングの予定（未実装）。できる限り安全側に倒したい。
 
-// たとえば C言語風の for ( int i=0 ; i < 10 ; i++ ) ... をあえて書くなら
-
 </pre><script>
 
 birds_script( "\
+    --- たとえば C言語風の for ( int i=0 ; i < 10 ; i++ ) ... をあえて書くなら\n\
     i :: 0 ;\n\
     {{\n\
         i >= 10 ?? break[] ;\n\
@@ -595,7 +621,7 @@ birds_script( "\
         \n\
         ++i ; ... C言語などの後方 i++ と異なり「先に実行される」のであえて前方のみにしました。\n\
     }}",
-    "(:: i 0 ) (loop noname { (?? (>= i 10 ) { (break noname [  ] ) } ) (<< (<< (. @ .co ) i ) ', ' ) (++ i ) } )",
+    "(:: i 0 ) (loop { (?? (>= i 10 ) { (break [  ] ) } ) (<< (<< (. @ .co ) i ) ', ' ) (++ i ) } )",
     '0, 1, 2, 3, 4, 5, 6, 7, 8, 9, '
 ) ;
 
@@ -615,7 +641,7 @@ birds_script( "\
         \n\
         @.co << i << ', ' ;  ... i を表示\n\
     }}",
-    "(:: i 0 ) (loop noname { (?? (> (++ i ) 20 ) { (break noname [  ] ) } ) (?? (== (% i 15 ) 0 ) { ( (<< (. @ .co ) 'FizzBuzz, ' ) (continue noname ) ) } ) (?? (== (% i 3 ) 0 ) { ( (<< (. @ .co ) 'Fizz, ' ) (continue noname ) ) } ) (?? (== (% i 5 ) 0 ) { ( (<< (. @ .co ) 'Buzz, ' ) (continue noname ) ) } ) (<< (<< (. @ .co ) i ) ', ' ) } )",
+    "(:: i 0 ) (loop { (?? (> (++ i ) 20 ) { (break [  ] ) } ) (?? (== (% i 15 ) 0 ) { ( (<< (. @ .co ) 'FizzBuzz, ' ) (continue ) ) } ) (?? (== (% i 3 ) 0 ) { ( (<< (. @ .co ) 'Fizz, ' ) (continue ) ) } ) (?? (== (% i 5 ) 0 ) { ( (<< (. @ .co ) 'Buzz, ' ) (continue ) ) } ) (<< (<< (. @ .co ) i ) ', ' ) } )",
     '1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz, 16, 17, Fizz, 19, Buzz, '
 ) ;
 
@@ -636,7 +662,7 @@ birds_script( "\
     }} ;\n\
     \n\
     @.co << a ;       ... [ 10, ] list-object を返す",
-    '(: a (loop noname { (break noname [ 10 ] ) (continue noname ) } ) ) (<< (. @ .co ) a )',
+    '(: a (loop { (break [ 10 ] ) (continue ) } ) ) (<< (. @ .co ) a )',
     '[ 10, ]'
 ) ;
 birds_script( "\
@@ -649,7 +675,7 @@ birds_script( "\
     }} ;\n\
     \n\
     @.co << a ;      ... 10",
-    '(: a (loop noname { (break noname [ 10 ] ) (continue noname ) } ) ) (<< (. @ .co ) a )',
+    '(: a (loop { (break [ 10 ] ) (continue ) } ) ) (<< (. @ .co ) a )',
     'NG'
 ) ;
 
@@ -659,8 +685,6 @@ birds_script( "\
 
 // each は '.{{', '}}'。 'it' はループ内で使用できる変数（イテレータの意味。it は予約語です）
 // 変数のイテレータであれば、上書き可能です。
-
-    5.{{ @.co << it << ', ' }}  ... 0, 1, 2, 3, 4,
 
     5.{{ @.co << it << ', ' }}  ... 0, 1, 2, 3, 4,
 
@@ -723,7 +747,7 @@ birds_script( "\
         it == 5 ?? break[ 555 ] ;\n\
     }} ;\n\
     @.co << b ; ... [ 555 ]",
-    "(: b (each 10 { (<< (<< (. @ .co ) it ) ', ' ) (?? (== it 5 ) { (break noname [ 555 ] ) } ) } ) ) (<< (. @ .co ) b )",
+    "(: b (each 10 { (<< (<< (. @ .co ) it ) ', ' ) (?? (== it 5 ) { (break [ 555 ] ) } ) } ) ) (<< (. @ .co ) b )",
     '0, 1, 2, 3, 4, 5, [ 555, ]'
 ) ;
 
@@ -775,57 +799,6 @@ birds_script( "\
     'STRING'
 ) ;
 
-</script><pre>
-
-// 以下、例外と同等な機能なので・・・実装検討中
-
-// ループ, 多重ループを抜ける break, continue (構造化された goto)
-
-    (
-        {{
-            foo()==true ?? break exit_scope[] ; ... 関数 exit_scope をコールして, exit_scope のあるスコープの外へ飛ぶ
-            foo()==true ?? exit  exit_scope[] ; ... 関数 exit_scope をコールして, exit_scope のあるスコープの外へ飛ぶ
-            foo()==true ?? throw exit_scope[] ; ... 関数 exit_scope をコールして, exit_scope のあるスコープの外へ飛ぶ
-            foo()==true ?? error exit_scope[] ; ... 関数 exit_scope をコールして, exit_scope のあるスコープの外へ飛ぶ
-            foo()==true ?? goto  exit_scope[] ; ... 関数 exit_scope をコールして, exit_scope のあるスコープの外へ飛ぶ
-        }}
-
-        ...
-
-        exit_scope ->> {} ; ... 'catch' <- ここへ飛ぶ（scopeの外へ抜ける）
-        exit_scope, exit1, exit2, exit3 ->> {} ;
-    )
-
-    (
-        restart_scope ->> {} ; ... 'label' <- ここへ飛ぶ（このscopeから再実行）
-        restart_scope, restart1, restart2, restart3 ->> {} ; ... <- ここへ飛ぶ（このscopeから再実行）
-
-        ...
-
-        {{
-            foo()==true ?? continue restart_scope[] ; ... 関数 restart_scope をコールして, restart_scope のあるスコープから再実行
-        }}
-    )
-
-
-</pre><script>
-// // on_button(
-//     "    {{  label a ;\n" +
-//     "        ... \n" +
-//     "        {{\n" +
-//     "            break a ; ... label a のあるスコープの外へ飛ぶ\n" +
-//     "        }}\n" +
-//     "    }}  ... <- ここへ飛ぶ（外へ抜ける）\n"
-// ,'OK') ;
-// on_button(
-//     "    {{  label bb ; ... <- ここへ飛ぶ（ループを繰り返す）\n" +
-//     "        ...\n" +
-//     "        {{\n" +
-//     "            continue bb ; ... label bb のあるスコープの最初に飛ぶ\n" +
-//     "        }}\n" +
-//     "    }}\n"
-// ,'OK'
-// );
 </script><pre>
 
 -----------------------------------------------------------------------
@@ -1134,36 +1107,136 @@ birds_script( "\
 
 </script><pre>
 
+// 以下、例外と同等な機能なので・・・実装検討中
+
+// ループ, 多重ループを抜ける break, continue (構造化された goto)を例外機能として実装。
+
+予約語 catch, ->>, throw, error, exit,
+予約されたイベント  undefine
+
+</pre><script>
+
+birds_script( "\
+    cnt :: 0 ;\n\
+    @.co << ( ... scope の値を表示してみる\n\
+    \n\
+        catch exit_scope1 ->> { _e } ; ... throw, error, exit でこの関数{}を実行しこのscopeの外へ抜ける。scopeの値はこの関数{}の戻り値になる。\n\
+        catch exit_scope10, exit11, exit12, exit13 ->> {} ; ... 複数個同時に書けます\n\
+    \n\
+        exit_scope0 ->> { _e } ; ... 'catch' は省略可能。ただし可読性を考慮して推奨はしない。\n\
+        exit_scope00, exit01, exit02, exit03 ->> {} ;\n\
+    \n\
+        @.co << cnt << ',' ;... 例外時には実行されない箇所\n\
+    \n\
+        {{\n\
+            @.co << cnt << ',' ;... 無限ループ\n\
+            \n\
+            ++cnt > 5 ?? throw exit_scope1( e:'throw' ) ; ... 関数 exit_scope をコールして, exit_scope のあるスコープの外へ飛ぶ\n\
+            ++cnt > 5 ?? error exit_scope1( e:'error' ) ; ... 関数 exit_scope をコールして, exit_scope のあるスコープの外へ飛ぶ\n\
+            ++cnt > 5 ?? exit  exit_scope1( e:'exit'  ) ; ... 関数 exit_scope をコールして, exit_scope のあるスコープの外へ飛ぶ\n\
+            ++cnt > 5 ?? exit_scope0( e:'noname') ;       ... throw, error, exit は省略可能。ただし可読性を考慮して推奨はしない。\n\
+        }}\n\
+    ) ;",
+    "",
+    ""
+) ;
+
+birds_script( "\
+    --- throw -> catch ex. \n\
+    boo : (\n\
+        catch exit_scope1 ->> { _a } ; ... 'exit' がこのscopeの値になる\n\
+    \n\
+        foo==true ?? throw exit_scope1( a:'exit' ) ; ... 関数 exit_scope をコールして, exit_scope のあるスコープの外へ飛ぶ\n\
+    \n\
+        'boo'\n\
+    ) ;\n\
+    @.co << boo ; ... 'exit' か 'boo' になる。",
+    "",
+    ""
+) ;
+
+birds_script( "\
+    --- undefine ex.\n\
+    foo : {\n\
+        a : ( undefine ->> 99 ; _a ) ; ... もし _a が未定義なら aには 99 が設定され、定義されているなら _a の値が設定される。\n\
+        @.co << a << ',' ;             ... a を表示してみる。\n\
+    } ;\n\
+    foo( a:55 );\n\
+    foo( b:77 );\n\
+    foo();",
+    "",
+    ""
+) ;
+
+</script><pre>
+
+予約語 repeat, label, <<-, until, goto
+
+</pre><script>
+
+birds_script( "\
+    (\n\
+        repeat restart_scope1 <<- {} ; ... <- untile でこのscopeから再実行。関数が実行されるが戻り値を使う事はできない。\n\
+        repeat restart_scope10, restart11, restart12, restart13 <<- {} ; ... 複数個同時に書けます\n\
+    \n\
+        label  restart_scope2 <<- {} ; ... <- goto でこのscopeから再実行。関数が実行されるが戻り値を使う事はできない。\n\
+        label  restart_scope20, restart21, restart22, restart23 <<- {} ;\n\
+    \n\
+        restart_scope0 <<- {} ; ... repeat, label は省略可能。ただし可読性を考慮して省略は推奨しない。\n\
+        restart_scope00, restart01, restart02, restart03 <<- {} ;\n\
+    \n\
+        ... 例外時にも実行される箇所\n\
+    \n\
+        --- 例外機能でループ処理が作れます\n\
+        {{\n\
+            foo()==true ?? until restart_scope1() ; ... 関数 restart_scope をコールして, restart_scope のあるスコープから再実行\n\
+            foo()==true ?? goto  restart_scope2() ; ... 関数 restart_scope をコールして, restart_scope のあるスコープから再実行\n\
+            foo()==true ?? restart_scope0() ;       ... until, goto は省略可能。ただし可読性を考慮して省略は推奨しない。\n\
+        }}\n\
+    )",
+    "",
+    ""
+) ;
+
+</script><pre>
+
 // @.xxxxって書いたらグローバル ... の予定
 
-    @.co : use SystemConsoleOut ;
+    use SystemConsoleOut.bs ;  ... use : いわゆる C言語でいう include
+    @.co : SystemConsoleOut() ;
 
-    @.log : use DebugLogStream ;
+    use DebugLogStream.bs ;    ... use : いわゆる C言語でいう include
+    @.log : DebugLogStream() ;
+
+    aaa : 100 ; ... と書いても aaa はグローバルではないです。
+
+    @.aaa : 100 ; ... と書けばグローバル。外から参照できます。
 
 
 // 例外も、構想のみで、実装されていません。
 
-    @.ex = use Exception ;
+    use Exception.bs ;
+    @.ex : Exception() ;
 
     @.ex.limit = { @.co << "limit over" ; } ; ... 既存関数の上書き
 
 
     // 例外はscopeに対する記述。後に書くと有効にならない（飛ばされる）ので必ず先に書いてください
-    ( exception ->> { .. } ; ... 例外の記述
+    ( catch exception ->> { .. } ; ... 例外の記述
 
-        ( error     ->> { .. } ; ... 例外の記述 上書き
-          undefined ->> { .. } ; ... 例外 undefined の記述
+        ( catch error     ->> { .. } ; ... 例外の記述 上書き
+          catch undefined ->> { .. } ; ... 例外 undefined の記述
 
         )
     )
 
 
     // 例外はscopeに対する記述。後に書くと有効にならない（飛ばされる）ので必ず先に書いてください
-    (  catch ->> { @.co << 'catch 1: ' << it  } ; ... 例外の記述
+    (  catch ev ->> { @.co << 'catch 1: ' << _e ; } ; ... 例外の記述
 
-        (  catch ->> { @.co << 'catch 2: ' << it  } ; ... 例外の記述
+        ( catch ev ->> { @.co << 'catch 2: ' << _e ; error ev( _e ) ; } ; ... 例外の記述
 
-            a != 0 ?? error 'ERROR' ; ... break と同じように処理を中断して catch を実行しスコープを抜ける
+            a != 0 ?? error ev( e:'ERROR' ) ; ... break と同じように処理を中断して catch を実行しスコープを抜ける
 
         )
     )
@@ -1172,26 +1245,54 @@ birds_script( "\
 
 // イベントは、言語仕様ではなくライブラリ仕様の予定
 
-    @.ev = use Event ;
+    use Event.bs ;
+    @.ev : Event() ;
 
     @.ev.set_timer : ( msec:1000, on:{ @.co << "now!" }, ) ;
 
     @.ev << [ msec:1000, on:{ @.co << "now!" }, ] ; ... こんなふうに書いてみるとか
 
 
+// float 浮動小数点演算も Math もライブラリの予定
+
+    use Float.bs ;
+
+    f1 : Float( '99.99' ) ;
+
+    @.co << f1 ;      ... 99.99
+    @.co << f1.type ; ... Float
+
+    f2 : Float( 100 ) ;
+
+    @.co << f2 ;      ... 100.0
+    @.co << f2.type ; ... Float
+
+    f3 : '99.99'.Float ;
+
+    @.co << f3 ;      ... 99.99
+    @.co << f3.type ; ... Float
+
+    f : 99.99 ;  ... これをなんとか書けるようにしたい
+
+    @.co << f ;      ... 99.99
+    @.co << f.type ; ... Float
+
+    f : 99.99.Float ;  ... もしくはこれ
+
+    @.co << f ;      ... 99.99
+    @.co << f.type ; ... Float
 
 
-use Float ;
+    f10 : f1 + 100 ;
 
-f : 99.99 ;
+    @.co << f10 ;      ... 199.99
+    @.co << f10.type ; ... Float
 
-@.co << f ; ... 99.99
-@.co << f.type ; ... Float
+    f11 : 100 + f1 ;   ... f11 : 100 + f1.int ;
 
-f2 : '99.99'.Float ;
+    @.co << f11 ;      ... 199
+    @.co << f11.type ; ... int
 
-@.co << f2 ; ... 99.99
-@.co << f2.type ; ... Float
 
 以上です。
 
@@ -1272,7 +1373,7 @@ birds_script( "\
         }}\n\
     } ;\n\
     @.co << prime( n:100 ).rtn ;\n",
-    "(: prime { (:: .rtn '' ) (:: tabl [  ] ) (each _n { (<< tabl false ) } ) (= (at tabl 0 ) true ) (= (at tabl 1 ) true ) (each _n { (: i it ) (?? (== (at tabl i ) false ) { ( (<< (<< .rtn i ) ', ' ) (:: j i ) (loop noname { (+= j i ) (?? (>= j _n ) { (break noname [  ] ) } { (= (at tabl j ) true ) } ) } ) ) } ) } ) } ) (<< (. @ .co ) (. (call prime [ (: n 100 ) ] ) .rtn ) )",
+    "(: prime { (:: .rtn '' ) (:: tabl [  ] ) (each _n { (<< tabl false ) } ) (= (at tabl 0 ) true ) (= (at tabl 1 ) true ) (each _n { (: i it ) (?? (== (at tabl i ) false ) { ( (<< (<< .rtn i ) ', ' ) (:: j i ) (loop { (+= j i ) (?? (>= j _n ) { (break [  ] ) } { (= (at tabl j ) true ) } ) } ) ) } ) } ) } ) (<< (. @ .co ) (. (call prime [ (: n 100 ) ] ) .rtn ) )",
     "2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, "
 ) ;
 
@@ -1289,7 +1390,7 @@ birds_script( "\
     }\n\
     \n\
     fib( max:2000 ).r.{{ @.co << it << ', ' }} ; ... 0 1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597",
-    "(: fib { (:: a 0 ) (:: b 1 ) (:: r [  ] ) (loop noname { (?? (> a _max ) { (break noname [  ] ) } ) (<< r a ) (: c (+ a b ) ) (= a b ) (= b c ) } ) (: .r r ) } ) (each (. (call fib [ (: max 2000 ) ] ) .r ) { (<< (<< (. @ .co ) it ) ', ' ) } )",
+    "(: fib { (:: a 0 ) (:: b 1 ) (:: r [  ] ) (loop { (?? (> a _max ) { (break [  ] ) } ) (<< r a ) (: c (+ a b ) ) (= a b ) (= b c ) } ) (: .r r ) } ) (each (. (call fib [ (: max 2000 ) ] ) .r ) { (<< (<< (. @ .co ) it ) ', ' ) } )",
     "0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, "
 ) ;
 
@@ -1331,7 +1432,7 @@ birds_script( "\
     p :: [3,1,4,1,5,9,2,6,5,3,5,8,9,7,9] ;\n\
     quick_sort( a:p, first:0, last:14 ) ;\n\
     p.{{ @.co << it << ', ' }} ; ... 1, 1, 2, 3, 3, 4, 5, 5, 5, 6, 7, 8, 9, 9, 9, ",
-    "(: quick_sort { (: x (at _a (/ ( (+ _first _last ) ) 2 ) ) ) (:: i _first ) (:: j _last ) (loop noname { (loop noname { (?? (< (at _a i ) x ) { (++ i ) } { (break noname [  ] ) } ) } ) (loop noname { (?? (< x (at _a j ) ) { (-- j ) } { (break noname [  ] ) } ) } ) (?? (>= i j ) { (break noname [  ] ) } ) (: t (at _a i ) ) (= (at _a i ) (at _a j ) ) (= (at _a j ) t ) (++ i ) (-- j ) } ) (-- i ) (?? (< _first i ) { (call quick_sort [ (: a _a ) (: first _first ) (: last i ) ] ) } ) (++ j ) (?? (< j _last ) { (call quick_sort [ (: a _a ) (: first j ) (: last _last ) ] ) } ) } ) (:: p [ 3 1 4 1 5 9 2 6 5 3 5 8 9 7 9 ] ) (call quick_sort [ (: a p ) (: first 0 ) (: last 14 ) ] ) (each p { (<< (<< (. @ .co ) it ) ', ' ) } )",
+    "(: quick_sort { (: x (at _a (/ ( (+ _first _last ) ) 2 ) ) ) (:: i _first ) (:: j _last ) (loop { (loop { (?? (< (at _a i ) x ) { (++ i ) } { (break [  ] ) } ) } ) (loop { (?? (< x (at _a j ) ) { (-- j ) } { (break [  ] ) } ) } ) (?? (>= i j ) { (break [  ] ) } ) (: t (at _a i ) ) (= (at _a i ) (at _a j ) ) (= (at _a j ) t ) (++ i ) (-- j ) } ) (-- i ) (?? (< _first i ) { (call quick_sort [ (: a _a ) (: first _first ) (: last i ) ] ) } ) (++ j ) (?? (< j _last ) { (call quick_sort [ (: a _a ) (: first j ) (: last _last ) ] ) } ) } ) (:: p [ 3 1 4 1 5 9 2 6 5 3 5 8 9 7 9 ] ) (call quick_sort [ (: a p ) (: first 0 ) (: last 14 ) ] ) (each p { (<< (<< (. @ .co ) it ) ', ' ) } )",
     "1, 1, 2, 3, 3, 4, 5, 5, 5, 6, 7, 8, 9, 9, 9, "
 );
 
@@ -1449,63 +1550,36 @@ heap_sort : {
 
 ... 以下優先度順対応項目
 
-... a : [] ; b :: a ; で a が更新されるのを阻止する。::はコピーなんだよ。
-
-... pair ( range ) のサポート   1..10 とかね。
-
-... +, -, ?, ! の４文字はシンボル（英数字）として認識。
-
-... 例外処理 catch throw, ->>, <<- で書いてみる？
+...  例外処理 catch throw, ->>, <<- で書いてみる？
 
  aaa ->> {} ;  ... catch, label
 
+... a : [] ; b :: a ; で a が更新されるのを阻止する。::はコピーなんだよ。
 
+... range のサポート   1..10 とかね。
+... ライブラリ use Range ; でのサポートにする？？ http://taiju.hatenablog.com/entry/20100323/1269299676
 
-■ 型付けモデルは？
-
--> 強い型付け(strong typing) Java
-   弱い型付け(weak typing) C, PHP
-
--> 静的型付け(static typing) コンパイル時に型が決まる C++, Java
-   動的型付け(dynamic typing) 実行時に型が決まる Ruby, PHP
-
-■ プログラミングモデルは？
-
-   オブジェクト指向
-    -> カプセル化
-       継承
-            クラスベース C++, Java, C#, Ruby, PHP, Python, Scala
-    ->      プロトタイプベース JavaScript, Io, Lua, Self
-    -> 多態性（ダックタイピング） Ruby, Python, Smalltalk, C++/template
-
-
-   関数型 Scala, Erlang, Clojure, Haskell, Scheme, Lisp
--> 手続き型 Basic, C, Fortran, Pascal
-   論理ベース Plolog
-   ハイブリッド
-
-   コンパイラ C, C++, Fortran, Pascal
--> インタプリタ(JIT) Java, Ruby, JavaScript, Perl, PHP, Basic
-
-
+... +, -, ?, ! の４文字はシンボル（英数字）として認識。
 
 ... "\n" サポート
 
 ... 文字列エスケープシーケンス、シンタックスシュガー"{aaa}" -> ''+aaa+'' サポート(evalではない)
 
-... test(), assert(), trace() のサポート
-
-... 引数のデフォルト値、サポート。
-... a : ( _a == undefined ? 0 : _a ) ;
-... a : _a || 0 ; ... この書き方はいまひとつ好きになれない。
-
 ... float 演算サポート
 
 ... 多倍長演算
 
+... test(), assert(), trace() のサポート
+
 ... 配列の範囲外アクセス、連想配列のunmatch、スタックメモリの枯渇。それぞれ例外を投げる。
 ... ゼロ除算、最大値最小値超えも。
 ... コールスタックの限界超え例外のサポート。
+
+
+... 引数のデフォルト値、サポート。
+... a : ( undefined ->> 0 ; _a ) ;
+... a : ( _a.undefined == true ? 0 : _a ) ;
+... a : _a || 0 ; ... この書き方はいまひとつ好きになれない。
 
 
 ... heap_sort( a:p, n::14 ) ; @.co << p ;
@@ -1523,6 +1597,7 @@ quick_sort( a:p, first:0, last:14 ) ; @.co << p ; ... @.co << p.sort()  って�
  -->
 
 </pre>
+
 <a href="https://twitter.com/share" class="twitter-share-button" data-text="BirdsScript" data-lang="ja" data-size="large" data-count="none" data-hashtags="BirdsScript">ツイート</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
 <div class="g-plusone" data-annotation="none"></div><script type="text/javascript">window.___gcfg = {lang: 'ja'};(function() {var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;po.src = 'https://apis.google.com/js/plusone.js'; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);})();</script>
 <a href="http://b.hatena.ne.jp/entry/" class="hatena-bookmark-button" data-hatena-bookmark-layout="standard-noballoon" data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加"><img src="http://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="http://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
