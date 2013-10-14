@@ -2,7 +2,7 @@
 <html lang="ja">
 <!--
 つい、カッ！となってLL言語を作りはじめてしまいました。名前は「BirdsScript」です。
-（2013/10/07 現在、未完成。JavaScriptによる試作中。）
+（2013/10/14 現在、未完成。JavaScriptによる試作中。）
 
 Source Layout
 =============
@@ -668,15 +668,15 @@ birds_script( "\
 birds_script( "\
     a : {{\n\
         \n\
-        break 10 ;   ... ループを抜ける。戻り値がリストじゃないのでエラーにしたい\n\
+        break 10 ;   ... ループを抜ける。戻り値が list-object じゃないので NG\n\
         \n\
         continue ;   ... ここは実行されないけどね\n\
         \n\
     }} ;\n\
     \n\
     @.co << a ;      ... 10",
-    '(: a (loop { (break [ 10 ] ) (continue ) } ) ) (<< (. @ .co ) a )',
-    'NG'
+    '(: a (loop { (break 10 ) (continue ) } ) ) (<< (. @ .co ) a )',
+    'syntax-error : argument is not list-object : (break\n'
 ) ;
 
 </script><pre>
