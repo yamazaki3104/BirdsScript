@@ -2,7 +2,7 @@
 <html lang="ja">
 <!--
 つい、カッ！となってLL言語を作りはじめてしまいました。名前は「BirdsScript」です。
-（2013/10/29 現在、未完成。JavaScriptによる試作中。）
+（2013/11/05 現在、未完成。JavaScriptによる試作中。）
 
 Source Layout
 =============
@@ -20,6 +20,9 @@ Source Layout
 
 すべてのプログラマーのために「軽量で」「安全で」「大規模開発に耐えられる」「使って楽しい」言語を目指してみました。
 （C/C++ や JavaScript に近い言語だと勝手に思っています）
+
+list-object と名づけた、なんでも入る「便利な配列」が言語の仕様として入っている点が１つの特徴かも。
+また、関数の戻り値は常にlist-object ですし、loopやeachなどの繰り返し文もlist-object を戻り値として返します。この点は他の言語にはみられない特長になると思っています。
 
 
 「軽量で」
@@ -172,19 +175,21 @@ function birds_script( _in, _check1, _check2 )
     }
     else
     {
-        var kawa_list = on_kawasemi( _check1 ) ;
+        var kawa_list = on_kawasemi( yama_list ) ;
         if ( _check2===kawa_list )
             document.write( '<pre style="background-color:#99D"><br>    '+kawa_list+'<br><br></pre>' ) ;
         else
             document.write( '<pre style="background-color:#D55"><br>'+kawa_list+'<br>'+_check2+'<br><br></pre>' ) ;
     }
+    // document.write( '<textarea cols="0" rows="0" id="yamasemi">' + _in + '</textarea>' ) ;
+    // document.write( '<a href="#" onclick="on_reset(\"' + _in + '\");"">[test]</a><br>' ) ;
 }
 
 </script>
 </head>
 <body>
 BirdsScript ver.0.01 (c) 2013/08 YAMAZAKI Satoshi.<br>
-<a href="https://twitter.com/share" class="twitter-share-button" data-text="BirdsScript" data-lang="ja" data-size="large" data-count="none" data-hashtags="BirdsScript">ツイート</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>　<div class="g-plusone" data-annotation="none"></div><script type="text/javascript">window.___gcfg = {lang: 'ja'};(function() {var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;po.src = 'https://apis.google.com/js/plusone.js'; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);})();</script>　<a href="http://b.hatena.ne.jp/entry/" class="hatena-bookmark-button" data-hatena-bookmark-layout="standard-noballoon" data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加"><img src="http://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="http://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
+<!-- <a href="https://twitter.com/share" class="twitter-share-button" data-text="BirdsScript" data-lang="ja" data-size="large" data-count="none" data-hashtags="BirdsScript">ツイート</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>　<div class="g-plusone" data-annotation="none"></div><script type="text/javascript">window.___gcfg = {lang: 'ja'};(function() {var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;po.src = 'https://apis.google.com/js/plusone.js'; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);})();</script>　<a href="http://b.hatena.ne.jp/entry/" class="hatena-bookmark-button" data-hatena-bookmark-layout="standard-noballoon" data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加"><img src="http://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="http://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script> -->
 <br>
 あー、すみません。Google Chrome でしか動作確認していないので、他のブラウザでは動かないかもしれません。ごめんなさい。<br>
 <textarea cols="60" rows="8" id="yamasemi">
@@ -197,6 +202,20 @@ fact : { _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 } ;
 @.co << fact( n:5 ).0 << ', ' ;
 
 </textarea>
+
+<!-- <textarea cols="60" rows="8" id="yamasemi">
+
+    --- C言語風の for ( int i=0 ; i < 4 ; i++ ) で
+    i :: 0 ;
+    a : {{      ... 戻り値 list-object を a に
+        i >= 4 ?? break[] ;
+        i,      ... i を戻り値 list-object に積む
+        ++i ;
+    }} ;
+    @.co << a ; ... a を表示してみる [ 0, 1, 2, 3, 4, ]
+
+</textarea>
+ -->
 <input type="button" id="BT1" value="コンパイル（中間コード生成）" onclick="
 document.getElementById('kawasemi').value=on_yamasemi(document.getElementById('yamasemi').value, document.getElementById('debug_check').checked )" >
 <input type="checkbox" id="debug_check" >デバッグ情報埋め込み<br>
@@ -224,14 +243,14 @@ document.getElementById('kawasemi_output').value=on_kawasemi( document.getElemen
 birds_script( "\
     @.co << 'Hello' << 'World' ; ... @.co はコンソール出力の意味です。ちょっと C++/STL のような表記です。",
     "(; (<< (<< (. @ .co ) 'Hello' ) 'World' ) )",
-    'HelloWorld'
+    "HelloWorld"
 ) ;
 
 birds_script( "\
     @.co << 'Hello' ... 区切り文字';' は無くてもある程度は動きます。\n\
     @.co << 'World' ... ただ、無いと優先順位がはっきりしない（可読性が悪い）ケースがあるので、なるべく書くことをおすすめします。",
     "(<< (. @ .co ) 'Hello' ) (<< (. @ .co ) 'World' )",
-    'HelloWorld'
+    "HelloWorld"
 ) ;
 
 </script><pre>
@@ -255,7 +274,7 @@ birds_script( "\
     "(; (: i 0 ) ) (; (= i 99 ) )",
     "syntax-error : cannot be set to a constant.: i\n"
 ) ;
-// birds_script( '\
+// birds_script( "\
 //     str : "string\n" ; ... 文字列型定数 ... エスケープ有りの文字列',
 //     "(: str 'string\n' )"
 // ) ;
@@ -279,7 +298,7 @@ birds_script( "\
     \n\
     @.co << i ; ... i を表示してみる",
     "(; (:: i 0 ) ) (; (= i 99 ) ) (; (<< (. @ .co ) i ) )",
-    '99'
+    "99"
 ) ;
 birds_script( "\
     s :: 'string' ; ... 文字列型変数\n\
@@ -287,7 +306,7 @@ birds_script( "\
     \n\
     @.co << s ;     ... str を表示してみる",
     "(; (:: s 'string' ) ) (; (= s 'STRING' ) ) (; (<< (. @ .co ) s ) )",
-    'STRING'
+    "STRING"
 ) ;
 birds_script( "\
     i :: 0 ;       ... 文字列型宣言. いわゆる Scala でいう var ですね。\n\
@@ -304,9 +323,12 @@ birds_script( "\
 
 </script><pre>
 -----------------------------------------------------------------
-■ if 文
+■ if 文　条件分岐
 
-    'if', 'else' という予約語はありません。C言語の三項演算子のような演算子 '??', '!!' を使います。
+    'if', 'else' という予約語はありません。
+    C言語の三項演算子のような演算子 '??', '!!' を使います。
+
+    最初は '?', '!' のひと文字だったのですが、文中に埋もれてしまって目立たないので二文字になりました。 
 
 </pre><script>
 
@@ -315,16 +337,16 @@ birds_script( "\
     foo > 0 ?? foo = 0 ; ... if 文 ... = は代入文\n\
     \n\
     @.co << foo ;        ... foo を表示してみる",
-    '(; (:: foo 1 ) ) (; (?? (> foo 0 ) { (= foo 0 ) } ) ) (; (<< (. @ .co ) foo ) )',
-    '0'
+    "(; (:: foo 1 ) ) (; (?? (> foo 0 ) { (= foo 0 ) } ) ) (; (<< (. @ .co ) foo ) )",
+    "0"
 ) ;
 birds_script( "\
     foo :: 1 ;\n\
     foo > 0 ?? foo = 0 !! foo = 1 ; ... if then else 文\n\
     \n\
     @.co << foo ; ... foo を表示してみる",
-    '(; (:: foo 1 ) ) (; (?? (> foo 0 ) { (= foo 0 ) } { (= foo 1 ) } ) ) (; (<< (. @ .co ) foo ) )',
-    '0'
+    "(; (:: foo 1 ) ) (; (?? (> foo 0 ) { (= foo 0 ) } { (= foo 1 ) } ) ) (; (<< (. @ .co ) foo ) )",
+    "0"
 ) ;
 birds_script( "\
     foo :: 1 ;\n\
@@ -333,18 +355,18 @@ birds_script( "\
     @.co << foo << ', ' ; ... foo を表示してみる\n\
     @.co << boo ;         ... boo を表示してみる",
     "(; (:: foo 1 ) ) (; (: boo ( (?? (> foo 0 ) { 0 } { 1 } ) ) ) ) (; (<< (<< (. @ .co ) foo ) ', ' ) ) (; (<< (. @ .co ) boo ) )",
-    '1, 0'
+    "1, 0"
 ) ;
 birds_script( "\
     foo :: 1 ;\n\
     boo : foo > 0 ?? 0 !! 1 ; ... スコープなしだと NG. define ':' が if '??' より先に評価されちゃいます" ,
-    'syntax-error: const-define:boo',
-    'NG'
+    "syntax-error: const-define:boo",
+    "NG"
 ) ;
 
 </script><pre>
 
-    '??' の前は必ず比較文であること。比較文以外はエラーになります。
+    '??' の前は必ず比較文である必要があります。比較文以外はsyntax-errorになります。
     flag = true ?? ... のようなタイポを防ぐ理由があります。
 
     true, false は予約語です。true, false の型は enum になる予定。
@@ -353,26 +375,27 @@ birds_script( "\
 birds_script( "\
     is_ok :: true ; a :: 0 ;\n\
     is_ok ?? a=1 !! a=2 ; ... NG",
-    'syntax-error: x:??',
-    'NG'
+    "syntax-error: x:??",
+    "NG"
 ) ;
 birds_script( "\
     is_ok :: true ; a :: 0 ;\n\
     is_ok == true ?? a=1 !! a=2 ; ... OK\n\
     \n\
     @.co << a ;                   ... a を表示してみる",
-    '(; (:: is_ok true ) ) (; (:: a 0 ) ) (; (?? (== is_ok true ) { (= a 1 ) } { (= a 2 ) } ) ) (; (<< (. @ .co ) a ) )',
-    '1'
+    "(; (:: is_ok true ) ) (; (:: a 0 ) ) (; (?? (== is_ok true ) { (= a 1 ) } { (= a 2 ) } ) ) (; (<< (. @ .co ) a ) )",
+    "1"
 ) ;
 </script><pre>
 
-    現在のところ else 文のみの書き方はNGになっています。メリットが感じられるようなら実装を検討します。そんなに難しい事ではないはず。
+    現在のところ else文のみの書き方はNGになっています。
+    メリットが感じられるようなら実装を検討します。そんなに難しい事ではないはず。
 
 </pre><script>
 birds_script( "\
     foo >= 0 !! foo = 0 ; ... NG",
-    'syntax-error: x:!!',
-    'NG'
+    "syntax-error: x:!!",
+    "NG"
 ) ;
 </script><pre>
 
@@ -383,6 +406,15 @@ birds_script( "\
     いわゆるC言語やJavaの '{','}' ですが表記は '(', ')' になります。注意してください。
 
     変数/定数の参照範囲が制限できるのと、リソースの開放ができるので上手に使ってください。
+
+    BirdsScript にはスコープのようにカッコで囲む構文が５種類あります。
+    のちほど順番に解説しますが、まずは一覧と簡単な概要を紹介します。
+
+    1, スコープ    (  )  実行の優先順位を示します。その場で実行され値を１つ返します。
+    2, リスト      [  ]  いわゆる便利な配列です。その場で実行され list-objectを返します。
+    3, ループ     {{  }}  範囲内を繰り返し実行します。その場で実行され list-objectを返します。
+    4, each     .{{  }}  引数のある繰り返し文です。その場で実行され list-objectを返します。
+    5, 関数宣言  {  }   関数を返します。呼ばれるまで実行はされません。実行後に list-objectを返します。
 
 </pre><script>
 
@@ -432,8 +464,8 @@ birds_script( "\
     ) ;\n\
     \n\
     @.co << b ;     ... b : 1",
-    '(; (:: boo (:: foo (:: woo 0 ) ) ) ) (; (: b ( (; (= boo 1 ) ) (; (= foo 2 ) ) (; (= woo 3 ) ) boo ) ) ) (; (<< (. @ .co ) b ) )',
-    '1'
+    "(; (:: boo (:: foo (:: woo 0 ) ) ) ) (; (: b ( (; (= boo 1 ) ) (; (= foo 2 ) ) (; (= woo 3 ) ) boo ) ) ) (; (<< (. @ .co ) b ) )",
+    "1"
 ) ;
 
 
@@ -447,14 +479,14 @@ birds_script( "\
     ) ;\n\
     \n\
     @.co << b ;     ... b : [] 空の配列が返されます",
-    '(; (:: boo (:: foo (:: woo 0 ) ) ) ) (; (: b ( (; (= boo 1 ) ) (; (= foo 2 ) ) (; (= woo 3 ) ) (; boo ) ) ) ) (; (<< (. @ .co ) b ) )',
-    '[ ]'
+    "(; (:: boo (:: foo (:: woo 0 ) ) ) ) (; (: b ( (; (= boo 1 ) ) (; (= foo 2 ) ) (; (= woo 3 ) ) (; boo ) ) ) ) (; (<< (. @ .co ) b ) )",
+    "[ ]"
 ) ;
 
 </script><pre>
 
-    複数の値を返したい場合は配列(list-object)を使ってください。
-    配列(list-object)は次で説明します。
+    複数の値を返したい場合は list-objectを使ってください。
+    list-objectは次項で説明します。
 
 </pre><script>
 
@@ -464,20 +496,20 @@ birds_script( "\
         boo = 1 ;\n\
         foo = 2 ;\n\
         woo = 3 ;\n\
-        [ boo, foo, woo, ]  ... 配列(list-object)の宣言。最後の';'を書かなければこの値が返ります\n\
+        [ boo, foo, woo, ]  ... list-objectの宣言。最後の';'を書かなければこの値が返ります\n\
     ) ;\n\
     \n\
     @.co << b ;     ... b : [ 1, 2, 3, ]",
-    '(; (:: boo (:: foo (:: woo 0 ) ) ) ) (; (: b ( (; (= boo 1 ) ) (; (= foo 2 ) ) (; (= woo 3 ) ) [ boo foo woo ] ) ) ) (; (<< (. @ .co ) b ) )',
-    '[ 1, 2, 3, ]'
+    "(; (:: boo (:: foo (:: woo 0 ) ) ) ) (; (: b ( (; (= boo 1 ) ) (; (= foo 2 ) ) (; (= woo 3 ) ) [ (, boo ) (, foo ) (, woo ) ] ) ) ) (; (<< (. @ .co ) b ) )",
+    "[ 1, 2, 3, ]"
 ) ;
 
 </script><pre>
 
 -----------------------------------------------------------------------
-■ 配列 '[', ']'。
+■ リスト '[', ']'。　list-object いわゆる便利な配列です。
 
-    BirdsScript でサポートしている配列は「リストオブジェクト(list-object)」と呼ぶことにしました。
+    BirdsScript でサポートしている便利な配列は「リストオブジェクト(list-object)」と呼ぶことにしました。
     配列であり、連想配列でもあり、オブジェクトでもある汎用的な入れ物です。
 
     C++/STLの std::vector, std::map の両方の機能が混在しているコンテナになります。
@@ -491,9 +523,9 @@ birds_script( "\
     @.co << int_list[0] << ', ' ; ... 1, \n\
     @.co << str_list[2] << ', ' ; ... 3, \n\
     \n\
-    @.co << int_list << ', ' ; ... 配列(list-object)そのものを表示してみる\n\
+    @.co << int_list << ', ' ; ... list-objectそのものを表示してみる\n\
     @.co << str_list ;",
-    "(; (: int_list [ 1 2 3 4 5 ] ) ) (; (: str_list [ '1' '2' '3' ] ) ) (; (<< (<< (. @ .co ) (at int_list 0 ) ) ', ' ) ) (; (<< (<< (. @ .co ) (at str_list 2 ) ) ', ' ) ) (; (<< (<< (. @ .co ) int_list ) ', ' ) ) (; (<< (. @ .co ) str_list ) )",
+    "(; (: int_list [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] ) ) (; (: str_list [ (, '1' ) (, '2' ) (, '3' ) ] ) ) (; (<< (<< (. @ .co ) (at int_list 0 ) ) ', ' ) ) (; (<< (<< (. @ .co ) (at str_list 2 ) ) ', ' ) ) (; (<< (<< (. @ .co ) int_list ) ', ' ) ) (; (<< (. @ .co ) str_list ) )",
     "1, 3, [ 1, 2, 3, 4, 5, ], [ '1', '2', '3', ]"
 ) ;
 
@@ -504,9 +536,9 @@ birds_script( "\
     @.co << str_map1[2] << ', ' ; ... two, \n\
     @.co << str_map2.b  << ', ' ; ... two, \n\
     \n\
-    @.co << str_map1 << ', ' ; ... 配列(list-object)そのものを表示してみる\n\
+    @.co << str_map1 << ', ' ; ... list-objectそのものを表示してみる\n\
     @.co << str_map2 ;",
-    "(; (: str_map1 [ (: 1 'one' ) (: 2 'two' ) ] ) ) (; (: str_map2 [ (: a 'one' ) (: b 'two' ) ] ) ) (; (<< (<< (. @ .co ) (at str_map1 2 ) ) ', ' ) ) (; (<< (<< (. @ .co ) (. str_map2 .b ) ) ', ' ) ) (; (<< (<< (. @ .co ) str_map1 ) ', ' ) ) (; (<< (. @ .co ) str_map2 ) )",
+    "(; (: str_map1 [ (, (: 1 'one' ) ) (, (: 2 'two' ) ) ] ) ) (; (: str_map2 [ (, (: a 'one' ) ) (, (: b 'two' ) ) ] ) ) (; (<< (<< (. @ .co ) (at str_map1 2 ) ) ', ' ) ) (; (<< (<< (. @ .co ) (. str_map2 .b ) ) ', ' ) ) (; (<< (<< (. @ .co ) str_map1 ) ', ' ) ) (; (<< (. @ .co ) str_map2 ) )",
     "two, two, [ 'one', 'two', ], [ 'one', 'two', ]"
 ) ;
 
@@ -531,7 +563,7 @@ birds_script( "\
     \n\
     @.co << list_b ; ... [ 1, ]",
     "(; (:: list_b [  ] ) ) (; (<< list_b 1 ) ) (; (<< (. @ .co ) list_b ) )",
-    '[ 1, ]'
+    "[ 1, ]"
 ) ;
 
 </script><pre>
@@ -543,9 +575,10 @@ birds_script( "\
 birds_script( "\
     list_a : [ [ 1, 2, ], [ 10, 20, ], [ 100, 200, ], ] ; ... ２次元配列\n\
     \n\
-    list_a.{{ it.{{ @.co << it << ', ' }} }} ; ... it は予約語です。詳細は後ほど。",
-    "(; (: list_a [ [ 1 2 ] [ 10 20 ] [ 100 200 ] ] ) ) (; (each list_a { (each it { (<< (<< (. @ .co ) it ) ', ' ) } ) } ) )",
-    "1, 2, 10, 20, 100, 200, "
+    list_a.{{ it.{{ @.co << it << ', ' ; }} ; }} ; ... it は予約語です。詳細は後ほど。\n\
+    @.co << list_a ;",
+    "(; (: list_a [ (, [ (, 1 ) (, 2 ) ] ) (, [ (, 10 ) (, 20 ) ] ) (, [ (, 100 ) (, 200 ) ] ) ] ) ) (; (each list_a { (; (each it { (; (<< (<< (. @ .co ) it ) ', ' ) ) } ) ) } ) ) (; (<< (. @ .co ) list_a ) )",
+    "1, 2, 10, 20, 100, 200, [ [ 1, 2, ], [ 10, 20, ], [ 100, 200, ], ]"
 ) ;
 
 birds_script( "\
@@ -553,13 +586,14 @@ birds_script( "\
     \n\
     put_tree : {                    ... 型がリストオブジェクト'list' の場合に再帰する木構造表示用関数を作成\n\
         _v.type == 'list'           ... .type は予約語です。詳細は後ほど。\n\
-        ?? _v.{{ put_tree( v:it ) }}\n\
+        ?? _v.{{ put_tree( v:it ) ; }}\n\
         !! @.co << _v << ', '\n\
     }\n\
     \n\
-    put_tree( v:list_a ) ;",
-    "(; (: list_a [ [ 1 2 ] [ 10 [ 20 21 ] 30 ] [ 100 ] ] ) ) (; (: put_tree { (?? (== (. _v .type ) 'list' ) { (each _v { (call put_tree [ (: v it ) ] ) } ) } { (<< (<< (. @ .co ) _v ) ', ' ) } ) } ) (call put_tree [ (: v list_a ) ] ) )",
-    "1, 2, 10, 20, 21, 30, 100, "
+    put_tree( v:list_a ) ;\n\
+    @.co << list_a ;",
+    "(; (: list_a [ (, [ (, 1 ) 2 ] ) (, [ (, 10 ) (, [ (, 20 ) 21 ] ) 30 ] ) [ 100 ] ] ) ) (; (: put_tree { (?? (== (. _v .type ) 'list' ) { (each _v { (; (call put_tree [ (: v it ) ] ) ) } ) } { (<< (<< (. @ .co ) _v ) ', ' ) } ) } ) (call put_tree [ (: v list_a ) ] ) ) (; (<< (. @ .co ) list_a ) )",
+    "1, 2, 10, 20, 21, 30, 100, [ [ 1, 2, ], [ 10, [ 20, 21, ], 30, ], [ 100, ], ]"
 ) ;
 
 </script><pre>
@@ -582,7 +616,7 @@ birds_script( "\
 ■ switch文は list-object で書きます
 
     ちょっと脱線
-    switch文は無いので関数の配列(list-object)で実装。
+    switch文は無いので関数の　list-objectで実装。
 
 </pre><script>
 
@@ -596,7 +630,7 @@ birds_script( "\
     @.co << sw << ', ' ; ... [ {}, {}, {}, ]\n\
     sw[2]()  ;           ... two,\n\
     sw[99]() ;           ... unmatch",
-    "(; (: sw [ (: 1 { (<< (. @ .co ) 'one, ' ) } ) (: 2 { (<< (. @ .co ) 'two, ' ) } ) (: unmatch { (<< (. @ .co ) 'unmatch' ) } ) ] ) ) (; (<< (<< (. @ .co ) sw ) ', ' ) ) (; (call (at sw 2 ) [  ] ) ) (; (call (at sw 99 ) [  ] ) )",
+    "(; (: sw [ (, (: 1 { (<< (. @ .co ) 'one, ' ) } ) ) (, (: 2 { (<< (. @ .co ) 'two, ' ) } ) ) (, (: unmatch { (<< (. @ .co ) 'unmatch' ) } ) ) ] ) ) (; (<< (<< (. @ .co ) sw ) ', ' ) ) (; (call (at sw 2 ) [  ] ) ) (; (call (at sw 99 ) [  ] ) )",
     "[ {}, {}, {}, ], two, unmatch"
 ) ;
 // ↓これは存在しない sw[1] に代入ってのはちょっと無謀だよね。エラーでいいと思う。
@@ -638,17 +672,17 @@ birds_script( "\
     sw( in:2 )  ;   ... two,\n\
     sw( in:99 ) ;   ... unmatch",
     "(; (: sw { (; (?? (== _in 1 ) { (<< (. @ .co ) 'one, ' ) } { (?? (== _in 2 ) { (<< (. @ .co ) 'two, ' ) } { (<< (. @ .co ) 'unmatch' ) } ) } ) ) } ) ) (; (call sw [ (: in 2 ) ] ) ) (; (call sw [ (: in 99 ) ] ) )",
-    'two, unmatch'
+    "two, unmatch"
 ) ;
 
 </script><pre>
 
 -----------------------------------------------------------------
-■ 繰り返し構文（その１）、for文
+■ ループ　'{{', '}}'　　繰り返し（その１）　for文
 
     予約語 break[], continue
 
-    ループ文は'{{', '}}'。いわゆる無限ループ for(;;){ ... } です。
+    ループは'{{', '}}'であらわします。意味としては無限ループ for(;;){ ... } です。
 
     ちなみに無限ループと完全に等価ではなくて、リミット上限に到達すると例外が発生して勝手にループを抜けます。
     また break[] 文が無いとワーニングの予定（未実装）。できる限り安全側に倒したい（希望）。
@@ -666,7 +700,7 @@ birds_script( "\
         ++i ; ... C言語などの後方 i++ と異なり「先に実行される」のであえて前方のみにしました。\n\
     }}",
     "(; (:: i 0 ) ) (loop { (; (?? (>= i 10 ) { (break [  ] ) } ) ) (; (<< (<< (. @ .co ) i ) ', ' ) ) (; (++ i ) ) } )",
-    '0, 1, 2, 3, 4, 5, 6, 7, 8, 9, '
+    "0, 1, 2, 3, 4, 5, 6, 7, 8, 9, "
 ) ;
 
 </script><pre>
@@ -685,22 +719,22 @@ birds_script( "\
     }} ;\n\
     \n\
     @.co << a ;       ... [ 10, 20, ] list-object が返る",
-    "(; (: a (loop { (; (<< (. @ .co ) 'A, ' ) ) (; (break [ 10 20 ] ) ) (; (<< (. @ .co ) 'B, ' ) ) (; (continue ) ) (; (<< (. @ .co ) 'C, ' ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
-    'A, [ 10, 20, ]'
+    "(; (: a (loop { (; (<< (. @ .co ) 'A, ' ) ) (; (break [ (, 10 ) 20 ] ) ) (; (<< (. @ .co ) 'B, ' ) ) (; (continue ) ) (; (<< (. @ .co ) 'C, ' ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
+    "A, [ 10, 20, ]"
 ) ;
 
 birds_script( "\
     a : {{\n\
         @.co << 'A, ' ; ... この行を何回通るか表示してみる\n\
-        break 10 ;      ... ループを抜ける。戻り値が list-object ではないので実行時エラーになります\n\
+        break 10 ;      ... ループを抜ける。戻り値が list-object ではないので実行時 syntax-errorになります\n\
         @.co << 'B, ' ;\n\
         continue ;      ... ここは実行されないけどね\n\
         @.co << 'C, ' ;\n\
     }} ;\n\
     \n\
-    @.co << a ;      ... 10",
+    @.co << a ;      ... 10　を表示したいけど・・・",
     "(; (: a (loop { (; (<< (. @ .co ) 'A, ' ) ) (; (break 10 ) ) (; (<< (. @ .co ) 'B, ' ) ) (; (continue ) ) (; (<< (. @ .co ) 'C, ' ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
-    'A, syntax-error : argument is not list-object : (break\n'
+    "A, syntax-error : argument is not list-object : (break\n"
 ) ;
 
 birds_script( "\
@@ -714,7 +748,7 @@ birds_script( "\
     \n\
     @.co << a ;      ... a : [ ] ",
     "(; (: a (loop { (; (<< (. @ .co ) 'A, ' ) ) (; (break [  ] ) ) (; (<< (. @ .co ) 'B, ' ) ) (; (continue ) ) (; (<< (. @ .co ) 'C, ' ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
-    'A, [ ]'
+    "A, [ ]"
 ) ;
 
 </script><pre>
@@ -735,73 +769,144 @@ birds_script( "\
         @.co << i << ', ' ;  ... i を表示\n\
     }}",
     "(; (:: i 0 ) ) (loop { (; (?? (> (++ i ) 20 ) { (break [  ] ) } ) ) (; (?? (== (% i 15 ) 0 ) { ( (; (<< (. @ .co ) 'FizzBuzz, ' ) ) (; (continue ) ) ) } ) (?? (== (% i 3 ) 0 ) { ( (; (<< (. @ .co ) 'Fizz, ' ) ) (; (continue ) ) ) } ) (?? (== (% i 5 ) 0 ) { ( (; (<< (. @ .co ) 'Buzz, ' ) ) (; (continue ) ) ) } ) (<< (<< (. @ .co ) i ) ', ' ) ) } )",
-    '1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz, 16, 17, Fizz, 19, Buzz, '
+    "1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz, 16, 17, Fizz, 19, Buzz, "
 ) ;
 
 birds_script( "\
     --- FizzBuzz 問題。もう少し BirdsScript っぽい書き方。\n\
     --- continue ではなく eachを使います。eachの項目を参考にしてください。\n\
     @.co << 20.{{\n\
-        it % 15 == 0   ?? 'FizzBuzz'\n\
-        !! it % 3 == 0 ?? 'Fizz'\n\
-        !! it % 5 == 0 ?? 'Buzz'\n\
-        !! it\n\
+        i : it + 1 ;\n\
+        i % 15 == 0   ?? 'FizzBuzz'\n\
+        !! i % 3 == 0 ?? 'Fizz'\n\
+        !! i % 5 == 0 ?? 'Buzz'\n\
+        !! i\n\
     }}",
-    "(<< (. @ .co ) (each 20 { (?? (== (% it 15 ) 0 ) { 'FizzBuzz' } { (?? (== (% it 3 ) 0 ) { 'Fizz' } { (?? (== (% it 5 ) 0 ) { 'Buzz' } { it } ) } ) } ) } ) )",
-    '[ 1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz, 16, 17, Fizz, 19, Buzz, ]'
+    "(<< (. @ .co ) (each 20 { (; (: i (+ it 1 ) ) ) (?? (== (% i 15 ) 0 ) { 'FizzBuzz' } { (?? (== (% i 3 ) 0 ) { 'Fizz' } { (?? (== (% i 5 ) 0 ) { 'Buzz' } { i } ) } ) } ) } ) )",
+    "[ 1, 2, 'Fizz', 4, 'Buzz', 'Fizz', 7, 8, 'Fizz', 'Buzz', 11, 'Fizz', 13, 14, 'FizzBuzz', 16, 17, 'Fizz', 19, 'Buzz', ]"
 ) ;
 
 </script><pre>
 
+    ループを抜けると list-object を返します。実行した結果が配列の中に格納されまとめて返されます。
+
+</pre><script>
+
+birds_script( "\
+    --- C言語風の for ( int i=0 ; i < 4 ; i++ ) で\n\
+    i :: 0 ;\n\
+    a : {{                  ... ループの戻り値 list-object を a に\n\
+        i >= 4 ?? break[] ; ... 戻り値無しでループを抜ける\n\
+        i,                  ... i を戻り値 list-object に積む\n\
+        ++i ;\n\
+    }} ;\n\
+    @.co << a ;             ... a を表示してみる [ 0, 1, 2, 3, 4, ]",
+    "(; (:: i 0 ) ) (; (: a (loop { (; (?? (>= i 4 ) { (break [  ] ) } ) ) (, i ) (; (++ i ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
+    "[ 0, 1, 2, 3, ]"
+) ;
+
+birds_script( "\
+    --- C言語風の for ( int i=0 ; i < 4 ; i++ ) で\n\
+    i :: 0 ;\n\
+    a : {{                              ... ループの戻り値 list-object を a に\n\
+        i >= 4 ?? break[ 44, 55, ] ;    ... さらに終了時にも値を追加する\n\
+        i,                              ... i を戻り値 list-object に積む\n\
+        ++i ;\n\
+    }} ;\n\
+    @.co << a ;                         ... a を表示してみる [ 0, 1, 2, 3, 44, 55, ]",
+    "(; (:: i 0 ) ) (; (: a (loop { (; (?? (>= i 4 ) { (break [ (, 44 ) (, 55 ) ] ) } ) ) (, i ) (; (++ i ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
+    "[ 0, 1, 2, 3, 44, 55, ]"
+) ;
+
+birds_script( "\
+    --- C言語風の for ( int i=0 ; i < 4 ; i++ ) で\n\
+    i :: 0 ;\n\
+    a : {{          ... 戻り値 list-object を a に\n\
+        i >= 4 ?? break[] ;\n\
+        i,\n\
+        ++i,        ... 異なる値を複数回積むこともできます\n\
+    }} ;\n\
+    @.co << a ;     ... a を表示してみる [ 0, 1, 1, 2, 2, 3, 3, 4, ]",
+    "(; (:: i 0 ) ) (; (: a (loop { (; (?? (>= i 4 ) { (break [  ] ) } ) ) (, i ) (, (++ i ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
+    "[ 0, 1, 1, 2, 2, 3, 3, 4, ]"
+) ;
+
+</script><pre>
+
+
 -----------------------------------------------------------------
-■ 繰り返し構文（その２）、each 文
+■ each文 '.{{', '}}'　繰り返しその２、each 文
 
     繰り返し構文といえば each でしょ。 for文は break[] する必要があるのでできることなら使いたくない。
 
-    each文は '.{{', '}}'。 'it' はループ内で使用できる変数（イテレータの意味の予約語です）
-    変数のイテレータであれば、上書き可能です。
-
-    5.{{ @.co << it << ', ' ; }}  ... 0, 1, 2, 3, 4,
-
-    ↓ 仕様の変更を検討中
-
-    @.co << 5.{{ it }}  ... [ 0, 1, 2, 3, 4, ]
-
-    @.co << 5..7.{{ it }}  ... [ 5, 6, 7, ]
-
-    @.co << 3.{{ [ it ] }}  ... [ [ 0, ], [ 1, ], [ 2, ], ]
-
-    @.co << 5.{{ it; }}  ... [  ] ... ';' でスタックがクリアされます。
+    each文は '.{{', '}}' で表します。
+    'it', 'idx' は繰り返し時に暗黙的に定義され、値が渡される変数です。予約語になります。
+    it : イテレータの意味。list-object の場合は各要素の値が入ります。
+    idx : インデックスの意味。list-object の場合は各要素の名前が入ります。
 
 </pre><script>
 
 birds_script( "\
     5.{{ @.co << it << ', ' ; }}  ... 0, 1, 2, 3, 4, ",
     "(each 5 { (; (<< (<< (. @ .co ) it ) ', ' ) ) } )",
-    '0, 1, 2, 3, 4, '
+    "0, 1, 2, 3, 4, "
 ) ;
 
 birds_script( "\
-    @.co << 5.{{ it }}  ... [ 0, 1, 2, 3, 4, ]",
-    "(<< (. @ .co ) (each 5 { it } ) )",
-    '[ 0, 1, 2, 3, 4, ]'
+    5.{{ @.co << idx << ', ' ; }}  ... 0, 1, 2, 3, 4, ",
+    "(each 5 { (; (<< (<< (. @ .co ) idx ) ', ' ) ) } )",
+    "0, 1, 2, 3, 4, "
 ) ;
 
 birds_script( "\
-    @.co << 5..7.{{ it }}  ... [ 5, 6, 7, ]",
-    "",
-    '[0, 1, 2, 3, 4, ]'
+    'string'.{{ @.co << it << ', ' ; }}  ... s, t, r, i, n, g, ",
+    "(each 'string' { (; (<< (<< (. @ .co ) it ) ', ' ) ) } )",
+    "s, t, r, i, n, g, "
 ) ;
 
 birds_script( "\
-    @.co << 3.{{ [ it ] }}  ... [ [ 0, ], [ 1, ], [ 2, ], ]",
-    "(<< (. @ .co ) (each 3 { [ it ] } ) )",
-    '[ [ 0, ], [ 1, ], [ 2, ], ]'
+    'string'.{{ @.co << idx << ', ' ; }}  ... 0, 1, 2, 3, 4, 5, ",
+    "(each 'string' { (; (<< (<< (. @ .co ) idx ) ', ' ) ) } )",
+    "0, 1, 2, 3, 4, 5, "
 ) ;
 
 </script><pre>
 
-    配列(list-object)と each の組み合わせ
+    it も idx も定数扱いなので更新することはできません。
+
+</pre><script>
+
+birds_script( "\
+    5.{{ it = 999 ; }}  ... NG ",
+    "(each 5 { (; (= it 999 ) ) } )",
+    "syntax-error : cannot be set to a constant.: it\n"
+) ;
+
+birds_script( "\
+    5.{{ idx = 999 ; }}  ... NG ",
+    "(each 5 { (; (= idx 999 ) ) } )",
+    "syntax-error : cannot be set to a constant.: idx\n"
+) ;
+
+</script><pre>
+
+    eachではなく、ループ文にも idx があります。it は無いです。
+
+</pre><script>
+
+birds_script( "\
+    a : {{          ... 戻り値 list-object を a に\n\
+        idx >= 4 ?? break[ 555 ] ;\n\
+        idx*10,\n\
+    }} ;\n\
+    @.co << a ;     ... a を表示してみる [ 0, 10, 20, 30, 555, ]",
+    "(; (: a (loop { (; (?? (>= idx 4 ) { (break [ 555 ] ) } ) ) (, (* idx 10 ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
+    "[ 0, 10, 20, 30, 555, ]"
+) ;
+
+</script><pre>
+
+    list-objectと each の組み合わせ
 
 </pre><script>
 
@@ -810,30 +915,30 @@ birds_script( "\
     pi.{{\n\
         @.co << it << ', ' ;   ... 3, 1, 4, 1, 5, 9, 2, \n\
     }} ;",
-    "(; (: pi [ 3 1 4 1 5 9 2 ] ) ) (; (each pi { (; (<< (<< (. @ .co ) it ) ', ' ) ) } ) )",
-    '3, 1, 4, 1, 5, 9, 2, '
+    "(; (: pi [ (, 3 ) (, 1 ) (, 4 ) (, 1 ) (, 5 ) (, 9 ) (, 2 ) ] ) ) (; (each pi { (; (<< (<< (. @ .co ) it ) ', ' ) ) } ) )",
+    "3, 1, 4, 1, 5, 9, 2, "
 ) ;
 
 birds_script( "\
     [ 3, 1, 4, 1, 5, 9, 2, ].{{\n\
-        @.co << idx << '-' << it << ', ' ;   ... 0-3, 1-1, 2-4, 3-1, 4-5, 5-9, 6-2, \n\
+        @.co << idx << ':' << it << ', ' ;   ... 0:3, 1:1, 2:4, 3:1, 4:5, 5:9, 6:2, \n\
     }} ;",
-    "(; (each [ 3 1 4 1 5 9 2 ] { (; (<< (<< (<< (<< (. @ .co ) idx ) '-' ) it ) ', ' ) ) } ) )",
-    '0-3, 1-1, 2-4, 3-1, 4-5, 5-9, 6-2, '
+    "(; (each [ (, 3 ) (, 1 ) (, 4 ) (, 1 ) (, 5 ) (, 9 ) (, 2 ) ] { (; (<< (<< (<< (<< (. @ .co ) idx ) ':' ) it ) ', ' ) ) } ) )",
+    "0:3, 1:1, 2:4, 3:1, 4:5, 5:9, 6:2, "
 ) ;
 
 birds_script( "\
-    hw : [ h:'Hello', w:'World', ] ;  ... 連想配列も each できます\n\
+    hw : [ h:'Hello', w:'World', ] ;  ... もちろん連想配列だって each できます\n\
     hw.{{\n\
-        @.co << idx << '-' << it << ', ' ;   ... h-Hello, w-World, \n\
+        @.co << idx << ':' << it << ', ' ;   ... h:Hello, w:World, \n\
     }} ;",
-    "(; (: hw [ (: h 'Hello' ) (: w 'World' ) ] ) ) (; (each hw { (; (<< (<< (<< (<< (. @ .co ) idx ) '-' ) it ) ', ' ) ) } ) )",
-    'h-Hello, w-World, '
+    "(; (: hw [ (, (: h 'Hello' ) ) (, (: w 'World' ) ) ] ) ) (; (each hw { (; (<< (<< (<< (<< (. @ .co ) idx ) ':' ) it ) ', ' ) ) } ) )",
+    "h:Hello, w:World, "
 ) ;
 
 </script><pre>
 
-    for文と同じく、each文でも break[]は値を返すことができる。戻り値も同じく list-object。
+    for文と同じく、each文でも break[]は値を返すことができます。戻り値も同じく list-object。
 
 </pre><script>
 
@@ -845,7 +950,7 @@ birds_script( "\
     }} ;\n\
     @.co << b ; ... [ 555 ]",
     "(; (: b (each 10 { (; (<< (<< (. @ .co ) it ) ', ' ) ) (; (?? (== it 5 ) { (break [ 555 ] ) } ) ) } ) ) ) (; (<< (. @ .co ) b ) )",
-    '0, 1, 2, 3, 4, 5, [ 555, ]'
+    "0, 1, 2, 3, 4, 5, [ 555, ]"
 ) ;
 
 birds_script( "\
@@ -856,12 +961,129 @@ birds_script( "\
     }} ;\n\
     @.co << b ; ... [ ]",
     "syntax-error: x:??",
-    'NG'
+    "NG"
 ) ;
 
 </script><pre>
 
+    each文も繰り返し実行した結果を list-objectに格納して返します。
+
+</pre><script>
+
+birds_script( "\
+    @.co << 5.{{ it }} ; ... [ 0, 1, 2, 3, 4, ]",
+    "(; (<< (. @ .co ) (each 5 { it } ) ) )",
+    "[ 0, 1, 2, 3, 4, ]"
+) ;
+
+birds_script( "\
+    @.co << 5.{{ it*2+1 }} ; ... [ 1, 3, 5, 7, 9, ]",
+    "(; (<< (. @ .co ) (each 5 { (+ (* it 2 ) 1 ) } ) ) )",
+    "[ 1, 3, 5, 7, 9, ]"
+) ;
+
+birds_script( "\
+    @.co << 5.{{ it % 2 == 0 }} ; ... [ true, false, true, false, true, ]",
+    "(; (<< (. @ .co ) (each 5 { (== (% it 2 ) 0 ) } ) ) )",
+    "[ true, false, true, false, true, ]"
+) ;
+
+</script><pre>
+
+    list-objectに値を返す時に次のような注意が必要です。
+
+    １回のループ処理で、複数の値を list-objectに積むことができる。
+    もしくは、積まないこともできる。その「積む」「積まない」を決める構文が、 ',' と ';' です。
+
+    ',' 値を list-object に積む。
+    ';' 値をクリアするので list-object には積まない。
+
+</pre><script>
+
+birds_script( "\
+    @.co << 3.{{ it, it, }} ; ... [ 0, 0, 1, 1, 2, 2, ]",
+    "(; (<< (. @ .co ) (each 3 { (, it ) (, it ) } ) ) )",
+    "[ 0, 0, 1, 1, 2, 2, ]"
+) ;
+
+birds_script( "\
+    @.co << 3.{{ it*2, it*3, }} ; ... [ 0, 0, 2, 3, 4, 6, ]",
+    "(; (<< (. @ .co ) (each 3 { (, (* it 2 ) ) (, (* it 3 ) ) } ) ) )",
+    "[ 0, 0, 2, 3, 4, 6, ]"
+) ;
+
+birds_script( "\
+    @.co << 3.{{ it*2, it*3; }} ; ... [ 0, 2, 4, ] ... i*3 の結果は積まれません",
+    "(; (<< (. @ .co ) (each 3 { (, (* it 2 ) ) (; (* it 3 ) ) } ) ) )",
+    "[ 0, 2, 4, ]"
+) ;
+
+birds_script( "\
+    @.co << 5.{{ it; }}  ... [  ] ... ';' でスタックがクリアされます。",
+    "(<< (. @ .co ) (each 5 { (; it ) } ) )",
+    "[ ]"
+) ;
+
+</script><pre>
+
+    また、 break[], continue の動作も list-object に積む/積まないが関係します。
+
+</pre><script>
+
+birds_script( "\
+    @.co << 7.{{ it > 2 ?? break[ 555 ] ; it }} ; ... [ 0, 1, 2, 555, ]",
+    "(; (<< (. @ .co ) (each 7 { (; (?? (> it 2 ) { (break [ 555 ] ) } ) ) it } ) ) )",
+    "[ 0, 1, 2, 555, ]"
+) ;
+
+birds_script( "\
+    @.co << 7.{{ it < 3 ?? continue ; it }} ; ... [ 3, 4, 5, 6, ]",
+    "(; (<< (. @ .co ) (each 7 { (; (?? (< it 3 ) { (continue ) } ) ) it } ) ) )",
+    "[ 3, 4, 5, 6, ]"
+) ;
+
+birds_script( "\
+    @.co << 9.{{ it % 2 == 0 ?? continue ; it }} ; ... [ 1, 3, 5, 7, ]",
+    "(; (<< (. @ .co ) (each 9 { (; (?? (== (% it 2 ) 0 ) { (continue ) } ) ) it } ) ) )",
+    "[ 1, 3, 5, 7, ]"
+) ;
+
+</script><pre>
+
+------------------------------------------------
     以下実験中。仕様が変わる可能性が高いです。
+
+-----------------------------------------------------------------------
+■ range '..'   範囲を指定した list-object の表記
+
+    range 表記 '..' は、 list-object の簡易表記です。
+
+    1..2 は [ 1, 2, ] と等価です。
+    3..6 は [ 3, 4, 5, 6, ] と等価です。
+    9..5 は [ 9, 8, 7, 6, 5, ] と等価です。
+
+
+    バグっている？↓
+    @.co << 3.{{ [ it ] }}  ... [ [ 0, ], [ 1, ], [ 2, ], ]
+
+
+</pre><script>
+
+birds_script( "\
+    @.co << 5..7 ;             ... [ 5, 6, 7, ]\n\
+    @.co << 5..7.{{ it*2 }} ;  ... [ 10, 12, 14, ]",
+    "",
+    "[ 5, 6, 7, ][ 10, 12, 14, ]"
+) ;
+
+birds_script( "\
+    @.co << 3.{{ [ it ] }}  ... [ [ 0, ], [ 1, ], [ 2, ], ]",
+    "(<< (. @ .co ) (each 3 { [ it ] } ) )",
+    "[ [ 0, ], [ 1, ], [ 2, ], ]"
+) ;
+
+</script><pre>
+
 
     C言語のように文字を計算するのは、やはりちょっと抵抗がある
 
@@ -894,7 +1116,7 @@ birds_script( "\
     }} ;\n\
     @.co << d ; ... d : 'STRING'",
     "(; (:: c 'String' ) ) (; (: d (each c { (; (?? (&& (>= it 'a' ) (<= it 'z' ) ) { (<< out (- it ( (- 'a' 'A' ) ) ) ) } { (<< out it ) } ) ) } ) ) ) (; (<< (. @ .co ) d ) )",
-    'STRING'
+    "STRING"
 ) ;
 
 </script><pre>
@@ -920,8 +1142,8 @@ birds_script( "\
         ret : foo() ; ... 関数 foo の戻り値を ret に格納\n\
         obj : Woo() ; ... Woo のインスタンス obj を生成\n\
     )",
-    '( (; (: foo { (; (<< (. @ .co ) 111 ) ) } ) ) (; (: Woo { (; (<< (. @ .co ) 222 ) ) (: dtor { (; (<< (. @ .co ) 333 ) ) } ) } ) ) (; (: ret (call foo [  ] ) ) ) (; (: obj (call Woo [  ] ) ) ) )',
-    '111222333'
+    "( (; (: foo { (; (<< (. @ .co ) 111 ) ) } ) ) (; (: Woo { (; (<< (. @ .co ) 222 ) ) (: dtor { (; (<< (. @ .co ) 333 ) ) } ) } ) ) (; (: ret (call foo [  ] ) ) ) (; (: obj (call Woo [  ] ) ) ) )",
+    "111222333"
 ) ;
 
 </script><pre>
@@ -943,8 +1165,8 @@ birds_script( "\
             }\n\
         }() ;             ... 無名関数をその場で呼び出す\n\
     )",
-    '( (; (: ret (call { (; (<< (. @ .co ) 111 ) ) } [  ] ) ) ) (; (: obj (call { (; (<< (. @ .co ) 222 ) ) (: dtor { (; (<< (. @ .co ) 333 ) ) } ) } [  ] ) ) ) )',
-    '111222333'
+    "( (; (: ret (call { (; (<< (. @ .co ) 111 ) ) } [  ] ) ) ) (; (: obj (call { (; (<< (. @ .co ) 222 ) ) (: dtor { (; (<< (. @ .co ) 333 ) ) } ) } [  ] ) ) ) )",
+    "111222333"
 );
 
 </script><pre>
@@ -959,8 +1181,8 @@ birds_script( "\
     foo = { @.co << 222 } ; ... こっちの関数に置き換わる\n\
     \n\
     foo() ;                 ... 関数 foo をコール",
-    '(; (:: foo { (<< (. @ .co ) 111 ) } ) ) (; (= foo { (<< (. @ .co ) 222 ) } ) ) (; (call foo [  ] ) )',
-    '222'
+    "(; (:: foo { (<< (. @ .co ) 111 ) } ) ) (; (= foo { (<< (. @ .co ) 222 ) } ) ) (; (call foo [  ] ) )",
+    "222"
 ) ;
 
 </script><pre>
@@ -993,7 +1215,7 @@ birds_script( "\
     } ;\n\
     foo( a:1 ) ; ... 引数は連想配列(list-object)で指定",
     "(; (: foo { (; (<< (<< (. @ .co ) _a ) ', ' ) ) (; (<< (. @ .co ) arg_size ) ) } ) ) (; (call foo [ (: a 1 ) ] ) )",
-    '1, 1'
+    "1, 1"
 ) ;
 
 birds_script( "\
@@ -1004,8 +1226,8 @@ birds_script( "\
         @.co << arg_size ;   ... 10\n\
     } ;\n\
     woo( x:1, y:2, z:3, a:4, b:5, c:6, d:7, e:8, f:9, g:10, ) ;",
-    "(; (: woo { (; (<< (<< (. @ .co ) _x ) ', ' ) ) (; (<< (<< (. @ .co ) _y ) ', ' ) ) (; (<< (<< (. @ .co ) _z ) ', ' ) ) (; (<< (. @ .co ) arg_size ) ) } ) ) (; (call woo [ (: x 1 ) (: y 2 ) (: z 3 ) (: a 4 ) (: b 5 ) (: c 6 ) (: d 7 ) (: e 8 ) (: f 9 ) (: g 10 ) ] ) )",
-    '1, 2, 3, 10'
+    "(; (: woo { (; (<< (<< (. @ .co ) _x ) ', ' ) ) (; (<< (<< (. @ .co ) _y ) ', ' ) ) (; (<< (<< (. @ .co ) _z ) ', ' ) ) (; (<< (. @ .co ) arg_size ) ) } ) ) (; (call woo [ (, (: x 1 ) ) (, (: y 2 ) ) (, (: z 3 ) ) (, (: a 4 ) ) (, (: b 5 ) ) (, (: c 6 ) ) (, (: d 7 ) ) (, (: e 8 ) ) (, (: f 9 ) ) (, (: g 10 ) ) ] ) )",
+    "1, 2, 3, 10"
 ) ;
 
 </script><pre>
@@ -1013,9 +1235,9 @@ birds_script( "\
 -----------------------------------------------------------------------
 ■ return[] と戻り値
 
-    戻り値は return[] 文。複数の値が返せます。いや、配列 list-object しか返せません！注意が必要です。
+    戻り値は return[] 文。複数の値が返せます。いや、list-objectしか返せません！注意が必要です。
 
-    うっかり .0 を忘れると配列 list-object そのものを参照してしまいます。
+    うっかり .0 を忘れると list-objectそのものを参照してしまいます。
 
     予約語： return[]
 
@@ -1052,8 +1274,8 @@ birds_script( "\
     \n\
     r5 : foo5() ;\n\
     @.co << r5.b ; ... 20",
-    "(; (: foo1 { (; (return [ (: x 123 ) (: y 456 ) ] ) ) } ) ) (; (: foo2 { (; (return [ 123 ] ) ) } ) ) (; (: foo3 { (; (return [ 123 456 ] ) ) } ) ) (; (: foo4 { (; (return [  ] ) ) } ) ) (; (: foo5 { (; (return [ (: a 10 ) (: b 20 ) (: c 30 ) ] ) ) } ) ) (; (: r1 (call foo1 [  ] ) ) ) (; (<< (<< (<< (<< (. @ .co ) (. r1 .x ) ) ',' ) (. r1 .y ) ) ', ' ) ) (; (: r2 (call foo2 [  ] ) ) ) (; (<< (<< (. @ .co ) (. r2 .0 ) ) ', ' ) ) (; (: r3 (call foo3 [  ] ) ) ) (; (<< (<< (. @ .co ) (. r3 .1 ) ) ', ' ) ) (; (: r4 (call foo4 [  ] ) ) ) (; (<< (<< (. @ .co ) r4 ) ', ' ) ) (; (: r5 (call foo5 [  ] ) ) ) (; (<< (. @ .co ) (. r5 .b ) ) )",
-    '123,456, 123, 456, [ ], 20'
+    "(; (: foo1 { (; (return [ (, (: x 123 ) ) (: y 456 ) ] ) ) } ) ) (; (: foo2 { (; (return [ 123 ] ) ) } ) ) (; (: foo3 { (; (return [ (, 123 ) 456 ] ) ) } ) ) (; (: foo4 { (; (return [  ] ) ) } ) ) (; (: foo5 { (; (return [ (, (: a 10 ) ) (, (: b 20 ) ) (: c 30 ) ] ) ) } ) ) (; (: r1 (call foo1 [  ] ) ) ) (; (<< (<< (<< (<< (. @ .co ) (. r1 .x ) ) ',' ) (. r1 .y ) ) ', ' ) ) (; (: r2 (call foo2 [  ] ) ) ) (; (<< (<< (. @ .co ) (. r2 .0 ) ) ', ' ) ) (; (: r3 (call foo3 [  ] ) ) ) (; (<< (<< (. @ .co ) (. r3 .1 ) ) ', ' ) ) (; (: r4 (call foo4 [  ] ) ) ) (; (<< (<< (. @ .co ) r4 ) ', ' ) ) (; (: r5 (call foo5 [  ] ) ) ) (; (<< (. @ .co ) (. r5 .b ) ) )",
+    "123,456, 123, 456, [ ], 20"
 ) ;
 
 </script><pre>
@@ -1080,7 +1302,7 @@ birds_script( "\
     @.co << foo1() ;\n\
     @.co << foo2() ;\n\
     @.co << foo3() ;",
-    "(; (: foo1 { (; (: a 1 ) ) (; (: b 1 ) ) (; (: c 3 ) ) (; (?? (== a b ) { (return [ (?? (== c b ) { 1 } { 2 } ) ] ) } ) ) } ) (: foo2 { (; (: a 1 ) ) (; (: b 1 ) ) (; (?? (== a b ) { (return [ 1 2 3 ] ) } ) ) } ) (: foo3 { (; (: a 1 ) ) (; (: b 1 ) ) (; (?? (== a b ) { (return [ (: x 1 ) (: y 2 ) (: z 3 ) ] ) } ) ) } ) (<< (. @ .co ) (call foo1 [  ] ) ) ) (; (<< (. @ .co ) (call foo2 [  ] ) ) ) (; (<< (. @ .co ) (call foo3 [  ] ) ) )",
+    "(; (: foo1 { (; (: a 1 ) ) (; (: b 1 ) ) (; (: c 3 ) ) (; (?? (== a b ) { (return [ (?? (== c b ) { 1 } { 2 } ) ] ) } ) ) } ) (: foo2 { (; (: a 1 ) ) (; (: b 1 ) ) (; (?? (== a b ) { (return [ (, 1 ) (, 2 ) (, 3 ) ] ) } ) ) } ) (: foo3 { (; (: a 1 ) ) (; (: b 1 ) ) (; (?? (== a b ) { (return [ (, (: x 1 ) ) (, (: y 2 ) ) (, (: z 3 ) ) ] ) } ) ) } ) (<< (. @ .co ) (call foo1 [  ] ) ) ) (; (<< (. @ .co ) (call foo2 [  ] ) ) ) (; (<< (. @ .co ) (call foo3 [  ] ) ) )",
     "[ 2, ][ 1, 2, 3, ][ 1, 2, 3, ]"
 ) ;
 
@@ -1104,7 +1326,7 @@ birds_script( "\
     foo : Foo() ;\n\
     foo.x = 0 ;  ... NG\n\
     foo.y = 0 ;  ... OK",
-    '(; (: Foo { (; (:: x 123 ) ) (; (:: .y 456 ) ) } ) ) (; (: foo (call Foo [  ] ) ) ) (; (= (. foo .x ) 0 ) ) (; (= (. foo .y ) 0 ) )',
+    "(; (: Foo { (; (:: x 123 ) ) (; (:: .y 456 ) ) } ) ) (; (: foo (call Foo [  ] ) ) ) (; (= (. foo .x ) 0 ) ) (; (= (. foo .y ) 0 ) )",
     "undefined variable.: foo.x\n"
 ) ;
 
@@ -1127,7 +1349,7 @@ birds_script( "\
     foo : Foo() ;\n\
     foo.x() ;  ... NG\n\
     foo.y() ;  ... OK",
-    '(; (: Foo { (; (: x {  } ) ) (; (: .y {  } ) ) } ) ) (; (: foo (call Foo [  ] ) ) ) (; (call (. foo .x ) [  ] ) ) (; (call (. foo .y ) [  ] ) )',
+    "(; (: Foo { (; (: x {  } ) ) (; (: .y {  } ) ) } ) ) (; (: foo (call Foo [  ] ) ) ) (; (call (. foo .x ) [  ] ) ) (; (call (. foo .y ) [  ] ) )",
     "undefined variable.: foo.x\n"
 ) ;
 
@@ -1144,6 +1366,13 @@ birds_script( "\
 
     それぞれの型を確認するには .type を使います。
 
+    int　 整数
+    str  文字列
+    func　関数
+    list　list-object
+    enum 列挙型(boolも含まれる予定)
+
+
 </pre><script>
 
 birds_script( "\
@@ -1158,7 +1387,7 @@ birds_script( "\
     @.co << f.type << ', ' ; ... func, \n\
     @.co << l.type << ', ' ; ... list, \n\
     @.co << m.type  ;        ... list",
-    "(; (: i 100 ) ) (; (: s 'Hello' ) ) (; (: f { } ) ) (; (: l [  ] ) ) (; (: m [ (: a 1 ) (: b 2 ) ] ) ) (; (<< (<< (. @ .co ) (. i .type ) ) ', ' ) ) (; (<< (<< (. @ .co ) (. s .type ) ) ', ' ) ) (; (<< (<< (. @ .co ) (. f .type ) ) ', ' ) ) (; (<< (<< (. @ .co ) (. l .type ) ) ', ' ) ) (; (<< (. @ .co ) (. m .type ) ) )",
+    "(; (: i 100 ) ) (; (: s 'Hello' ) ) (; (: f { } ) ) (; (: l [  ] ) ) (; (: m [ (, (: a 1 ) ) (, (: b 2 ) ) ] ) ) (; (<< (<< (. @ .co ) (. i .type ) ) ', ' ) ) (; (<< (<< (. @ .co ) (. s .type ) ) ', ' ) ) (; (<< (<< (. @ .co ) (. f .type ) ) ', ' ) ) (; (<< (<< (. @ .co ) (. l .type ) ) ', ' ) ) (; (<< (. @ .co ) (. m .type ) ) )",
     "int, str, func, list, list"
 ) ;
 
@@ -1168,7 +1397,7 @@ birds_script( "\
     @.co << {}.type      << ', ' ; ... func, \n\
     @.co << [].type      << ', ' ; ... list, \n\
     @.co << [ a:1, b:2, ].type  ;  ... list",
-    "(; (<< (<< (. @ .co ) (. 100 .type ) ) ', ' ) ) (; (<< (<< (. @ .co ) (. 'World' .type ) ) ', ' ) ) (; (<< (<< (. @ .co ) (. { } .type ) ) ', ' ) ) (; (<< (<< (. @ .co ) (. [  ] .type ) ) ', ' ) ) (; (<< (. @ .co ) (. [ (: a 1 ) (: b 2 ) ] .type ) ) )",
+    "(; (<< (<< (. @ .co ) (. 100 .type ) ) ', ' ) ) (; (<< (<< (. @ .co ) (. 'World' .type ) ) ', ' ) ) (; (<< (<< (. @ .co ) (. { } .type ) ) ', ' ) ) (; (<< (<< (. @ .co ) (. [  ] .type ) ) ', ' ) ) (; (<< (. @ .co ) (. [ (, (: a 1 ) ) (, (: b 2 ) ) ] .type ) ) )",
     "int, str, func, list, list"
 ) ;
 
@@ -1203,7 +1432,7 @@ birds_script( "\
     n = NUM.TWO ;\n\
     @.co << n << ', ' ; ... TWO\n\
     n = NUM.ZERO ;      ... NG undefined",
-    "(; (: NUM [ ONE TWO ] ) ) (; (:: n (. NUM .ONE ) ) ) (; (<< (<< (. @ .co ) n ) ', ' ) ) (; (= n (. NUM .TWO ) ) ) (; (<< (<< (. @ .co ) n ) ', ' ) ) (; (= n (. NUM .ZERO ) ) )",
+    "(; (: NUM [ (, ONE ) (, TWO ) ] ) ) (; (:: n (. NUM .ONE ) ) ) (; (<< (<< (. @ .co ) n ) ', ' ) ) (; (= n (. NUM .TWO ) ) ) (; (<< (<< (. @ .co ) n ) ', ' ) ) (; (= n (. NUM .ZERO ) ) )",
     "undefined variable.: NUM.ZERO"
 ) ;
 birds_script( "\
@@ -1212,7 +1441,7 @@ birds_script( "\
     n = TWO ;\n\
     @.co << n << ', ' ; ... TWO\n\
     n = ZERO ;          ... NG undefined",
-    "(; (:: n (. [ ONE TWO ] .ONE ) ) ) (; (<< (<< (. @ .co ) n ) ', ' ) ) (; (= n TWO ) ) (; (<< (<< (. @ .co ) n ) ', ' ) ) (; (= n ZERO ) )",
+    "(; (:: n (. [ (, ONE ) (, TWO ) ] .ONE ) ) ) (; (<< (<< (. @ .co ) n ) ', ' ) ) (; (= n TWO ) ) (; (<< (<< (. @ .co ) n ) ', ' ) ) (; (= n ZERO ) )",
     "undefined variable.: literal.ZERO"
 ) ;
 
@@ -1416,7 +1645,7 @@ birds_script( "\
     \n\
     @.co << f( x:7, y:8, z:9 ) << '; ' ;  ... 関数 f の戻り値 list-object の確認 その１\n\
     f( x:7, y:8, z:9 ).{{ @.co << idx << ':' << it << ', ' ; }} ;  ... 関数 f の戻り値 list-object の確認 その２",
-    "(; (: f { (; (: a 1 ) ) (; (: b 2 ) ) (; (: .c 3 ) ) (; (return [ 4 5 6 ] ) ) } ) (<< (<< (. @ .co ) (call f [ (: x 7 ) (: y 8 ) (: z 9 ) ] ) ) '; ' ) ) (; (each (call f [ (: x 7 ) (: y 8 ) (: z 9 ) ] ) { (; (<< (<< (<< (<< (. @ .co ) idx ) ':' ) it ) ', ' ) ) } ) )",
+    "(; (: f { (; (: a 1 ) ) (; (: b 2 ) ) (; (: .c 3 ) ) (; (return [ (, 4 ) (, 5 ) (, 6 ) ] ) ) } ) (<< (<< (. @ .co ) (call f [ (, (: x 7 ) ) (, (: y 8 ) ) (: z 9 ) ] ) ) '; ' ) ) (; (each (call f [ (, (: x 7 ) ) (, (: y 8 ) ) (: z 9 ) ] ) { (; (<< (<< (<< (<< (. @ .co ) idx ) ':' ) it ) ', ' ) ) } ) )",
     "[ 3, 4, 5, 6, ]; c:3, 0:4, 1:5, 2:6, "
 ) ;
 
@@ -1426,11 +1655,11 @@ birds_script( "\
 
 </pre><script>
 
-birds_script( '\
+birds_script( "\
     @.co << 0 ;\n\
     @.co << ( 1 ) ;\n\
     @.co << ( ( 2 ) ) ;\n\
-    @.co << ( ( ( 3 ) ) ) ;',
+    @.co << ( ( ( 3 ) ) ) ;",
     "(; (<< (. @ .co ) 0 ) ) (; (<< (. @ .co ) ( 1 ) ) ) (; (<< (. @ .co ) ( ( 2 ) ) ) ) (; (<< (. @ .co ) ( ( ( 3 ) ) ) ) )",
     "0123"
 ) ;
@@ -1441,24 +1670,24 @@ birds_script( '\
 
 </pre><script>
 
-birds_script( '\
+birds_script( "\
     --- １、return を使うパターン\n\
     fact : { return[ _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 ] ; }  ;\n\
-    @.co << fact( n:3 ).0 ;',
+    @.co << fact( n:3 ).0 ;",
     "(; (: fact { (; (return [ (?? (<= _n 1 ) { 1 } { (* _n (. (call fact [ (: n (- _n 1 ) ) ] ) .0 ) ) } ) ] ) ) } ) ) (; (<< (. @ .co ) (. (call fact [ (: n 3 ) ] ) .0 ) ) )",
     "6"
 ) ;
-birds_script( '\
+birds_script( "\
     --- ２、public member を使うパターン\n\
     fact2 : { .r : ( _n <= 1 ?? 1 !! _n * fact2( n:_n-1 ).r ) ; } ;\n\
-    @.co << fact2( n:3 ).r ;',
+    @.co << fact2( n:3 ).r ;",
     "(; (: fact2 { (; (: .r ( (?? (<= _n 1 ) { 1 } { (* _n (. (call fact2 [ (: n (- _n 1 ) ) ] ) .r ) ) } ) ) ) ) } ) ) (; (<< (. @ .co ) (. (call fact2 [ (: n 3 ) ] ) .r ) ) )",
     "6"
 ) ;
-birds_script( '\
+birds_script( "\
     --- ３、戻り値を直接使うパターン\n\
     fact3 : { _n <= 1 ?? 1 !! _n * fact3( n:_n-1 ).0 } ;\n\
-    @.co << fact3( n:3 ).0 ;',
+    @.co << fact3( n:3 ).0 ;",
     "(; (: fact3 { (?? (<= _n 1 ) { 1 } { (* _n (. (call fact3 [ (: n (- _n 1 ) ) ] ) .0 ) ) } ) } ) ) (; (<< (. @ .co ) (. (call fact3 [ (: n 3 ) ] ) .0 ) ) )",
     "6"
 ) ;
@@ -1543,7 +1772,7 @@ birds_script( "\
     p :: [3,1,4,1,5,9,2,6,5,3,5,8,9,7,9] ;\n\
     quick_sort( a:p, first:0, last:14 ) ;\n\
     p.{{ @.co << it << ', ' }} ; ... 1, 1, 2, 3, 3, 4, 5, 5, 5, 6, 7, 8, 9, 9, 9, ",
-    "(; (: quick_sort { (; (: x (at _a (/ ( (+ _first _last ) ) 2 ) ) ) ) (; (:: i _first ) ) (; (:: j _last ) ) (; (loop { (; (loop { (?? (< (at _a i ) x ) { (++ i ) } { (break [  ] ) } ) } ) (loop { (?? (< x (at _a j ) ) { (-- j ) } { (break [  ] ) } ) } ) (?? (>= i j ) { (break [  ] ) } ) ) (; (: t (at _a i ) ) ) (; (= (at _a i ) (at _a j ) ) ) (; (= (at _a j ) t ) ) (; (++ i ) ) (; (-- j ) ) } ) (-- i ) ) (; (?? (< _first i ) { (call quick_sort [ (: a _a ) (: first _first ) (: last i ) ] ) } ) ) (; (++ j ) ) (; (?? (< j _last ) { (call quick_sort [ (: a _a ) (: first j ) (: last _last ) ] ) } ) ) } ) (:: p [ 3 1 4 1 5 9 2 6 5 3 5 8 9 7 9 ] ) ) (; (call quick_sort [ (: a p ) (: first 0 ) (: last 14 ) ] ) ) (; (each p { (<< (<< (. @ .co ) it ) ', ' ) } ) )",
+    "(; (: quick_sort { (; (: x (at _a (/ ( (+ _first _last ) ) 2 ) ) ) ) (; (:: i _first ) ) (; (:: j _last ) ) (; (loop { (; (loop { (?? (< (at _a i ) x ) { (++ i ) } { (break [  ] ) } ) } ) (loop { (?? (< x (at _a j ) ) { (-- j ) } { (break [  ] ) } ) } ) (?? (>= i j ) { (break [  ] ) } ) ) (; (: t (at _a i ) ) ) (; (= (at _a i ) (at _a j ) ) ) (; (= (at _a j ) t ) ) (; (++ i ) ) (; (-- j ) ) } ) (-- i ) ) (; (?? (< _first i ) { (call quick_sort [ (, (: a _a ) ) (, (: first _first ) ) (: last i ) ] ) } ) ) (; (++ j ) ) (; (?? (< j _last ) { (call quick_sort [ (, (: a _a ) ) (, (: first j ) ) (: last _last ) ] ) } ) ) } ) (:: p [ (, 3 ) (, 1 ) (, 4 ) (, 1 ) (, 5 ) (, 9 ) (, 2 ) (, 6 ) (, 5 ) (, 3 ) (, 5 ) (, 8 ) (, 9 ) (, 7 ) 9 ] ) ) (; (call quick_sort [ (, (: a p ) ) (, (: first 0 ) ) (: last 14 ) ] ) ) (; (each p { (<< (<< (. @ .co ) it ) ', ' ) } ) )",
     "1, 1, 2, 3, 3, 4, 5, 5, 5, 6, 7, 8, 9, 9, 9, "
 );
 
@@ -1557,7 +1786,7 @@ birds_script( "\
     }\n\
     \n\
     hanoi( n:3, fm:'A', tmp:'B', to:'C', ) ;",
-    "(; (: hanoi { (; (?? (<= _n 0 ) { (return [  ] ) } ) ) (; (call hanoi [ (: n (- _n 1 ) ) (: fm _fm ) (: tmp _to ) (: to _tmp ) ] ) ) (; (<< (<< (<< (<< (<< (<< (. @ .co ) _n ) ':' ) _fm ) '->' ) _to ) ', ' ) ) (; (call hanoi [ (: n (- _n 1 ) ) (: fm _tmp ) (: tmp _fm ) (: to _to ) ] ) ) } ) (call hanoi [ (: n 3 ) (: fm 'A' ) (: tmp 'B' ) (: to 'C' ) ] ) )",
+    "(; (: hanoi { (; (?? (<= _n 0 ) { (return [  ] ) } ) ) (; (call hanoi [ (, (: n (- _n 1 ) ) ) (, (: fm _fm ) ) (, (: tmp _to ) ) (: to _tmp ) ] ) ) (; (<< (<< (<< (<< (<< (<< (. @ .co ) _n ) ':' ) _fm ) '->' ) _to ) ', ' ) ) (; (call hanoi [ (, (: n (- _n 1 ) ) ) (, (: fm _tmp ) ) (, (: tmp _fm ) ) (: to _to ) ] ) ) } ) (call hanoi [ (, (: n 3 ) ) (, (: fm 'A' ) ) (, (: tmp 'B' ) ) (, (: to 'C' ) ) ] ) )",
     "1:A->C, 2:A->B, 1:C->B, 3:A->C, 1:B->A, 2:B->C, 1:A->C, "
 );
 
@@ -1732,7 +1961,7 @@ quick_sort( a:p, first:0, last:14 ) ; @.co << p ; ... @.co << p.sort()  って�
 
 </pre>
 
-<a href="https://twitter.com/share" class="twitter-share-button" data-text="BirdsScript" data-lang="ja" data-size="large" data-count="none" data-hashtags="BirdsScript">ツイート</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+<!-- <a href="https://twitter.com/share" class="twitter-share-button" data-text="BirdsScript" data-lang="ja" data-size="large" data-count="none" data-hashtags="BirdsScript">ツイート</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
 <div class="g-plusone" data-annotation="none"></div><script type="text/javascript">window.___gcfg = {lang: 'ja'};(function() {var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;po.src = 'https://apis.google.com/js/plusone.js'; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);})();</script>
 <a href="http://b.hatena.ne.jp/entry/" class="hatena-bookmark-button" data-hatena-bookmark-layout="standard-noballoon" data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加"><img src="http://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="http://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
 <div id="fb-root"></div>
@@ -1743,6 +1972,6 @@ quick_sort( a:p, first:0, last:14 ) ; @.co << p ; ... @.co << p.sort()  って�
   js.src = "//connect.facebook.net/ja_JP/all.js#xfbml=1";
   fjs.parentNode.insertBefore(js, fjs);
 }(document, 'script', 'facebook-jssdk'));</script><div class="fb-comments" data-href="https://dl.dropboxusercontent.com/s/rms83ka38q6vjrw/BirdsScript.html" data-colorscheme="light" data-width="470"></div>
-
+ -->
 </body>
 </html>
