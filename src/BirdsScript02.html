@@ -10,11 +10,14 @@
 <script type="text/javascript" charset="utf-8" src="Yamasemi.js"></script>
 <script type="text/javascript" charset="utf-8" src="Kawasemi.js"></script>
 <script>
+
+var c_max = 0 ;
+var c_NG = 0 ;
 function birds_script( _in, _check1, _check2 )
 {
     var interlanguage = yamasemi_compiler( _in, false ) ;
     var bgc1 = ( _check1 === interlanguage ) ? '#9D9' : '#D55' ;
-    document.write( '<pre style="background-color:'+bgc1+';padding:20px;">'+_in+'<br></pre>' ) ;
+    document.write( '<pre id="id'+c_max+'" style="background-color:'+bgc1+';padding:20px;">'+_in+'</pre>' ) ;
 
     if ( _check2 === 'NG' ) {
         document.write( '<pre style="background-color:#99D;padding:20px;">'+interlanguage+'<br></pre>' ) ;
@@ -24,17 +27,22 @@ function birds_script( _in, _check1, _check2 )
         if ( _check2 === result )
             document.write( '<pre style="background-color:#99D;padding:20px;">'+result+'<br></pre>' ) ;
         else
+        {
             document.write( '<pre style="background-color:#D55;padding:20px;">'+result+'<br>'+_check2+'<br></pre>' ) ;
+            ++ c_NG ;
+        }
     }
+    document.write( '<div align="right" ><input type="button" value="test" onclick="document.getElementById(\'yamasemi\').value=document.getElementById(\'id'+c_max+'\').innerText;location.href=\'#\'" ></div>' ) ;
+    ++ c_max ;
 }
 </script>
 </head>
 <body>
 BirdsScript ver.0.01 (c) 2013/08 YAMAZAKI Satoshi.<br>
-<a href="https://twitter.com/share" class="twitter-share-button" data-text="BirdsScript" data-lang="ja" data-size="large" data-count="none" data-hashtags="BirdsScript">ツイート</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s) ;js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs) ;}}(document, 'script', 'twitter-wjs') ;</script>　<div class="g-plusone" data-annotation="none"></div><script type="text/javascript">window.___gcfg = {lang: 'ja'};(function() {var po = document.createElement('script') ; po.type = 'text/javascript'; po.async = true;po.src = 'https://apis.google.com/js/plusone.js'; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s) ;})() ;</script>　<a href="http://b.hatena.ne.jp/entry/" class="hatena-bookmark-button" data-hatena-bookmark-layout="standard-noballoon" data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加"><img src="http://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="http://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
+<!-- <a href="https://twitter.com/share" class="twitter-share-button" data-text="BirdsScript" data-lang="ja" data-size="large" data-count="none" data-hashtags="BirdsScript">ツイート</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s) ;js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs) ;}}(document, 'script', 'twitter-wjs') ;</script>　<div class="g-plusone" data-annotation="none"></div><script type="text/javascript">window.___gcfg = {lang: 'ja'};(function() {var po = document.createElement('script') ; po.type = 'text/javascript'; po.async = true;po.src = 'https://apis.google.com/js/plusone.js'; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s) ;})() ;</script>　<a href="http://b.hatena.ne.jp/entry/" class="hatena-bookmark-button" data-hatena-bookmark-layout="standard-noballoon" data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加"><img src="http://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="http://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
 <br>
-試作ページとして公開を開始しました。(2013/12/23)<br>
-\n \t に対応。現在も試作途中(2014/07/13)<br>
+ -->試作ページとして公開を開始しました。(2013/12/23)<br>
+現在も試作途中。なんかいわゆる関数型言語に近くなってきたきがする。(2014/07/17)<br>
 <textarea cols="60" rows="8" id="yamasemi">
 
 --- sample code 階乗(fact) の関数宣言
@@ -460,7 +468,7 @@ birds_script( "\
 
     オブジェクトには list を使います。
 
-    関数を使うことで class 同じような記述ができます。
+    関数と list を使うことで class 同じような記述ができます。
 
 </pre><script>
 
@@ -471,7 +479,7 @@ birds_script( "\
         .count : { ++ member_a ; } ;            ... member_a をインクリメントするメソッド　.count の宣言\n\
     } ;\n\
     \n\
-    f : ClassFoo() ;  ... ClassFooを実行して、戻り値のオブジェクト（list）に f という名前をつけます。\n\
+    f : ClassFoo() ;  ... ClassFooを実行して、戻り値の list に f という名前をつけます。\n\
     f.put() ;         ... 111, \n\
     f.count() ;\n\
     f.put() ;         ... 112, ",
@@ -500,7 +508,7 @@ birds_script( "\
         .count : { ++ member_a ; } ;\n\
     } ;\n\
     \n\
-    f : ClassFoo() ;        ... ClassFooを実行して、戻り値のオブジェクト（list）に f という名前をつけます。\n\
+    f : ClassFoo() ;        ... ClassFooを実行して、戻り値の list に f という名前をつけます。\n\
     @.co << f ;             ... f をそのまま表示してみる",
     "(; (: ClassFoo { (; (:: member_a 111 ) ) (; (: .put { (; (<< (<< (. @ .co ) member_a ) ', ' ) ) } ) ) (; (: .count { (; (++ member_a ) ) } ) ) } ) ) (; (: f (call ClassFoo [  ] ) ) ) (; (<< (. @ .co ) f ) )",
     "[ { }, { }, ]"
@@ -508,7 +516,7 @@ birds_script( "\
 
 birds_script( "\
     ClassFoo : {\n\
-        member_a :: _init ;     ... 引数で初期値を指定するように変更\n\
+        member_a :: _init ;     ... 引数 _init で初期値を指定するように変更\n\
         .put : { @.co << member_a << ', ' ; } ;\n\
         .count : { ++ member_a ; } ;\n\
     } ;\n\
@@ -531,8 +539,10 @@ birds_script( "\
 
     オブジェクト内メンバの表記
 
-    関数からの戻り値で作成するオブジェクト list 内のメンバは基本的に privateになり、オブジェクトの外からは参照できません。
+    関数からの戻り値で作成する list 内のメンバは基本的に privateになり、外からは参照できません。
     publicにしたい（外から見せたい）場合は変数名の先頭に '.' をつけることで参照可能になります。（記述コストで安全側に倒しています）
+
+    memo: '.' だと前の ident とつながってしまっていろいろ面倒が発生するから他の文字 '#' とかに変えたい。
 
 </pre><script>
 
@@ -551,7 +561,7 @@ birds_script( "\
 
 </script><pre>
 
-    オブジェクト内メソッドの表記も同様です。（メソッドとオブジェクトの区別は無いですが）
+    オブジェクト内メソッドの表記も同様です。
 
 </pre><script>
 
@@ -592,7 +602,7 @@ birds_script( "\
 </script><pre>
 
 -----------------------------------------------------------------------
-■ 例外 throw
+■ 例外 throw - catch
 
     例外は予約語 throw, exit を使い発生させます。
     throw, exit, で例外を発生させ処理を中断します。
@@ -1412,10 +1422,16 @@ birds_script( "\
 </script><pre>
 
 </pre>
+<script>
+if ( c_NG === 0 || c_max > 0 )
+    document.write( '<div style="background-color:#99D;padding:10px;">'+(c_max-c_NG)+'/'+c_max+' OK!</div>' ) ;
+else
+    document.write( '<div style="background-color:#D55;padding:10px;">'+(c_max-c_NG)+'/'+c_max+' NG!</div>' ) ;
+</script>
 
-<a href="https://twitter.com/share" class="twitter-share-button" data-text="BirdsScript" data-lang="ja" data-size="large" data-count="none" data-hashtags="BirdsScript">ツイート</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s) ;js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs) ;}}(document, 'script', 'twitter-wjs') ;</script>
+<!-- <a href="https://twitter.com/share" class="twitter-share-button" data-text="BirdsScript" data-lang="ja" data-size="large" data-count="none" data-hashtags="BirdsScript">ツイート</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s) ;js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs) ;}}(document, 'script', 'twitter-wjs') ;</script>
 <div class="g-plusone" data-annotation="none"></div><script type="text/javascript">window.___gcfg = {lang: 'ja'};(function() {var po = document.createElement('script') ; po.type = 'text/javascript'; po.async = true;po.src = 'https://apis.google.com/js/plusone.js'; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s) ;})() ;</script>
 <a href="http://b.hatena.ne.jp/entry/" class="hatena-bookmark-button" data-hatena-bookmark-layout="standard-noballoon" data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加"><img src="http://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="http://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
-
+ -->
 </body>
 </html>

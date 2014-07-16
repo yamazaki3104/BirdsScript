@@ -140,14 +140,17 @@ Copyright (c) YAMAZAKI Satoshi. All rights reserved.
 <title>BirdsScript</title>
 <meta charset="UTF-8">
 <style> body { background-color:#cccccc; } </style>
-<script type="text/javascript" charset="utf-8" src="Yamasemi.mini.js"></script>
-<script type="text/javascript" charset="utf-8" src="Kawasemi.mini.js"></script>
+<script type="text/javascript" charset="utf-8" src="Yamasemi.js"></script>
+<script type="text/javascript" charset="utf-8" src="Kawasemi.js"></script>
 <script>
+
+var c_max = 0 ;
+var c_NG = 0 ;
 function birds_script( _in, _check1, _check2 )
 {
     var interlanguage = yamasemi_compiler( _in, false ) ;
     var bgc1 = ( _check1 === interlanguage ) ? '#9D9' : '#D55' ;
-    document.write( '<pre style="background-color:'+bgc1+';padding:20px;">'+_in+'<br></pre>' ) ;
+    document.write( '<pre id="id'+c_max+'" style="background-color:'+bgc1+';padding:20px;">'+_in+'</pre>' ) ;
 
     if ( _check2 === 'NG' ) {
         document.write( '<pre style="background-color:#99D;padding:20px;">'+interlanguage+'<br></pre>' ) ;
@@ -157,17 +160,22 @@ function birds_script( _in, _check1, _check2 )
         if ( _check2 === result )
             document.write( '<pre style="background-color:#99D;padding:20px;">'+result+'<br></pre>' ) ;
         else
+        {
             document.write( '<pre style="background-color:#D55;padding:20px;">'+result+'<br>'+_check2+'<br></pre>' ) ;
+            ++ c_NG ;
+        }
     }
+    document.write( '<div align="right" ><input type="button" value="test" onclick="document.getElementById(\'yamasemi\').value=document.getElementById(\'id'+c_max+'\').innerText;location.href=\'#\'" ></div>' ) ;
+    ++ c_max ;
 }
 </script>
 </head>
 <body>
 BirdsScript ver.0.01 (c) 2013/08 YAMAZAKI Satoshi.<br>
-<a href="https://twitter.com/share" class="twitter-share-button" data-text="BirdsScript" data-lang="ja" data-size="large" data-count="none" data-hashtags="BirdsScript">ツイート</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script> <div class="g-plusone" data-annotation="none"></div><script type="text/javascript">window.___gcfg = {lang: 'ja'};(function() {var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;po.src = 'https://apis.google.com/js/plusone.js'; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);})();</script> <a href="http://b.hatena.ne.jp/entry/" class="hatena-bookmark-button" data-hatena-bookmark-layout="standard-noballoon" data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加"><img src="http://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="http://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
-<br>
+<!-- <a href="https://twitter.com/share" class="twitter-share-button" data-text="BirdsScript" data-lang="ja" data-size="large" data-count="none" data-hashtags="BirdsScript">ツイート</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script> <div class="g-plusone" data-annotation="none"></div><script type="text/javascript">window.___gcfg = {lang: 'ja'};(function() {var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;po.src = 'https://apis.google.com/js/plusone.js'; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);})();</script> <a href="http://b.hatena.ne.jp/entry/" class="hatena-bookmark-button" data-hatena-bookmark-layout="standard-noballoon" data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加"><img src="http://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="http://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
+<br> -->
 試作ページとして公開を開始しました。(2013/12/23)<br>
-現在も試作途中。なんかいわゆる関数型言語に近くなってきたきがする。(2014/07/15)<br>
+現在も試作途中。なんかいわゆる関数型言語に近くなってきたきがする。(2014/07/17)<br>
 <textarea cols="60" rows="8" id="yamasemi">
 --- sample code 階乗(fact) の関数宣言
 fact : { _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 } ;
@@ -1320,6 +1328,13 @@ birds_script( "\
   <a href="http://birdsscript.com/BirdsScript02.html">http://birdsscript.com/BirdsScript02.html</a>
 
 </pre>
+
+<script>
+if ( c_NG === 0 || c_max > 0 )
+    document.write( '<div style="background-color:#99D;padding:10px;">'+(c_max-c_NG)+'/'+c_max+' OK!</div>' ) ;
+else
+    document.write( '<div style="background-color:#D55;padding:10px;">'+(c_max-c_NG)+'/'+c_max+' NG!</div>' ) ;
+</script>
 
 <!-- <a href="https://twitter.com/share" class="twitter-share-button" data-text="BirdsScript" data-lang="ja" data-size="large" data-count="none" data-hashtags="BirdsScript">ツイート</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script><div class="g-plusone" data-annotation="none"></div><script type="text/javascript">window.___gcfg = {lang: 'ja'};(function() {var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;po.src = 'https://apis.google.com/js/plusone.js'; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);})();</script><a href="http://b.hatena.ne.jp/entry/" class="hatena-bookmark-button" data-hatena-bookmark-layout="standard-noballoon" data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加"><img src="http://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="http://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script> -->
 
