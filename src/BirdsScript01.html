@@ -2,7 +2,7 @@
 <html lang="ja">
 <!--
 つい、カッ！となってLL言語を作りはじめてしまいました。名前は「BirdsScript」です。
-（2014/07/14 現在、未完成。JavaScriptによる試作中。）
+（2014/07/27 現在、未完成。JavaScriptによる試作中。）
 
 Source Layout
 =============
@@ -140,8 +140,8 @@ Copyright (c) YAMAZAKI Satoshi. All rights reserved.
 <title>BirdsScript</title>
 <meta charset="UTF-8">
 <style> body { background-color:#cccccc; } </style>
-<script type="text/javascript" charset="utf-8" src="Yamasemi.js"></script>
-<script type="text/javascript" charset="utf-8" src="Kawasemi.js"></script>
+<script type="text/javascript" charset="utf-8" src="Yamasemi.mini.js"></script>
+<script type="text/javascript" charset="utf-8" src="Kawasemi.mini.js"></script>
 <script>
 
 var c_max = 0 ;
@@ -175,7 +175,7 @@ BirdsScript ver.0.01 (c) 2013/08 YAMAZAKI Satoshi.<br>
 <!-- <a href="https://twitter.com/share" class="twitter-share-button" data-text="BirdsScript" data-lang="ja" data-size="large" data-count="none" data-hashtags="BirdsScript">ツイート</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script> <div class="g-plusone" data-annotation="none"></div><script type="text/javascript">window.___gcfg = {lang: 'ja'};(function() {var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;po.src = 'https://apis.google.com/js/plusone.js'; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);})();</script> <a href="http://b.hatena.ne.jp/entry/" class="hatena-bookmark-button" data-hatena-bookmark-layout="standard-noballoon" data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加"><img src="http://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="http://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
 <br> -->
 試作ページとして公開を開始しました。(2013/12/23)<br>
-現在も試作途中。なんかいわゆる関数型言語に近くなってきたきがする。(2014/07/17)<br>
+現在も試作途中。メソッドチェーンが通るようになって、あと少しな感じになってきた。(2014/07/27)<br>
 <textarea cols="60" rows="8" id="yamasemi">
 --- sample code 階乗(fact) の関数宣言
 fact : { _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 } ;
@@ -210,16 +210,16 @@ document.getElementById('kawasemi_output').value=kawasemi_interpreter( document.
 </pre><script>
 
 birds_script( "\
-    @.co << 'Hello' << 'World' ; ... @.co はコンソール出力の意味です。ちょっと C++/STL のような表記です。",
-    "(; (<< (<< (. @ .co ) 'Hello' ) 'World' ) )",
-    "HelloWorld"
+@.co << 'Hello' << 'World' ; ... @.co はコンソール出力の意味です。ちょっと C++/STL のような表記です。",
+"(; (<< (<< (. @ .co ) 'Hello' ) 'World' ) )",
+"HelloWorld"
 ) ;
 
 birds_script( "\
-    @.co << 'Hello' ... 区切り文字 ';' は無くてもある程度は動きます。\n\
-    @.co << 'World' ... ただ、無いと優先順位がはっきりしない（可読性が悪い）ケースがあるので、なるべく書くことをおすすめします。",
-    "(<< (. @ .co ) 'Hello' ) (<< (. @ .co ) 'World' )",
-    "HelloWorld"
+@.co << 'Hello' ... 区切り文字 ';' は無くてもある程度は動きます。\n\
+@.co << 'World' ... ただ、無いと優先順位がはっきりしない（可読性が悪い）ケースがあるので、なるべく書くことをおすすめします。",
+"(<< (. @ .co ) 'Hello' ) (<< (. @ .co ) 'World' )",
+"HelloWorld"
 ) ;
 
 </script><pre>
@@ -240,20 +240,20 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    i : 0 ;  ... 整数型 int の定数宣言\n\
-    i = 99 ; ... NG 代入（上書き）は失敗します",
-    "(; (: i 0 ) ) (; (= i 99 ) )",
-    "\nrun-time error: cannot be set to a read-only property.: i.int"
+i : 0 ;  ... 整数型 int の定数宣言\n\
+i = 99 ; ... NG 代入（上書き）は失敗します",
+"(; (: i 0 ) ) (; (= i 99 ) )",
+"\nrun-time error: cannot be set to a read-only property.: i.int"
 ) ;
 // birds_script( "\
 //     str : "string\n" ; ... 文字列型定数 ... エスケープ有りの文字列',
 //     "(: str 'string\n' )"
 // ) ;
 birds_script( "\
-    s : 'string' ; ... 文字列型 str の定数宣言 ... エスケープ無しの文字列\n\
-    s = 'STRING' ; ... NG 代入（上書き）は失敗します",
-    "(; (: s 'string' ) ) (; (= s 'STRING' ) )",
-    "\nrun-time error: cannot be set to a read-only property.: s.str"
+s : 'string' ; ... 文字列型 str の定数宣言 ... エスケープ無しの文字列\n\
+s = 'STRING' ; ... NG 代入（上書き）は失敗します",
+"(; (: s 'string' ) ) (; (= s 'STRING' ) )",
+"\nrun-time error: cannot be set to a read-only property.: s.str"
 ) ;
 
 </script><pre>
@@ -264,35 +264,35 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    i :: 0 ;    ... 整数型 int の変数宣言.\n\
-    i = 99 ;    ... OK 代入は成功します\n\
-    \n\
-    @.co << i ; ... i を表示してみる",
-    "(; (:: i 0 ) ) (; (= i 99 ) ) (; (<< (. @ .co ) i ) )",
-    "99"
+i :: 0 ;    ... 整数型 int の変数宣言.\n\
+i = 99 ;    ... OK 代入は成功します\n\
+\n\
+@.co << i ; ... i を表示してみる",
+"(; (:: i 0 ) ) (; (= i 99 ) ) (; (<< (. @ .co ) i ) )",
+"99"
 ) ;
 
 birds_script( "\
-    s :: 'string' ; ... 文字列型 str の変数宣言\n\
-    s = 'STRING' ;  ... OK 代入は成功します\n\
-    \n\
-    @.co << s ;     ... str を表示してみる",
-    "(; (:: s 'string' ) ) (; (= s 'STRING' ) ) (; (<< (. @ .co ) s ) )",
-    "STRING"
+s :: 'string' ; ... 文字列型 str の変数宣言\n\
+s = 'STRING' ;  ... OK 代入は成功します\n\
+\n\
+@.co << s ;     ... str を表示してみる",
+"(; (:: s 'string' ) ) (; (= s 'STRING' ) ) (; (<< (. @ .co ) s ) )",
+"STRING"
 ) ;
 
 birds_script( "\
-    i :: 0 ;       ... 整数型 int の変数宣言.\n\
-    i = 'string' ; ... NG 型が違うので代入は失敗します",
-    "(; (:: i 0 ) ) (; (= i 'string' ) )",
-    "\nrun-time error: type mismatch.: i.int != literal.str"
+i :: 0 ;       ... 整数型 int の変数宣言.\n\
+i = 'string' ; ... NG 型が違うので代入は失敗します",
+"(; (:: i 0 ) ) (; (= i 'string' ) )",
+"\nrun-time error: type mismatch.: i.int != literal.str"
 ) ;
 
 birds_script( "\
-    s :: 'string' ; ... 文字列型 str の変数宣言\n\
-    s = 99 ;        ... NG 型が違うので代入は失敗します",
-    "(; (:: s 'string' ) ) (; (= s 99 ) )",
-    "\nrun-time error: type mismatch.: s.str != literal.int"
+s :: 'string' ; ... 文字列型 str の変数宣言\n\
+s = 99 ;        ... NG 型が違うので代入は失敗します",
+"(; (:: s 'string' ) ) (; (= s 99 ) )",
+"\nrun-time error: type mismatch.: s.str != literal.int"
 ) ;
 
 </script><pre>
@@ -307,38 +307,31 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    foo :: 1 ;\n\
-    foo > 0 ?? foo = 0 ; ... if 文 ... = は代入文\n\
-    \n\
-    @.co << foo ;        ... foo を表示してみる",
-    "(; (:: foo 1 ) ) (; (?? (> foo 0 ) { (= foo 0 ) } ) ) (; (<< (. @ .co ) foo ) )",
-    "0"
+foo :: 1 ;\n\
+foo > 0 ?? foo = 0 ; ... if 文 ... = は代入文\n\
+\n\
+@.co << foo ;        ... foo を表示してみる",
+"(; (:: foo 1 ) ) (; (?? (> foo 0 ) { (= foo 0 ) } ) ) (; (<< (. @ .co ) foo ) )",
+"0"
 ) ;
 
 birds_script( "\
-    foo :: 1 ;\n\
-    foo > 0 ?? foo = 0 !! foo = 1 ; ... if then else 文\n\
-    \n\
-    @.co << foo ; ... foo を表示してみる",
-    "(; (:: foo 1 ) ) (; (?? (> foo 0 ) { (= foo 0 ) } { (= foo 1 ) } ) ) (; (<< (. @ .co ) foo ) )",
-    "0"
+foo :: 1 ;\n\
+foo > 0 ?? foo = 0 !! foo = 1 ; ... if then else 文\n\
+\n\
+@.co << foo ; ... foo を表示してみる",
+"(; (:: foo 1 ) ) (; (?? (> foo 0 ) { (= foo 0 ) } { (= foo 1 ) } ) ) (; (<< (. @ .co ) foo ) )",
+"0"
 ) ;
 
 birds_script( "\
-    foo :: 1 ;\n\
-    boo : ( foo > 0 ?? 0 !! 1 ) ; ... スコープとの組み合わせ\n\
-    \n\
-    @.co << foo << ', ' ; ... foo を表示してみる\n\
-    @.co << boo ;         ... boo を表示してみる",
-    "(; (:: foo 1 ) ) (; (: boo (scope { (?? (> foo 0 ) { 0 } { 1 } ) } ) ) ) (; (<< (<< (. @ .co ) foo ) ', ' ) ) (; (<< (. @ .co ) boo ) )",
-    "1, 0"
-) ;
-
-birds_script( "\
-    foo :: 1 ;\n\
-    boo : foo > 0 ?? 0 !! 1 ; ... スコープなしだと NG. define ':' が if '??' より先に評価されちゃいます" ,
-    "syntax-error: 'boo'",
-    "NG"
+foo :: 1 ;\n\
+boo : foo > 0 ?? 0 !! 1 ;\n\
+\n\
+@.co << foo << ', ' ; ... foo を表示してみる\n\
+@.co << boo ;         ... boo を表示してみる",
+"(; (:: foo 1 ) ) (; (: boo (?? (> foo 0 ) { 0 } { 1 } ) ) ) (; (<< (<< (. @ .co ) foo ) ', ' ) ) (; (<< (. @ .co ) boo ) )",
+"1, 0"
 ) ;
 
 </script><pre>
@@ -351,19 +344,19 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    is_ok : true ; a :: 0 ;\n\
-    is_ok ?? a=1 !! a=2 ; ... NG",
-    "syntax-error: '??'",
-    "NG"
+is_ok : true ; a :: 0 ;\n\
+is_ok ?? a=1 !! a=2 ; ... NG",
+"syntax-error: '??'",
+"NG"
 ) ;
 
 birds_script( "\
-    is_ok : true ; a :: 0 ;\n\
-    is_ok == true ?? a=1 !! a=2 ; ... OK\n\
-    \n\
-    @.co << a ;                   ... a を表示してみる",
-    "(; (: is_ok true ) ) (; (:: a 0 ) ) (; (?? (== is_ok true ) { (= a 1 ) } { (= a 2 ) } ) ) (; (<< (. @ .co ) a ) )",
-    "1"
+is_ok : true ; a :: 0 ;\n\
+is_ok == true ?? a=1 !! a=2 ; ... OK\n\
+\n\
+@.co << a ;                   ... a を表示してみる",
+"(; (: is_ok true ) ) (; (:: a 0 ) ) (; (?? (== is_ok true ) { (= a 1 ) } { (= a 2 ) } ) ) (; (<< (. @ .co ) a ) )",
+"1"
 ) ;
 
 </script><pre>
@@ -374,9 +367,9 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    foo >= 0 !! foo = 0 ; ... NG",
-    "syntax-error: '!!'",
-    "NG"
+foo >= 0 !! foo = 0 ; ... NG",
+"syntax-error: '!!'",
+"NG"
 ) ;
 
 </script><pre>
@@ -401,33 +394,33 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    boo :: foo :: woo :: 5 ;\n\
-    foo < 0\n\
-    ?? ( boo = 0 ; foo = 0 ; woo = 0 ; )\n\
-    !! ( boo = 1 ; foo = 1 ; woo = 1 ; )\n\
-    \n\
-    @.co << boo << ', ' << foo << ', ' << woo ; ... foo, boo, woo を表示してみる",
-    "(; (:: boo (:: foo (:: woo 5 ) ) ) ) (; (?? (< foo 0 ) { (scope { (; (= boo 0 ) ) (; (= foo 0 ) ) (; (= woo 0 ) ) } ) } { (scope { (; (= boo 1 ) ) (; (= foo 1 ) ) (; (= woo 1 ) ) } ) } ) (<< (<< (<< (<< (<< (. @ .co ) boo ) ', ' ) foo ) ', ' ) woo ) )",
-    "1, 1, 1"
+boo :: foo :: woo :: 5 ;\n\
+foo < 0\n\
+?? ( boo = 0 ; foo = 0 ; woo = 0 ; )\n\
+!! ( boo = 1 ; foo = 1 ; woo = 1 ; )\n\
+\n\
+@.co << boo << ', ' << foo << ', ' << woo ; ... foo, boo, woo を表示してみる",
+"(; (:: boo (:: foo (:: woo 5 ) ) ) ) (; (?? (< foo 0 ) { (scope { (; (= boo 0 ) ) (; (= foo 0 ) ) (; (= woo 0 ) ) } ) } { (scope { (; (= boo 1 ) ) (; (= foo 1 ) ) (; (= woo 1 ) ) } ) } ) (<< (<< (<< (<< (<< (. @ .co ) boo ) ', ' ) foo ) ', ' ) woo ) )",
+"1, 1, 1"
 ) ;
 
 birds_script( "\
-    boo :: foo :: woo :: 5 ;\n\
-    foo < 0\n\
-    ?? (\n\
-        boo = 0 ;\n\
-        foo = 0 ;\n\
-        woo = 0 ;\n\
-    )\n\
-    !! (\n\
-        boo = 1 ;\n\
-        foo = 2 ;\n\
-        woo = 3 ;\n\
-    )\n\
-    \n\
-    @.co << boo << ', ' << foo << ', ' << woo ; ... foo, boo, woo を表示してみる",
-    "(; (:: boo (:: foo (:: woo 5 ) ) ) ) (; (?? (< foo 0 ) { (scope { (; (= boo 0 ) ) (; (= foo 0 ) ) (; (= woo 0 ) ) } ) } { (scope { (; (= boo 1 ) ) (; (= foo 2 ) ) (; (= woo 3 ) ) } ) } ) (<< (<< (<< (<< (<< (. @ .co ) boo ) ', ' ) foo ) ', ' ) woo ) )",
-    "1, 2, 3"
+boo :: foo :: woo :: 5 ;\n\
+foo < 0\n\
+?? (\n\
+    boo = 0 ;\n\
+    foo = 0 ;\n\
+    woo = 0 ;\n\
+)\n\
+!! (\n\
+    boo = 1 ;\n\
+    foo = 2 ;\n\
+    woo = 3 ;\n\
+)\n\
+\n\
+@.co << boo << ', ' << foo << ', ' << woo ; ... foo, boo, woo を表示してみる",
+"(; (:: boo (:: foo (:: woo 5 ) ) ) ) (; (?? (< foo 0 ) { (scope { (; (= boo 0 ) ) (; (= foo 0 ) ) (; (= woo 0 ) ) } ) } { (scope { (; (= boo 1 ) ) (; (= foo 2 ) ) (; (= woo 3 ) ) } ) } ) (<< (<< (<< (<< (<< (. @ .co ) boo ) ', ' ) foo ) ', ' ) woo ) )",
+"1, 2, 3"
 ) ;
 
 </script><pre>
@@ -438,32 +431,32 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    boo :: foo :: woo :: 5 ;\n\
-    b : (\n\
-        boo = 1 ;\n\
-        foo = 2 ;\n\
-        woo = 3 ;\n\
-        boo         ... 最後の';'を書かなければこの値が返ります\n\
-    ) ;\n\
-    \n\
-    @.co << b ;     ... b : 1",
-    "(; (:: boo (:: foo (:: woo 5 ) ) ) ) (; (: b (scope { (; (= boo 1 ) ) (; (= foo 2 ) ) (; (= woo 3 ) ) boo } ) ) ) (; (<< (. @ .co ) b ) )",
-    "1"
+boo :: foo :: woo :: 5 ;\n\
+b : (\n\
+    boo = 1 ;\n\
+    foo = 2 ;\n\
+    woo = 3 ;\n\
+    boo         ... 最後の';'を書かなければこの値が返ります\n\
+) ;\n\
+\n\
+@.co << b ;     ... b : 1",
+"(; (:: boo (:: foo (:: woo 5 ) ) ) ) (; (: b (scope { (; (= boo 1 ) ) (; (= foo 2 ) ) (; (= woo 3 ) ) boo } ) ) ) (; (<< (. @ .co ) b ) )",
+"1"
 ) ;
 
 
 birds_script( "\
-    boo :: foo :: woo :: 5 ;\n\
-    b : (\n\
-        boo = 1 ;\n\
-        foo = 2 ;\n\
-        woo = 3 ;\n\
-        boo ;       ... ちなみに最後に';'を書くと直前に評価した値がクリアされるので...\n\
-    ) ;\n\
-    \n\
-    @.co << b ;     ... b : [] 空の配列 list が返されます",
-    "(; (:: boo (:: foo (:: woo 5 ) ) ) ) (; (: b (scope { (; (= boo 1 ) ) (; (= foo 2 ) ) (; (= woo 3 ) ) (; boo ) } ) ) ) (; (<< (. @ .co ) b ) )",
-    "[ ]"
+boo :: foo :: woo :: 5 ;\n\
+b : (\n\
+    boo = 1 ;\n\
+    foo = 2 ;\n\
+    woo = 3 ;\n\
+    boo ;       ... ちなみに最後に';'を書くと直前に評価した値がクリアされるので...\n\
+) ;\n\
+\n\
+@.co << b ;     ... b : [] 空の配列 list が返されます",
+"(; (:: boo (:: foo (:: woo 5 ) ) ) ) (; (: b (scope { (; (= boo 1 ) ) (; (= foo 2 ) ) (; (= woo 3 ) ) (; boo ) } ) ) ) (; (<< (. @ .co ) b ) )",
+"[ ]"
 ) ;
 
 </script><pre>
@@ -474,17 +467,17 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    boo :: foo :: woo :: 5 ;\n\
-    b : (\n\
-        boo = 1 ;\n\
-        foo = 2 ;\n\
-        woo = 3 ;\n\
-        [ boo, foo, woo, ]  ... listの宣言。最後の';'を書かなければこの値が返ります\n\
-    ) ;\n\
-    \n\
-    @.co << b ;     ... b : [ 1, 2, 3, ]",
-    "(; (:: boo (:: foo (:: woo 5 ) ) ) ) (; (: b (scope { (; (= boo 1 ) ) (; (= foo 2 ) ) (; (= woo 3 ) ) [ (, boo ) (, foo ) (, woo ) ] } ) ) ) (; (<< (. @ .co ) b ) )",
-    "[ 1, 2, 3, ]"
+boo :: foo :: woo :: 5 ;\n\
+b : (\n\
+    boo = 1 ;\n\
+    foo = 2 ;\n\
+    woo = 3 ;\n\
+    [ boo, foo, woo, ]  ... listの宣言。最後の';'を書かなければこの値が返ります\n\
+) ;\n\
+\n\
+@.co << b ;     ... b : [ 1, 2, 3, ]",
+"(; (:: boo (:: foo (:: woo 5 ) ) ) ) (; (: b (scope { (; (= boo 1 ) ) (; (= foo 2 ) ) (; (= woo 3 ) ) [ (, boo ) (, foo ) (, woo ) ] } ) ) ) (; (<< (. @ .co ) b ) )",
+"[ 1, 2, 3, ]"
 ) ;
 
 </script><pre>
@@ -503,29 +496,29 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    int_list : [ 1, 2, 3, 4, 5, ] ;\n\
-    str_list : [ '1', '2', '3', ] ;\n\
-    \n\
-    @.co << int_list[0] << \"\\n\" ; ... 1\n\
-    @.co << str_list[2] << \"\\n\" ; ... 3\n\
-    \n\
-    @.co << int_list << \"\\n\" ;    ... listそのものを表示してみる\n\
-    @.co << str_list ;",
-    "(; (: int_list [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] ) ) (; (: str_list [ (, '1' ) (, '2' ) (, '3' ) ] ) ) (; (<< (<< (. @ .co ) (at int_list 0 ) ) '\n' ) ) (; (<< (<< (. @ .co ) (at str_list 2 ) ) '\n' ) ) (; (<< (<< (. @ .co ) int_list ) '\n' ) ) (; (<< (. @ .co ) str_list ) )",
-    "1\n3\n[ 1, 2, 3, 4, 5, ]\n[ 1, 2, 3, ]"
+int_list : [ 1, 2, 3, 4, 5, ] ;\n\
+str_list : [ '1', '2', '3', ] ;\n\
+\n\
+@.co << int_list[0] << \"\\n\" ; ... 1\n\
+@.co << str_list[2] << \"\\n\" ; ... 3\n\
+\n\
+@.co << int_list << \"\\n\" ;    ... listそのものを表示してみる\n\
+@.co << str_list ;",
+"(; (: int_list [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] ) ) (; (: str_list [ (, '1' ) (, '2' ) (, '3' ) ] ) ) (; (<< (<< (. @ .co ) (at int_list 0 ) ) '\n' ) ) (; (<< (<< (. @ .co ) (at str_list 2 ) ) '\n' ) ) (; (<< (<< (. @ .co ) int_list ) '\n' ) ) (; (<< (. @ .co ) str_list ) )",
+"1\n3\n[ 1, 2, 3, 4, 5, ]\n[ 1, 2, 3, ]"
 ) ;
 
 birds_script( "\
-    str_map1 : [ 1:'one', 2:'two', ] ;\n\
-    str_map2 : [ a:'one', b:'two', ] ;\n\
-    \n\
-    @.co << str_map1[2] << \"\\n\" ; ... two\n\
-    @.co << str_map2.b  << \"\\n\" ; ... two\n\
-    \n\
-    @.co << str_map1 << \"\\n\" ;    ... listそのものを表示してみる\n\
-    @.co << str_map2 ;",
-    "(; (: str_map1 [ (, (: 1 'one' ) ) (, (: 2 'two' ) ) ] ) ) (; (: str_map2 [ (, (: a 'one' ) ) (, (: b 'two' ) ) ] ) ) (; (<< (<< (. @ .co ) (at str_map1 2 ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. str_map2 .b ) ) '\n' ) ) (; (<< (<< (. @ .co ) str_map1 ) '\n' ) ) (; (<< (. @ .co ) str_map2 ) )",
-    "two\ntwo\n[ one, two, ]\n[ one, two, ]"
+str_map1 : [ 1:'one', 2:'two', ] ;\n\
+str_map2 : [ a:'one', b:'two', ] ;\n\
+\n\
+@.co << str_map1[2] << \"\\n\" ; ... two\n\
+@.co << str_map2.b  << \"\\n\" ; ... two\n\
+\n\
+@.co << str_map1 << \"\\n\" ;    ... listそのものを表示してみる\n\
+@.co << str_map2 ;",
+"(; (: str_map1 [ (, (: 1 'one' ) ) (, (: 2 'two' ) ) ] ) ) (; (: str_map2 [ (, (: a 'one' ) ) (, (: b 'two' ) ) ] ) ) (; (<< (<< (. @ .co ) (at str_map1 2 ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. str_map2 .b ) ) '\n' ) ) (; (<< (<< (. @ .co ) str_map1 ) '\n' ) ) (; (<< (. @ .co ) str_map2 ) )",
+"two\ntwo\n[ one, two, ]\n[ one, two, ]"
 ) ;
 
 </script><pre>
@@ -535,21 +528,21 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    list_a : [] ; ... 追加不可な配列\n\
-    \n\
-    list_a << 1 ;  ...  NG",
-    "(; (: list_a [  ] ) ) (; (<< list_a 1 ) )",
-    "\nrun-time error: cannot be set to a read-only property.: list_a.list"
+list_a : [] ; ... 追加不可な配列\n\
+\n\
+list_a << 1 ;  ...  NG",
+"(; (: list_a [  ] ) ) (; (<< list_a 1 ) )",
+"\nrun-time error: cannot be set to a read-only property.: list_a.list"
 ) ;
 
 birds_script( "\
-    list_b :: [] ; ... 追加可能な配列\n\
-    \n\
-    list_b << 1 ;  ...  OK\n\
-    \n\
-    @.co << list_b ; ... [ 1, ]",
-    "(; (:: list_b [  ] ) ) (; (<< list_b 1 ) ) (; (<< (. @ .co ) list_b ) )",
-    "[ 1, ]"
+list_b :: [] ; ... 追加可能な配列\n\
+\n\
+list_b << 1 ;  ...  OK\n\
+\n\
+@.co << list_b ; ... [ 1, ]",
+"(; (:: list_b [  ] ) ) (; (<< list_b 1 ) ) (; (<< (. @ .co ) list_b ) )",
+"[ 1, ]"
 ) ;
 
 </script><pre>
@@ -559,27 +552,27 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    list_a : [ [ 1, 2, ], [ 10, 20, ], [ 100, 200, ], ] ; ... ２次元配列\n\
-    \n\
-    list_a.{{ it.{{ @.co << it << ', ' ; }} ; }} ; ... it は予約語です。詳細は後ほど。\n\
-    @.co << list_a ;",
-    "(; (: list_a [ (, [ (, 1 ) (, 2 ) ] ) (, [ (, 10 ) (, 20 ) ] ) (, [ (, 100 ) (, 200 ) ] ) ] ) ) (; (each list_a { (; (each it { (; (<< (<< (. @ .co ) it ) ', ' ) ) } ) ) } ) ) (; (<< (. @ .co ) list_a ) )",
-    "1, 2, 10, 20, 100, 200, [ [ 1, 2, ], [ 10, 20, ], [ 100, 200, ], ]"
+list_a : [ [ 1, 2, ], [ 10, 20, ], [ 100, 200, ], ] ; ... ２次元配列\n\
+\n\
+list_a.{{ it.{{ @.co << it << ', ' ; }} ; }} ; ... it は予約語です。詳細は後ほど。\n\
+@.co << list_a ;",
+"(; (: list_a [ (, [ (, 1 ) (, 2 ) ] ) (, [ (, 10 ) (, 20 ) ] ) (, [ (, 100 ) (, 200 ) ] ) ] ) ) (; (each list_a { (; (each it { (; (<< (<< (. @ .co ) it ) ', ' ) ) } ) ) } ) ) (; (<< (. @ .co ) list_a ) )",
+"1, 2, 10, 20, 100, 200, [ [ 1, 2, ], [ 10, 20, ], [ 100, 200, ], ]"
 ) ;
 
 birds_script( "\
-    list_a : [ [ 1, 2 ], [ 10, [ 20, 21 ], 30 ], [ 100 ] ] ; ... 最後の要素の区切り ',' は無くても動きますがバグを呼ぶのでなるべく書きましょう。\n\
-    \n\
-    put_tree : {                    ... 型がリストオブジェクト'list' の場合に再帰する木構造表示用関数を作成\n\
-        _v.type == 'list'           ... .type は予約語です。詳細は後ほど。\n\
-        ?? _v.{{ put_tree( v:it ) ; }}\n\
-        !! @.co << _v << ', '\n\
-    }\n\
-    \n\
-    put_tree( v:list_a ) ;\n\
-    @.co << list_a ;",
-    "(; (: list_a [ (, [ (, 1 ) 2 ] ) (, [ (, 10 ) (, [ (, 20 ) 21 ] ) 30 ] ) [ 100 ] ] ) ) (; (: put_tree { (?? (== (. _v .type ) 'list' ) { (each _v { (; (call put_tree [ (: v it ) ] ) ) } ) } { (<< (<< (. @ .co ) _v ) ', ' ) } ) } ) (call put_tree [ (: v list_a ) ] ) ) (; (<< (. @ .co ) list_a ) )",
-    "1, 2, 10, 20, 21, 30, 100, [ [ 1, 2, ], [ 10, [ 20, 21, ], 30, ], [ 100, ], ]"
+list_a : [ [ 1, 2 ], [ 10, [ 20, 21 ], 30 ], [ 100 ] ] ; ... 最後の要素の区切り ',' は無くても動きますがバグを呼ぶのでなるべく書きましょう。\n\
+\n\
+put_tree : {                    ... 型がリストオブジェクト'list' の場合に再帰する木構造表示用関数を作成\n\
+    _v.type == 'list'           ... .type は予約語です。詳細は後ほど。\n\
+    ?? _v.{{ put_tree( v:it ) ; }}\n\
+    !! @.co << _v << ', '\n\
+}\n\
+\n\
+put_tree( v:list_a ) ;\n\
+@.co << list_a ;",
+"(; (: list_a [ (, [ (, 1 ) 2 ] ) (, [ (, 10 ) (, [ (, 20 ) 21 ] ) 30 ] ) [ 100 ] ] ) ) (; (: put_tree { (?? (== (. _v .type ) 'list' ) { (each _v { (; (call put_tree [ (: v it ) ] ) ) } ) } { (<< (<< (. @ .co ) _v ) ', ' ) } ) } ) (call put_tree [ (: v list_a ) ] ) ) (; (<< (. @ .co ) list_a ) )",
+"1, 2, 10, 20, 21, 30, 100, [ [ 1, 2, ], [ 10, [ 20, 21, ], 30, ], [ 100, ], ]"
 ) ;
 
 </script><pre>
@@ -589,11 +582,11 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    list_a : [1 2 3 4 5] ; ... list内の区切り記号 ',' を省略してみる\n\
-    \n\
-    @.co << list_a ;",
-    "(; (: list_a [ 1 2 3 4 5 ] ) ) (; (<< (. @ .co ) list_a ) )",
-    "[ 1, 2, 3, 4, 5, ]"
+list_a : [1 2 3 4 5] ; ... list内の区切り記号 ',' を省略してみる\n\
+\n\
+@.co << list_a ;",
+"(; (: list_a [ 1 2 3 4 5 ] ) ) (; (<< (. @ .co ) list_a ) )",
+"[ 1, 2, 3, 4, 5, ]"
 ) ;
 
 </script><pre>
@@ -608,31 +601,31 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    sw : [                            ... 固定テーブル（マップ）\n\
-        1 : { @.co << 'one, ' ; },    ... 関数{} を指定します。 ブロック() で書くと先に実行しちゃいます。\n\
-        2 : { @.co << 'two, ' ; },\n\
-    ] ;\n\
-    \n\
-    @.co << sw << ', ' ;  ... [ {}, {}, {}, ]\n\
-    sw[1]()  ;            ... one, \n\
-    sw[2]()  ;            ... two, \n\
-    sw[99]() ;            ... unmatch",
-    "(; (: sw [ (, (: 1 { (; (<< (. @ .co ) 'one, ' ) ) } ) ) (, (: 2 { (; (<< (. @ .co ) 'two, ' ) ) } ) ) ] ) ) (; (<< (<< (. @ .co ) sw ) ', ' ) ) (; (call (at sw 1 ) [  ] ) ) (; (call (at sw 2 ) [  ] ) ) (; (call (at sw 99 ) [  ] ) )",
-    "[ { }, { }, ], one, two, \nexception: on_unmatch unmatch index.: sw.99"
+sw : [                            ... 固定テーブル（マップ）\n\
+    1 : { @.co << 'one, ' ; },    ... 関数{} を指定します。 ブロック() で書くと先に実行しちゃいます。\n\
+    2 : { @.co << 'two, ' ; },\n\
+] ;\n\
+\n\
+@.co << sw << ', ' ;  ... [ {}, {}, {}, ]\n\
+sw[1]()  ;            ... one, \n\
+sw[2]()  ;            ... two, \n\
+sw[99]() ;            ... unmatch",
+"(; (: sw [ (, (: 1 { (; (<< (. @ .co ) 'one, ' ) ) } ) ) (, (: 2 { (; (<< (. @ .co ) 'two, ' ) ) } ) ) ] ) ) (; (<< (<< (. @ .co ) sw ) ', ' ) ) (; (call (at sw 1 ) [  ] ) ) (; (call (at sw 2 ) [  ] ) ) (; (call (at sw 99 ) [  ] ) )",
+"[ { }, { }, ], one, two, \nexception: on_unmatch unmatch member-name.: .99"
 ) ;
 
 birds_script( "\
-    sw : [                                  ... 固定テーブル（マップ）\n\
-        unmatch : { @.co << 'unmatch' ; },  ... 一致しなかった時に呼ばれる関数 ... unmatch は予約語です。\n\
-        1 : { @.co << 'one, ' ; },          ... 関数{} を指定します。 ブロック() で書くと先に実行しちゃいます。\n\
-        2 : { @.co << 'two, ' ; },\n\
-    ] ;\n\
-    \n\
-    @.co << sw << ', ' ;  ... [ {}, {}, ]\n\
-    sw[2]()  ;            ... two,\n\
-    sw[99]() ;            ... unmatch",
-    "(; (: sw [ (, (: unmatch { (; (<< (. @ .co ) 'unmatch' ) ) } ) ) (, (: 1 { (; (<< (. @ .co ) 'one, ' ) ) } ) ) (, (: 2 { (; (<< (. @ .co ) 'two, ' ) ) } ) ) ] ) ) (; (<< (<< (. @ .co ) sw ) ', ' ) ) (; (call (at sw 2 ) [  ] ) ) (; (call (at sw 99 ) [  ] ) )",
-    "[ { }, { }, { }, ], two, unmatch"
+sw : [                                  ... 固定テーブル（マップ）\n\
+    unmatch : { @.co << 'unmatch' ; },  ... 一致しなかった時に呼ばれる関数 ... unmatch は予約語です。\n\
+    1 : { @.co << 'one, ' ; },          ... 関数{} を指定します。 ブロック() で書くと先に実行しちゃいます。\n\
+    2 : { @.co << 'two, ' ; },\n\
+] ;\n\
+\n\
+@.co << sw << ', ' ;  ... [ {}, {}, ]\n\
+sw[2]()  ;            ... two,\n\
+sw[99]() ;            ... unmatch",
+"(; (: sw [ (, (: unmatch { (; (<< (. @ .co ) 'unmatch' ) ) } ) ) (, (: 1 { (; (<< (. @ .co ) 'one, ' ) ) } ) ) (, (: 2 { (; (<< (. @ .co ) 'two, ' ) ) } ) ) ] ) ) (; (<< (<< (. @ .co ) sw ) ', ' ) ) (; (call (at sw 2 ) [  ] ) ) (; (call (at sw 99 ) [  ] ) )",
+"[ { }, { }, { }, ], two, unmatch"
 ) ;
 // ↓これは存在しない sw[1] に代入ってのはちょっと無謀だよね。エラーでいいと思う。
 // birds_script( "\
@@ -645,17 +638,17 @@ birds_script( "\
 //      ''
 // ) ;
 birds_script( "\
-    sw :: [      ... 可変テーブル（マップ）、後から追加・変更可能。\n\
-        unmatch : { @.co << 'unmatch' ; },  ... 一致しなかった時に呼ばれる関数\n\
-    ] ;\n\
-    sw << ( 1 : { @.co << 'one, ' ; } ) ;\n\
-    sw << ( 2 : { @.co << 'two, ' ; } ) ;\n\
-    \n\
-    @.co << sw << ', ' ;  ... [ {}, {}, ]\n\
-    sw[2]()  ;            ... two,\n\
-    sw[99]() ;            ... unmatch",
-    "(; (:: sw [ (, (: unmatch { (; (<< (. @ .co ) 'unmatch' ) ) } ) ) ] ) ) (; (<< sw (scope { (: 1 { (; (<< (. @ .co ) 'one, ' ) ) } ) } ) ) ) (; (<< sw (scope { (: 2 { (; (<< (. @ .co ) 'two, ' ) ) } ) } ) ) ) (; (<< (<< (. @ .co ) sw ) ', ' ) ) (; (call (at sw 2 ) [  ] ) ) (; (call (at sw 99 ) [  ] ) )",
-    "[ { }, { }, { }, ], two, unmatch"
+sw :: [      ... 可変テーブル（マップ）、後から追加・変更可能。\n\
+    unmatch : { @.co << 'unmatch' ; },  ... 一致しなかった時に呼ばれる関数\n\
+] ;\n\
+sw << ( 1 : { @.co << 'one, ' ; } ) ;\n\
+sw << ( 2 : { @.co << 'two, ' ; } ) ;\n\
+\n\
+@.co << sw << ', ' ;  ... [ {}, {}, ]\n\
+sw[2]()  ;            ... two,\n\
+sw[99]() ;            ... unmatch",
+"(; (:: sw [ (, (: unmatch { (; (<< (. @ .co ) 'unmatch' ) ) } ) ) ] ) ) (; (<< sw (scope { (: 1 { (; (<< (. @ .co ) 'one, ' ) ) } ) } ) ) ) (; (<< sw (scope { (: 2 { (; (<< (. @ .co ) 'two, ' ) ) } ) } ) ) ) (; (<< (<< (. @ .co ) sw ) ', ' ) ) (; (call (at sw 2 ) [  ] ) ) (; (call (at sw 99 ) [  ] ) )",
+"[ { }, { }, { }, ], two, unmatch"
 ) ;
 
 </script><pre>
@@ -665,16 +658,16 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    sw : {\n\
-        _in == 1 ?? @.co << 'one, ' !!\n\
-        _in == 2 ?? @.co << 'two, ' !!\n\
-        @.co << 'unmatch' ;\n\
-    } ;\n\
-    \n\
-    sw( in:2 )  ;   ... two,\n\
-    sw( in:99 ) ;   ... unmatch",
-    "(; (: sw { (; (?? (== _in 1 ) { (<< (. @ .co ) 'one, ' ) } { (?? (== _in 2 ) { (<< (. @ .co ) 'two, ' ) } { (<< (. @ .co ) 'unmatch' ) } ) } ) ) } ) ) (; (call sw [ (: in 2 ) ] ) ) (; (call sw [ (: in 99 ) ] ) )",
-    "two, unmatch"
+sw : {\n\
+    _in == 1 ?? @.co << 'one, ' !!\n\
+    _in == 2 ?? @.co << 'two, ' !!\n\
+    @.co << 'unmatch' ;\n\
+} ;\n\
+\n\
+sw( in:2 )  ;   ... two,\n\
+sw( in:99 ) ;   ... unmatch",
+"(; (: sw { (; (?? (== _in 1 ) { (<< (. @ .co ) 'one, ' ) } { (?? (== _in 2 ) { (<< (. @ .co ) 'two, ' ) } { (<< (. @ .co ) 'unmatch' ) } ) } ) ) } ) ) (; (call sw [ (: in 2 ) ] ) ) (; (call sw [ (: in 99 ) ] ) )",
+"two, unmatch"
 ) ;
 
 </script><pre>
@@ -692,17 +685,17 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    --- たとえば C言語風の for ( int i=0 ; i < 10 ; i++ ) ... をあえて書くなら\n\
-    i :: 0 ;\n\
-    {{\n\
-        i >= 10 ?? break[] ;\n\
-        \n\
-        @.co << i << ', ' ;  ... i を表示してみる\n\
-        \n\
-        ++i ; ... C言語などの後方 i++ と異なり「先に実行される」のであえて前方のみにしました。\n\
-    }}",
-    "(; (:: i 0 ) ) (loop { (; (?? (>= i 10 ) { (break [  ] ) } ) ) (; (<< (<< (. @ .co ) i ) ', ' ) ) (; (++ i ) ) } )",
-    "0, 1, 2, 3, 4, 5, 6, 7, 8, 9, "
+--- たとえば C言語風の for ( int i=0 ; i < 10 ; i++ ) ... をあえて書くなら\n\
+i :: 0 ;\n\
+{{\n\
+    i >= 10 ?? break[] ;\n\
+    \n\
+    @.co << i << ', ' ;  ... i を表示してみる\n\
+    \n\
+    ++i ; ... C言語などの後方 i++ と異なり「先に実行される」のであえて前方のみにしました。\n\
+}}",
+"(; (:: i 0 ) ) (loop { (; (?? (>= i 10 ) { (break [  ] ) } ) ) (; (<< (<< (. @ .co ) i ) ', ' ) ) (; (++ i ) ) } )",
+"0, 1, 2, 3, 4, 5, 6, 7, 8, 9, "
 ) ;
 
 </script><pre>
@@ -712,45 +705,45 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    a : {{\n\
-        @.co << 'A, ' ;   ... この行を何回通るか表示してみる\n\
-        break[ 10, 20 ] ; ... 複数の値を指定してループを抜ける\n\
-        @.co << 'B, ' ;\n\
-        continue ;    ... ここは実行されないけどね\n\
-        @.co << 'C, ' ;\n\
-    }} ;\n\
-    \n\
-    @.co << a ;       ... [ 10, 20, ] list が返る",
-    "(; (: a (loop { (; (<< (. @ .co ) 'A, ' ) ) (; (break [ (, 10 ) 20 ] ) ) (; (<< (. @ .co ) 'B, ' ) ) (; (continue ) ) (; (<< (. @ .co ) 'C, ' ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
-    "A, [ 10, 20, ]"
+a : {{\n\
+    @.co << 'A, ' ;   ... この行を何回通るか表示してみる\n\
+    break[ 10, 20 ] ; ... 複数の値を指定してループを抜ける\n\
+    @.co << 'B, ' ;\n\
+    continue ;    ... ここは実行されないけどね\n\
+    @.co << 'C, ' ;\n\
+}} ;\n\
+\n\
+@.co << a ;       ... [ 10, 20, ] list が返る",
+"(; (: a (loop { (; (<< (. @ .co ) 'A, ' ) ) (; (break [ (, 10 ) 20 ] ) ) (; (<< (. @ .co ) 'B, ' ) ) (; (continue ) ) (; (<< (. @ .co ) 'C, ' ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
+"A, [ 10, 20, ]"
 ) ;
 
 birds_script( "\
-    a : {{\n\
-        @.co << 'A, ' ;\n\
-        break 10 ;      ... ループを抜ける。戻り値が list ではないので実行時 run-time errorになります。できればコンパイルエラーにしたい。\n\
-        @.co << 'B, ' ;\n\
-        continue ;\n\
-        @.co << 'C, ' ;\n\
-    }} ;\n\
-    \n\
-    @.co << a ;      ... 10 を表示したいけど・・・",
-    "(; (: a (loop { (; (<< (. @ .co ) 'A, ' ) ) (; (break 10 ) ) (; (<< (. @ .co ) 'B, ' ) ) (; (continue ) ) (; (<< (. @ .co ) 'C, ' ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
-    "A, \nrun-time error: argument type is not list-object.: (break"
+a : {{\n\
+    @.co << 'A, ' ;\n\
+    break 10 ;      ... ループを抜ける。戻り値が list ではないので実行時 run-time errorになります。できればコンパイルエラーにしたい。\n\
+    @.co << 'B, ' ;\n\
+    continue ;\n\
+    @.co << 'C, ' ;\n\
+}} ;\n\
+\n\
+@.co << a ;      ... 10 を表示したいけど・・・",
+"(; (: a (loop { (; (<< (. @ .co ) 'A, ' ) ) (; (break 10 ) ) (; (<< (. @ .co ) 'B, ' ) ) (; (continue ) ) (; (<< (. @ .co ) 'C, ' ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
+"A, \nrun-time error: argument type is not list-object.: (break"
 ) ;
 
 birds_script( "\
-    a : {{\n\
-        @.co << 'A, ' ;\n\
-        break[] ;       ... 戻り値無しでループを抜ける\n\
-        @.co << 'B, ' ;\n\
-        continue ;\n\
-        @.co << 'C, ' ;\n\
-    }} ;\n\
-    \n\
-    @.co << a ;      ... a : [ ] ",
-    "(; (: a (loop { (; (<< (. @ .co ) 'A, ' ) ) (; (break [  ] ) ) (; (<< (. @ .co ) 'B, ' ) ) (; (continue ) ) (; (<< (. @ .co ) 'C, ' ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
-    "A, [ ]"
+a : {{\n\
+    @.co << 'A, ' ;\n\
+    break[] ;       ... 戻り値無しでループを抜ける\n\
+    @.co << 'B, ' ;\n\
+    continue ;\n\
+    @.co << 'C, ' ;\n\
+}} ;\n\
+\n\
+@.co << a ;      ... a : [ ] ",
+"(; (: a (loop { (; (<< (. @ .co ) 'A, ' ) ) (; (break [  ] ) ) (; (<< (. @ .co ) 'B, ' ) ) (; (continue ) ) (; (<< (. @ .co ) 'C, ' ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
+"A, [ ]"
 ) ;
 
 </script><pre>
@@ -760,33 +753,33 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    --- FizzBuzz 問題\n\
-    i :: 0 ;\n\
-    {{\n\
-        ++i > 20 ?? break[] ;\n\
-        i % 15 == 0 ?? ( @.co << 'FizzBuzz, ' ; continue ; )\n\
-        i % 3  == 0 ?? ( @.co << 'Fizz, ' ; continue ; )\n\
-        i % 5  == 0 ?? ( @.co << 'Buzz, ' ; continue ; )\n\
-        \n\
-        @.co << i << ', ' ;  ... i を表示\n\
-    }}",
-    "(; (:: i 0 ) ) (loop { (; (?? (> (++ i ) 20 ) { (break [  ] ) } ) ) (; (?? (== (% i 15 ) 0 ) { (scope { (; (<< (. @ .co ) 'FizzBuzz, ' ) ) (; (continue ) ) } ) } ) (?? (== (% i 3 ) 0 ) { (scope { (; (<< (. @ .co ) 'Fizz, ' ) ) (; (continue ) ) } ) } ) (?? (== (% i 5 ) 0 ) { (scope { (; (<< (. @ .co ) 'Buzz, ' ) ) (; (continue ) ) } ) } ) (<< (<< (. @ .co ) i ) ', ' ) ) } )",
-    "1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz, 16, 17, Fizz, 19, Buzz, "
+--- FizzBuzz 問題\n\
+i :: 0 ;\n\
+{{\n\
+    ++i > 20 ?? break[] ;\n\
+    i % 15 == 0 ?? ( @.co << 'FizzBuzz, ' ; continue ; )\n\
+    i % 3  == 0 ?? ( @.co << 'Fizz, ' ; continue ; )\n\
+    i % 5  == 0 ?? ( @.co << 'Buzz, ' ; continue ; )\n\
+    \n\
+    @.co << i << ', ' ;  ... i を表示\n\
+}}",
+"(; (:: i 0 ) ) (loop { (; (?? (> (++ i ) 20 ) { (break [  ] ) } ) ) (; (?? (== (% i 15 ) 0 ) { (scope { (; (<< (. @ .co ) 'FizzBuzz, ' ) ) (; (continue ) ) } ) } ) (?? (== (% i 3 ) 0 ) { (scope { (; (<< (. @ .co ) 'Fizz, ' ) ) (; (continue ) ) } ) } ) (?? (== (% i 5 ) 0 ) { (scope { (; (<< (. @ .co ) 'Buzz, ' ) ) (; (continue ) ) } ) } ) (<< (<< (. @ .co ) i ) ', ' ) ) } )",
+"1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz, 16, 17, Fizz, 19, Buzz, "
 ) ;
 
 birds_script( "\
-    --- FizzBuzz 問題。その２．\n\
-    --- もう少し BirdsScript の特長を生かした書き方版です。\n\
-    --- continue ではなく each文を使っています。each文の詳細については次の項目を参考にしてください。\n\
-    @.co << 20.{{\n\
-        i : it + 1 ;\n\
-           i % 15 == 0 ?? 'FizzBuzz'\n\
-        !! i %  3 == 0 ?? 'Fizz'\n\
-        !! i %  5 == 0 ?? 'Buzz'\n\
-        !! i\n\
-    }}",
-    "(<< (. @ .co ) (each 20 { (; (: i (+ it 1 ) ) ) (?? (== (% i 15 ) 0 ) { 'FizzBuzz' } { (?? (== (% i 3 ) 0 ) { 'Fizz' } { (?? (== (% i 5 ) 0 ) { 'Buzz' } { i } ) } ) } ) } ) )",
-    "[ 1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz, 16, 17, Fizz, 19, Buzz, ]"
+--- FizzBuzz 問題。その２．\n\
+--- もう少し BirdsScript の特長を生かした書き方版です。\n\
+--- continue ではなく each文を使っています。each文の詳細については次の項目を参考にしてください。\n\
+@.co << 20.{{\n\
+    i : it + 1 ;\n\
+       i % 15 == 0 ?? 'FizzBuzz'\n\
+    !! i %  3 == 0 ?? 'Fizz'\n\
+    !! i %  5 == 0 ?? 'Buzz'\n\
+    !! i\n\
+}}",
+"(<< (. @ .co ) (each 20 { (; (: i (+ it 1 ) ) ) (?? (== (% i 15 ) 0 ) { 'FizzBuzz' } { (?? (== (% i 3 ) 0 ) { 'Fizz' } { (?? (== (% i 5 ) 0 ) { 'Buzz' } { i } ) } ) } ) } ) )",
+"[ 1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz, 16, 17, Fizz, 19, Buzz, ]"
 ) ;
 
 </script><pre>
@@ -796,42 +789,42 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    --- C言語風の for ( int i=0 ; i < 4 ; i++ ) で\n\
-    i :: 0 ;\n\
-    a : {{                  ... ループの戻り値 list を a に\n\
-        i >= 4 ?? break[] ; ... 戻り値無しでループを抜ける\n\
-        i,                  ... i を戻り値 list に積む\n\
-        ++i ;\n\
-    }} ;\n\
-    @.co << a ;             ... a を表示してみる [ 0, 1, 2, 3, ]",
-    "(; (:: i 0 ) ) (; (: a (loop { (; (?? (>= i 4 ) { (break [  ] ) } ) ) (, i ) (; (++ i ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
-    "[ 0, 1, 2, 3, ]"
+--- C言語風の for ( int i=0 ; i < 4 ; i++ ) で\n\
+i :: 0 ;\n\
+a : {{                  ... ループの戻り値 list を a に\n\
+    i >= 4 ?? break[] ; ... 戻り値無しでループを抜ける\n\
+    i,                  ... i を戻り値 list に積む\n\
+    ++i ;\n\
+}} ;\n\
+@.co << a ;             ... a を表示してみる [ 0, 1, 2, 3, ]",
+"(; (:: i 0 ) ) (; (: a (loop { (; (?? (>= i 4 ) { (break [  ] ) } ) ) (, i ) (; (++ i ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
+"[ 0, 1, 2, 3, ]"
 ) ;
 
 birds_script( "\
-    --- C言語風の for ( int i=0 ; i < 4 ; i++ ) で\n\
-    i :: 0 ;\n\
-    a : {{                              ... ループの戻り値 list を a に\n\
-        i >= 4 ?? break[ 44, 55, ] ;    ... さらに終了時にも値を追加する\n\
-        i,                              ... i を戻り値 list に積む\n\
-        ++i ;\n\
-    }} ;\n\
-    @.co << a ;                         ... a を表示してみる [ 0, 1, 2, 3, 44, 55, ]",
-    "(; (:: i 0 ) ) (; (: a (loop { (; (?? (>= i 4 ) { (break [ (, 44 ) (, 55 ) ] ) } ) ) (, i ) (; (++ i ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
-    "[ 0, 1, 2, 3, 44, 55, ]"
+--- C言語風の for ( int i=0 ; i < 4 ; i++ ) で\n\
+i :: 0 ;\n\
+a : {{                              ... ループの戻り値 list を a に\n\
+    i >= 4 ?? break[ 44, 55, ] ;    ... さらに終了時にも値を追加する\n\
+    i,                              ... i を戻り値 list に積む\n\
+    ++i ;\n\
+}} ;\n\
+@.co << a ;                         ... a を表示してみる [ 0, 1, 2, 3, 44, 55, ]",
+"(; (:: i 0 ) ) (; (: a (loop { (; (?? (>= i 4 ) { (break [ (, 44 ) (, 55 ) ] ) } ) ) (, i ) (; (++ i ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
+"[ 0, 1, 2, 3, 44, 55, ]"
 ) ;
 
 birds_script( "\
-    --- C言語風の for ( int i=0 ; i < 4 ; i++ ) で\n\
-    i :: 0 ;\n\
-    a : {{          ... 戻り値 list を a に\n\
-        i >= 4 ?? break[] ;\n\
-        i,\n\
-        ++i,        ... 異なる値を複数回積むこともできます\n\
-    }} ;\n\
-    @.co << a ;     ... a を表示してみる [ 0, 1, 1, 2, 2, 3, 3, 4, ]",
-    "(; (:: i 0 ) ) (; (: a (loop { (; (?? (>= i 4 ) { (break [  ] ) } ) ) (, i ) (, (++ i ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
-    "[ 0, 1, 1, 2, 2, 3, 3, 4, ]"
+--- C言語風の for ( int i=0 ; i < 4 ; i++ ) で\n\
+i :: 0 ;\n\
+a : {{          ... 戻り値 list を a に\n\
+    i >= 4 ?? break[] ;\n\
+    i,\n\
+    ++i,        ... 異なる値を複数回積むこともできます\n\
+}} ;\n\
+@.co << a ;     ... a を表示してみる [ 0, 1, 1, 2, 2, 3, 3, 4, ]",
+"(; (:: i 0 ) ) (; (: a (loop { (; (?? (>= i 4 ) { (break [  ] ) } ) ) (, i ) (, (++ i ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
+"[ 0, 1, 1, 2, 2, 3, 3, 4, ]"
 ) ;
 
 </script><pre>
@@ -854,27 +847,27 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    5.{{ @.co << it << ', ' ; }}  ... 0, 1, 2, 3, 4, ",
-    "(each 5 { (; (<< (<< (. @ .co ) it ) ', ' ) ) } )",
-    "0, 1, 2, 3, 4, "
+5.{{ @.co << it << ', ' ; }}  ... 0, 1, 2, 3, 4, ",
+"(each 5 { (; (<< (<< (. @ .co ) it ) ', ' ) ) } )",
+"0, 1, 2, 3, 4, "
 ) ;
 
 birds_script( "\
-    5.{{ @.co << idx << ', ' ; }}  ... 0, 1, 2, 3, 4, ",
-    "(each 5 { (; (<< (<< (. @ .co ) idx ) ', ' ) ) } )",
-    "0, 1, 2, 3, 4, "
+5.{{ @.co << idx << ', ' ; }}  ... 0, 1, 2, 3, 4, ",
+"(each 5 { (; (<< (<< (. @ .co ) idx ) ', ' ) ) } )",
+"0, 1, 2, 3, 4, "
 ) ;
 
 birds_script( "\
-    'string'.{{ @.co << it << ', ' ; }}  ... s, t, r, i, n, g, ",
-    "(each 'string' { (; (<< (<< (. @ .co ) it ) ', ' ) ) } )",
-    "s, t, r, i, n, g, "
+'string'.{{ @.co << it << ', ' ; }}  ... s, t, r, i, n, g, ",
+"(each 'string' { (; (<< (<< (. @ .co ) it ) ', ' ) ) } )",
+"s, t, r, i, n, g, "
 ) ;
 
 birds_script( "\
-    'string'.{{ @.co << idx << ', ' ; }}  ... 0, 1, 2, 3, 4, 5, ",
-    "(each 'string' { (; (<< (<< (. @ .co ) idx ) ', ' ) ) } )",
-    "0, 1, 2, 3, 4, 5, "
+'string'.{{ @.co << idx << ', ' ; }}  ... 0, 1, 2, 3, 4, 5, ",
+"(each 'string' { (; (<< (<< (. @ .co ) idx ) ', ' ) ) } )",
+"0, 1, 2, 3, 4, 5, "
 ) ;
 
 </script><pre>
@@ -884,15 +877,15 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    5.{{ it = 999 ; }}  ... NG ",
-    "(each 5 { (; (= it 999 ) ) } )",
-    "\nrun-time error: cannot be set to a read-only property.: it.int"
+5.{{ it = 999 ; }}  ... NG ",
+"(each 5 { (; (= it 999 ) ) } )",
+"\nrun-time error: cannot be set to a read-only property.: it.int"
 ) ;
 
 birds_script( "\
-    5.{{ idx = 999 ; }}  ... NG ",
-    "(each 5 { (; (= idx 999 ) ) } )",
-    "\nrun-time error: cannot be set to a read-only property.: idx.int"
+5.{{ idx = 999 ; }}  ... NG ",
+"(each 5 { (; (= idx 999 ) ) } )",
+"\nrun-time error: cannot be set to a read-only property.: idx.int"
 ) ;
 
 </script><pre>
@@ -902,13 +895,13 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    a : {{          ... 戻り値 list を a に\n\
-        idx >= 4 ?? break[ 555 ] ;\n\
-        idx * 10,\n\
-    }} ;\n\
-    @.co << a ;     ... a を表示してみる [ 0, 10, 20, 30, 555, ]",
-    "(; (: a (loop { (; (?? (>= idx 4 ) { (break [ 555 ] ) } ) ) (, (* idx 10 ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
-    "[ 0, 10, 20, 30, 555, ]"
+a : {{          ... 戻り値 list を a に\n\
+    idx >= 4 ?? break[ 555 ] ;\n\
+    idx * 10,\n\
+}} ;\n\
+@.co << a ;     ... a を表示してみる [ 0, 10, 20, 30, 555, ]",
+"(; (: a (loop { (; (?? (>= idx 4 ) { (break [ 555 ] ) } ) ) (, (* idx 10 ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
+"[ 0, 10, 20, 30, 555, ]"
 ) ;
 
 </script><pre>
@@ -918,29 +911,29 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    pi : [ 3, 1, 4, 1, 5, 9, 2, ] ;\n\
-    pi.{{\n\
-        @.co << it << ', ' ;   ... 3, 1, 4, 1, 5, 9, 2, \n\
-    }} ;",
-    "(; (: pi [ (, 3 ) (, 1 ) (, 4 ) (, 1 ) (, 5 ) (, 9 ) (, 2 ) ] ) ) (; (each pi { (; (<< (<< (. @ .co ) it ) ', ' ) ) } ) )",
-    "3, 1, 4, 1, 5, 9, 2, "
+pi : [ 3, 1, 4, 1, 5, 9, 2, ] ;\n\
+pi.{{\n\
+    @.co << it << ', ' ;   ... 3, 1, 4, 1, 5, 9, 2, \n\
+}} ;",
+"(; (: pi [ (, 3 ) (, 1 ) (, 4 ) (, 1 ) (, 5 ) (, 9 ) (, 2 ) ] ) ) (; (each pi { (; (<< (<< (. @ .co ) it ) ', ' ) ) } ) )",
+"3, 1, 4, 1, 5, 9, 2, "
 ) ;
 
 birds_script( "\
-    [ 3, 1, 4, 1, 5, 9, 2, ].{{\n\
-        @.co << idx << ':' << it << ', ' ;   ... 0:3, 1:1, 2:4, 3:1, 4:5, 5:9, 6:2, \n\
-    }} ;",
-    "(; (each [ (, 3 ) (, 1 ) (, 4 ) (, 1 ) (, 5 ) (, 9 ) (, 2 ) ] { (; (<< (<< (<< (<< (. @ .co ) idx ) ':' ) it ) ', ' ) ) } ) )",
-    "0:3, 1:1, 2:4, 3:1, 4:5, 5:9, 6:2, "
+[ 3, 1, 4, 1, 5, 9, 2, ].{{\n\
+    @.co << idx << ':' << it << ', ' ;   ... 0:3, 1:1, 2:4, 3:1, 4:5, 5:9, 6:2, \n\
+}} ;",
+"(; (each [ (, 3 ) (, 1 ) (, 4 ) (, 1 ) (, 5 ) (, 9 ) (, 2 ) ] { (; (<< (<< (<< (<< (. @ .co ) idx ) ':' ) it ) ', ' ) ) } ) )",
+"0:3, 1:1, 2:4, 3:1, 4:5, 5:9, 6:2, "
 ) ;
 
 birds_script( "\
-    hw : [ h:'Hello', w:'World', ] ;  ... もちろん連想配列も each できます\n\
-    hw.{{\n\
-        @.co << idx << ':' << it << ', ' ;   ... h:Hello, w:World, \n\
-    }} ;",
-    "(; (: hw [ (, (: h 'Hello' ) ) (, (: w 'World' ) ) ] ) ) (; (each hw { (; (<< (<< (<< (<< (. @ .co ) idx ) ':' ) it ) ', ' ) ) } ) )",
-    "h:Hello, w:World, "
+hw : [ h:'Hello', w:'World', ] ;  ... もちろん連想配列も each できます\n\
+hw.{{\n\
+    @.co << idx << ':' << it << ', ' ;   ... h:Hello, w:World, \n\
+}} ;",
+"(; (: hw [ (, (: h 'Hello' ) ) (, (: w 'World' ) ) ] ) ) (; (each hw { (; (<< (<< (<< (<< (. @ .co ) idx ) ':' ) it ) ', ' ) ) } ) )",
+"h:Hello, w:World, "
 ) ;
 
 </script><pre>
@@ -950,25 +943,25 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    b : 10.{{\n\
-        @.co << it << ', ' ;   ... 0, 1, 2, 3, 4, 5,\n\
-        \n\
-        it == 5 ?? break[ 555 ] ;\n\
-    }} ;\n\
-    @.co << b ; ... [ 555 ]",
-    "(; (: b (each 10 { (; (<< (<< (. @ .co ) it ) ', ' ) ) (; (?? (== it 5 ) { (break [ 555 ] ) } ) ) } ) ) ) (; (<< (. @ .co ) b ) )",
-    "0, 1, 2, 3, 4, 5, [ 555, ]"
+b : 10.{{\n\
+    @.co << it << ', ' ;   ... 0, 1, 2, 3, 4, 5,\n\
+    \n\
+    it == 5 ?? break[ 555 ] ;\n\
+}} ;\n\
+@.co << b ; ... [ 555 ]",
+"(; (: b (each 10 { (; (<< (<< (. @ .co ) it ) ', ' ) ) (; (?? (== it 5 ) { (break [ 555 ] ) } ) ) } ) ) ) (; (<< (. @ .co ) b ) )",
+"0, 1, 2, 3, 4, 5, [ 555, ]"
 ) ;
 
 birds_script( "\
-    b : 10.{{\n\
-        @.co << it << ', ' ;   ... 0, 1, 2, 3, 4, 5,\n\
-        \n\
-        it == 5 ?? break ; ... 引数（戻り値？）を忘れると NG\n\
-    }} ;\n\
-    @.co << b ; ... [ ]",
-    "syntax-error: '??'",
-    "NG"
+b : 10.{{\n\
+    @.co << it << ', ' ;   ... 0, 1, 2, 3, 4, 5,\n\
+    \n\
+    it == 5 ?? break ; ... 引数（戻り値？）を忘れると NG\n\
+}} ;\n\
+@.co << b ; ... [ ]",
+"syntax-error: '??'",
+"NG"
 ) ;
 
 </script><pre>
@@ -978,21 +971,21 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    @.co << 5.{{ it }} ; ... [ 0, 1, 2, 3, 4, ]",
-    "(; (<< (. @ .co ) (each 5 { it } ) ) )",
-    "[ 0, 1, 2, 3, 4, ]"
+@.co << 5.{{ it }} ; ... [ 0, 1, 2, 3, 4, ]",
+"(; (<< (. @ .co ) (each 5 { it } ) ) )",
+"[ 0, 1, 2, 3, 4, ]"
 ) ;
 
 birds_script( "\
-    @.co << 5.{{ it*2+1 }} ; ... [ 1, 3, 5, 7, 9, ]",
-    "(; (<< (. @ .co ) (each 5 { (+ (* it 2 ) 1 ) } ) ) )",
-    "[ 1, 3, 5, 7, 9, ]"
+@.co << 5.{{ it*2+1 }} ; ... [ 1, 3, 5, 7, 9, ]",
+"(; (<< (. @ .co ) (each 5 { (+ (* it 2 ) 1 ) } ) ) )",
+"[ 1, 3, 5, 7, 9, ]"
 ) ;
 
 birds_script( "\
-    @.co << 5.{{ it % 2 == 0 }} ; ... [ true, false, true, false, true, ]",
-    "(; (<< (. @ .co ) (each 5 { (== (% it 2 ) 0 ) } ) ) )",
-    "[ true, false, true, false, true, ]"
+@.co << 5.{{ it % 2 == 0 }} ; ... [ true, false, true, false, true, ]",
+"(; (<< (. @ .co ) (each 5 { (== (% it 2 ) 0 ) } ) ) )",
+"[ true, false, true, false, true, ]"
 ) ;
 
 </script><pre>
@@ -1010,27 +1003,27 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    @.co << 3.{{ it, it, }} ; ... [ 0, 0, 1, 1, 2, 2, ]",
-    "(; (<< (. @ .co ) (each 3 { (, it ) (, it ) } ) ) )",
-    "[ 0, 0, 1, 1, 2, 2, ]"
+@.co << 3.{{ it, it, }} ; ... [ 0, 0, 1, 1, 2, 2, ]",
+"(; (<< (. @ .co ) (each 3 { (, it ) (, it ) } ) ) )",
+"[ 0, 0, 1, 1, 2, 2, ]"
 ) ;
 
 birds_script( "\
-    @.co << 3.{{ it*2, it*3, }} ; ... [ 0, 0, 2, 3, 4, 6, ]",
-    "(; (<< (. @ .co ) (each 3 { (, (* it 2 ) ) (, (* it 3 ) ) } ) ) )",
-    "[ 0, 0, 2, 3, 4, 6, ]"
+@.co << 3.{{ it*2, it*3, }} ; ... [ 0, 0, 2, 3, 4, 6, ]",
+"(; (<< (. @ .co ) (each 3 { (, (* it 2 ) ) (, (* it 3 ) ) } ) ) )",
+"[ 0, 0, 2, 3, 4, 6, ]"
 ) ;
 
 birds_script( "\
-    @.co << 3.{{ it*2, it*3; }} ; ... [ 0, 2, 4, ] ... it*3 は実行され計算され（処理され）ますが結果はlistに積まれません",
-    "(; (<< (. @ .co ) (each 3 { (, (* it 2 ) ) (; (* it 3 ) ) } ) ) )",
-    "[ 0, 2, 4, ]"
+@.co << 3.{{ it*2, it*3; }} ; ... [ 0, 2, 4, ] ... it*3 は実行され計算され（処理され）ますが結果はlistに積まれません",
+"(; (<< (. @ .co ) (each 3 { (, (* it 2 ) ) (; (* it 3 ) ) } ) ) )",
+"[ 0, 2, 4, ]"
 ) ;
 
 birds_script( "\
-    @.co << 5.{{ it; }}  ... [  ] ... ';' でスタックがクリアされます。",
-    "(<< (. @ .co ) (each 5 { (; it ) } ) )",
-    "[ ]"
+@.co << 5.{{ it; }}  ... [  ] ... ';' でスタックがクリアされます。",
+"(<< (. @ .co ) (each 5 { (; it ) } ) )",
+"[ ]"
 ) ;
 
 </script><pre>
@@ -1040,21 +1033,21 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    @.co << 7.{{ it > 2 ?? break[ 555 ] ; it }} ; ... [ 0, 1, 2, 555, ]",
-    "(; (<< (. @ .co ) (each 7 { (; (?? (> it 2 ) { (break [ 555 ] ) } ) ) it } ) ) )",
-    "[ 0, 1, 2, 555, ]"
+@.co << 7.{{ it > 2 ?? break[ 555 ] ; it }} ; ... [ 0, 1, 2, 555, ]",
+"(; (<< (. @ .co ) (each 7 { (; (?? (> it 2 ) { (break [ 555 ] ) } ) ) it } ) ) )",
+"[ 0, 1, 2, 555, ]"
 ) ;
 
 birds_script( "\
-    @.co << 7.{{ it < 3 ?? continue ; it }} ; ... [ 3, 4, 5, 6, ]",
-    "(; (<< (. @ .co ) (each 7 { (; (?? (< it 3 ) { (continue ) } ) ) it } ) ) )",
-    "[ 3, 4, 5, 6, ]"
+@.co << 7.{{ it < 3 ?? continue ; it }} ; ... [ 3, 4, 5, 6, ]",
+"(; (<< (. @ .co ) (each 7 { (; (?? (< it 3 ) { (continue ) } ) ) it } ) ) )",
+"[ 3, 4, 5, 6, ]"
 ) ;
 
 birds_script( "\
-    @.co << 9.{{ it % 2 == 0 ?? continue ; it }} ; ... [ 1, 3, 5, 7, ]",
-    "(; (<< (. @ .co ) (each 9 { (; (?? (== (% it 2 ) 0 ) { (continue ) } ) ) it } ) ) )",
-    "[ 1, 3, 5, 7, ]"
+@.co << 9.{{ it % 2 == 0 ?? continue ; it }} ; ... [ 1, 3, 5, 7, ]",
+"(; (<< (. @ .co ) (each 9 { (; (?? (== (% it 2 ) 0 ) { (continue ) } ) ) it } ) ) )",
+"[ 1, 3, 5, 7, ]"
 ) ;
 
 </script><pre>
@@ -1065,30 +1058,30 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    boo :: foo :: woo :: 0 ;\n\
-    b : (\n\
-        boo = 1 ;\n\
-        foo = 2 ,   ... 注目（ここで積んでいます）\n\
-        woo = 3 ;\n\
-    ) ;\n\
-    \n\
-    @.co << b ;     ... b : 2",
-    "(; (:: boo (:: foo (:: woo 0 ) ) ) ) (; (: b (scope { (; (= boo 1 ) ) (, (= foo 2 ) ) (; (= woo 3 ) ) } ) ) ) (; (<< (. @ .co ) b ) )",
-    "2"
+boo :: foo :: woo :: 0 ;\n\
+b : (\n\
+    boo = 1 ;\n\
+    foo = 2 ,   ... 注目（ここで積んでいます）\n\
+    woo = 3 ;\n\
+) ;\n\
+\n\
+@.co << b ;     ... b : 2",
+"(; (:: boo (:: foo (:: woo 0 ) ) ) ) (; (: b (scope { (; (= boo 1 ) ) (, (= foo 2 ) ) (; (= woo 3 ) ) } ) ) ) (; (<< (. @ .co ) b ) )",
+"2"
 ) ;
 
 
 birds_script( "\
-    boo :: foo :: woo :: 0 ;\n\
-    b : (\n\
-        boo = 1 ,\n\
-        foo = 2 ,\n\
-        woo = 3 ,   ... ３つ積んでもスコープから返るのは最後に積んだ１つだけです\n\
-    ) ;\n\
-    \n\
-    @.co << b ;     ... b : 3",
-    "(; (:: boo (:: foo (:: woo 0 ) ) ) ) (; (: b (scope { (, (= boo 1 ) ) (, (= foo 2 ) ) (, (= woo 3 ) ) } ) ) ) (; (<< (. @ .co ) b ) )",
-    "3"
+boo :: foo :: woo :: 0 ;\n\
+b : (\n\
+    boo = 1 ,\n\
+    foo = 2 ,\n\
+    woo = 3 ,   ... ３つ積んでもスコープから返るのは最後に積んだ１つだけです\n\
+) ;\n\
+\n\
+@.co << b ;     ... b : 3",
+"(; (:: boo (:: foo (:: woo 0 ) ) ) ) (; (: b (scope { (, (= boo 1 ) ) (, (= foo 2 ) ) (, (= woo 3 ) ) } ) ) ) (; (<< (. @ .co ) b ) )",
+"3"
 ) ;
 
 </script><pre>
@@ -1105,26 +1098,26 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    @.co << 1..2 << \"\\n\" ;     ... [ 1, 2, ]\n\
-    @.co << 3..6 << \"\\n\" ;     ... [ 3, 4, 5, 6, ]\n\
-    @.co << 9..5 << \"\\n\" ;     ... [ 9, 8, 7, 6, 5, ]\n\
-    @.co << 5..7.{{ it*2 }} ;  ... [ 10, 12, 14, ]",
-    "(; (<< (<< (. @ .co ) (range 1 2 ) ) '\n' ) ) (; (<< (<< (. @ .co ) (range 3 6 ) ) '\n' ) ) (; (<< (<< (. @ .co ) (range 9 5 ) ) '\n' ) ) (; (<< (. @ .co ) (each (range 5 7 ) { (* it 2 ) } ) ) )",
-    "[ 1, 2, ]\n[ 3, 4, 5, 6, ]\n[ 9, 8, 7, 6, 5, ]\n[ 10, 12, 14, ]"
+@.co << 1..2 << \"\\n\" ;     ... [ 1, 2, ]\n\
+@.co << 3..6 << \"\\n\" ;     ... [ 3, 4, 5, 6, ]\n\
+@.co << 9..5 << \"\\n\" ;     ... [ 9, 8, 7, 6, 5, ]\n\
+@.co << 5..7.{{ it*2 }} ;  ... [ 10, 12, 14, ]",
+"(; (<< (<< (. @ .co ) (range 1 2 ) ) '\n' ) ) (; (<< (<< (. @ .co ) (range 3 6 ) ) '\n' ) ) (; (<< (<< (. @ .co ) (range 9 5 ) ) '\n' ) ) (; (<< (. @ .co ) (each (range 5 7 ) { (* it 2 ) } ) ) )",
+"[ 1, 2, ]\n[ 3, 4, 5, 6, ]\n[ 9, 8, 7, 6, 5, ]\n[ 10, 12, 14, ]"
 ) ;
 
 birds_script( "\
-    a : 3 ; b : 5 ; \n\
-    @.co << a..b << \"\\n\" ;  ... [ 3, 4, 5, ]\n\
-    @.co << a..b.{{ it*2 }} ;  ... [ 6, 8, 10, ]",
-    "(; (: a 3 ) ) (; (: b 5 ) ) (; (<< (<< (. @ .co ) (range a b ) ) '\n' ) ) (; (<< (. @ .co ) (each (range a b ) { (* it 2 ) } ) ) )",
-    "[ 3, 4, 5, ]\n[ 6, 8, 10, ]"
+a : 3 ; b : 5 ; \n\
+@.co << a..b << \"\\n\" ;  ... [ 3, 4, 5, ]\n\
+@.co << a..b.{{ it*2 }} ;  ... [ 6, 8, 10, ]",
+"(; (: a 3 ) ) (; (: b 5 ) ) (; (<< (<< (. @ .co ) (range a b ) ) '\n' ) ) (; (<< (. @ .co ) (each (range a b ) { (* it 2 ) } ) ) )",
+"[ 3, 4, 5, ]\n[ 6, 8, 10, ]"
 ) ;
 
 birds_script( "\
-    @.co << (5..7).type ;  ... 型は list",
-    "(; (<< (. @ .co ) (. (scope { (range 5 7 ) } ) .type ) ) )",
-    "list"
+@.co << (5..7).type ;  ... 型は list",
+"(; (<< (. @ .co ) (. (scope { (range 5 7 ) } ) .type ) ) )",
+"list"
 ) ;
 
 </script><pre>
@@ -1135,16 +1128,16 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    @.co << 'a'..'c' ;         ... NG ... できてもいい気もする",
-    "(; (<< (. @ .co ) (range 'a' 'c' ) ) )",
-    "\nrun-time error: argument type is not int : literal.str"
+@.co << 'a'..'c' ;         ... NG ... できてもいい気もする",
+"(; (<< (. @ .co ) (range 'a' 'c' ) ) )",
+"\nrun-time error: argument type is not int : literal.str"
 ) ;
 
 birds_script( "\
-    a : 'a' ; c : 'c' ; \n\
-    @.co << a..c ;             ... NG",
-    "(; (: a 'a' ) ) (; (: c 'c' ) ) (; (<< (. @ .co ) (range a c ) ) )",
-    "\nrun-time error: argument type is not int : a.str"
+a : 'a' ; c : 'c' ; \n\
+@.co << a..c ;             ... NG",
+"(; (: a 'a' ) ) (; (: c 'c' ) ) (; (<< (. @ .co ) (range a c ) ) )",
+"\nrun-time error: argument type is not int : a.str"
 ) ;
 
 </script><pre>
@@ -1159,15 +1152,15 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    a : [ 1, 2, 3, 4, 5, ] ;\n\
-    @.co << a[2] << ', ' ;              ... 3 \n\
-    \n\
-    @.co << [ 1, 2, 3, 4, 5, ][ 2 ] ;   ... 3\n\
-    @.co << ', ' ;\n\
-    \n\
-    @.co << [ 1, 2, 3, 4, 5, ][ 9 ] ;   ... unmatch index.",
-    "(; (: a [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] ) ) (; (<< (<< (. @ .co ) (at a 2 ) ) ', ' ) ) (; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] 2 ) ) ) (; (<< (. @ .co ) ', ' ) ) (; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] 9 ) ) )",
-    "3, 3, \nexception: on_unmatch unmatch index.: literal.9"
+a : [ 1, 2, 3, 4, 5, ] ;\n\
+@.co << a[2] << ', ' ;              ... 3 \n\
+\n\
+@.co << [ 1, 2, 3, 4, 5, ][ 2 ] ;   ... 3\n\
+@.co << ', ' ;\n\
+\n\
+@.co << [ 1, 2, 3, 4, 5, ][ 9 ] ;   ... unmatch index.",
+"(; (: a [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] ) ) (; (<< (<< (. @ .co ) (at a 2 ) ) ', ' ) ) (; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] 2 ) ) ) (; (<< (. @ .co ) ', ' ) ) (; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] 9 ) ) )",
+"3, 3, \nexception: on_unmatch unmatch member-name.: .9"
 ) ;
 
 </script><pre>
@@ -1177,15 +1170,15 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    @.co << [ 1, 2, 3, 4, 5, ][ [ 1, 2, 3, ] ] ;    ... [ 2, 3, 4, ]\n\
-    @.co << \"\\n\" ;\n\
-    \n\
-    @.co << [ 1, 2, 3, 4, 5, ][ [ 3, 2, 1, ] ] ;    ... [ 4, 3, 2, ]\n\
-    @.co << \"\\n\" ;\n\
-    \n\
-    @.co << [ 1, 2, 3, 4, 5, ][ [ 9, ] ] ;  ... [  ] ... なんと！これはエラー unmatch index. にならないのですが、エラーにしたほうがいいかも。",
-    "(; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] [ (, 1 ) (, 2 ) (, 3 ) ] ) ) ) (; (<< (. @ .co ) '\n' ) ) (; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] [ (, 3 ) (, 2 ) (, 1 ) ] ) ) ) (; (<< (. @ .co ) '\n' ) ) (; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] [ (, 9 ) ] ) ) )",
-    "[ 2, 3, 4, ]\n[ 4, 3, 2, ]\n[ ]"
+@.co << [ 1, 2, 3, 4, 5, ][ [ 1, 2, 3, ] ] ;    ... [ 2, 3, 4, ]\n\
+@.co << \"\\n\" ;\n\
+\n\
+@.co << [ 1, 2, 3, 4, 5, ][ [ 3, 2, 1, ] ] ;    ... [ 4, 3, 2, ]\n\
+@.co << \"\\n\" ;\n\
+\n\
+@.co << [ 1, 2, 3, 4, 5, ][ [ 9, ] ] ;  ... [  ] ... なんと！これはエラー unmatch index. にならないのですが、エラーにしたほうがいいかも。",
+"(; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] [ (, 1 ) (, 2 ) (, 3 ) ] ) ) ) (; (<< (. @ .co ) '\n' ) ) (; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] [ (, 3 ) (, 2 ) (, 1 ) ] ) ) ) (; (<< (. @ .co ) '\n' ) ) (; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] [ (, 9 ) ] ) ) )",
+"[ 2, 3, 4, ]\n[ 4, 3, 2, ]\n[ ]"
 ) ;
 
 </script><pre>
@@ -1195,12 +1188,12 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    @.co << [ 1, 2, 3, 4, 5, ][ 1..3 ] ;    ... [ 2, 3, 4, ]\n\
-    @.co << \"\\n\" ;\n\
-    \n\
-    @.co << [ 1, 2, 3, 4, 5, ][ 3..1 ] ;    ... [ 4, 3, 2, ]",
-    "(; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] (range 1 3 ) ) ) ) (; (<< (. @ .co ) '\n' ) ) (; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] (range 3 1 ) ) ) )",
-    "[ 2, 3, 4, ]\n[ 4, 3, 2, ]"
+@.co << [ 1, 2, 3, 4, 5, ][ 1..3 ] ;    ... [ 2, 3, 4, ]\n\
+@.co << \"\\n\" ;\n\
+\n\
+@.co << [ 1, 2, 3, 4, 5, ][ 3..1 ] ;    ... [ 4, 3, 2, ]",
+"(; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] (range 1 3 ) ) ) ) (; (<< (. @ .co ) '\n' ) ) (; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) ] (range 3 1 ) ) ) )",
+"[ 2, 3, 4, ]\n[ 4, 3, 2, ]"
 ) ;
 
 </script><pre>
@@ -1210,15 +1203,15 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    @.co << [ 1, 2, 3, 4, 5, unmatch:55, ][ 9 ] ;  ... 55\n\
-    @.co << \"\\n\" ;\n\
-    \n\
-    @.co << [ 1, 2, 3, 4, 5, unmatch:55, ][ [ 1, 9, 2, 8, 3, 7, ] ] ;    ... [ 2, 55, 3, 55, 4, 55, ]\n\
-    @.co << \"\\n\" ;\n\
-    \n\
-    @.co << [ 1, 2, 3, 4, 5, unmatch:55, ][ 9..11 ] ;    ... [ 55, 55, 55, ]",
-    "(; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) (, (: unmatch 55 ) ) ] 9 ) ) ) (; (<< (. @ .co ) '\n' ) ) (; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) (, (: unmatch 55 ) ) ] [ (, 1 ) (, 9 ) (, 2 ) (, 8 ) (, 3 ) (, 7 ) ] ) ) ) (; (<< (. @ .co ) '\n' ) ) (; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) (, (: unmatch 55 ) ) ] (range 9 11 ) ) ) )",
-    "55\n[ 2, 55, 3, 55, 4, 55, ]\n[ 55, 55, 55, ]"
+@.co << [ 1, 2, 3, 4, 5, unmatch:55, ][ 9 ] ;  ... 55\n\
+@.co << \"\\n\" ;\n\
+\n\
+@.co << [ 1, 2, 3, 4, 5, unmatch:55, ][ [ 1, 9, 2, 8, 3, 7, ] ] ;    ... [ 2, 55, 3, 55, 4, 55, ]\n\
+@.co << \"\\n\" ;\n\
+\n\
+@.co << [ 1, 2, 3, 4, 5, unmatch:55, ][ 9..11 ] ;    ... [ 55, 55, 55, ]",
+"(; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) (, (: unmatch 55 ) ) ] 9 ) ) ) (; (<< (. @ .co ) '\n' ) ) (; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) (, (: unmatch 55 ) ) ] [ (, 1 ) (, 9 ) (, 2 ) (, 8 ) (, 3 ) (, 7 ) ] ) ) ) (; (<< (. @ .co ) '\n' ) ) (; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) (, (: unmatch 55 ) ) ] (range 9 11 ) ) ) )",
+"55\n[ 2, 55, 3, 55, 4, 55, ]\n[ 55, 55, 55, ]"
 ) ;
 
 </script><pre>
@@ -1245,29 +1238,29 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    i : 100 ;\n\
-    s : 'Hello' ;\n\
-    f : {} ;\n\
-    l : [] ;\n\
-    m : [ a:1, b:2, ] ;  ... 連想配列も list になります。区別はしていません。\n\
-    \n\
-    @.co << i.type << \"\\n\" ; ... int, \n\
-    @.co << s.type << \"\\n\" ; ... str, \n\
-    @.co << f.type << \"\\n\" ; ... func, \n\
-    @.co << l.type << \"\\n\" ; ... list, \n\
-    @.co << m.type  ;        ... list",
-    "(; (: i 100 ) ) (; (: s 'Hello' ) ) (; (: f { } ) ) (; (: l [  ] ) ) (; (: m [ (, (: a 1 ) ) (, (: b 2 ) ) ] ) ) (; (<< (<< (. @ .co ) (. i .type ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. s .type ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. f .type ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. l .type ) ) '\n' ) ) (; (<< (. @ .co ) (. m .type ) ) )",
-    "int\nstr\nfunc\nlist\nlist"
+i : 100 ;\n\
+s : 'Hello' ;\n\
+f : {} ;\n\
+l : [] ;\n\
+m : [ a:1, b:2, ] ;  ... 連想配列も list になります。区別はしていません。\n\
+\n\
+@.co << i.type << \"\\n\" ; ... int, \n\
+@.co << s.type << \"\\n\" ; ... str, \n\
+@.co << f.type << \"\\n\" ; ... func, \n\
+@.co << l.type << \"\\n\" ; ... list, \n\
+@.co << m.type  ;        ... list",
+"(; (: i 100 ) ) (; (: s 'Hello' ) ) (; (: f { } ) ) (; (: l [  ] ) ) (; (: m [ (, (: a 1 ) ) (, (: b 2 ) ) ] ) ) (; (<< (<< (. @ .co ) (. i .type ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. s .type ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. f .type ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. l .type ) ) '\n' ) ) (; (<< (. @ .co ) (. m .type ) ) )",
+"int\nstr\nfunc\nlist\nlist"
 ) ;
 
 birds_script( "\
-    @.co << 100.type     << \"\\n\" ; ... int, \n\
-    @.co << 'World'.type << \"\\n\" ; ... str, \n\
-    @.co << {}.type      << \"\\n\" ; ... func, \n\
-    @.co << [].type      << \"\\n\" ; ... list, \n\
-    @.co << [ a:1, b:2, ].type  ;  ... list",
-    "(; (<< (<< (. @ .co ) (. 100 .type ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. 'World' .type ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. { } .type ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. [  ] .type ) ) '\n' ) ) (; (<< (. @ .co ) (. [ (, (: a 1 ) ) (, (: b 2 ) ) ] .type ) ) )",
-    "int\nstr\nfunc\nlist\nlist"
+@.co << 100.type     << \"\\n\" ; ... int, \n\
+@.co << 'World'.type << \"\\n\" ; ... str, \n\
+@.co << {}.type      << \"\\n\" ; ... func, \n\
+@.co << [].type      << \"\\n\" ; ... list, \n\
+@.co << [ a:1, b:2, ].type  ;  ... list",
+"(; (<< (<< (. @ .co ) (. 100 .type ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. 'World' .type ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. { } .type ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. [  ] .type ) ) '\n' ) ) (; (<< (. @ .co ) (. [ (, (: a 1 ) ) (, (: b 2 ) ) ] .type ) ) )",
+"int\nstr\nfunc\nlist\nlist"
 ) ;
 
 </script><pre>
@@ -1280,36 +1273,36 @@ birds_script( "\
 </pre><script>
 
 birds_script( "\
-    i : 100 ;\n\
-    s : 'Hello' ;\n\
-    f : {} ;\n\
-    l : [] ;\n\
-    m : [ a:1, b:2, ] ;  ... 連想配列も list になります。区別はしていません。\n\
-    \n\
-    @.co << i.detail << \"\\n\" ; ... i:100.int, \n\
-    @.co << s.detail << \"\\n\" ; ... s:'Hello'.str, \n\
-    @.co << f.detail << \"\\n\" ; ... f:{ }, \n\
-    @.co << l.detail << \"\\n\" ; ... l:[ ].noname, \n\
-    @.co << m.detail  ;        ... m:[ .a:1.int, .b:2.int, ].noname",
-    "(; (: i 100 ) ) (; (: s 'Hello' ) ) (; (: f { } ) ) (; (: l [  ] ) ) (; (: m [ (, (: a 1 ) ) (, (: b 2 ) ) ] ) ) (; (<< (<< (. @ .co ) (. i .detail ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. s .detail ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. f .detail ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. l .detail ) ) '\n' ) ) (; (<< (. @ .co ) (. m .detail ) ) )",
-    "i:100.int\ns:'Hello'.str\nf:{ }\nl:[ ].noname\nm:[ .a:1.int, .b:2.int, ].noname"
+i : 100 ;\n\
+s : 'Hello' ;\n\
+f : {} ;\n\
+l : [] ;\n\
+m : [ a:1, b:2, ] ;  ... 連想配列も list になります。区別はしていません。\n\
+\n\
+@.co << i.detail << \"\\n\" ; ... i:100.int, \n\
+@.co << s.detail << \"\\n\" ; ... s:'Hello'.str, \n\
+@.co << f.detail << \"\\n\" ; ... f:{ }, \n\
+@.co << l.detail << \"\\n\" ; ... l:[ ].noname, \n\
+@.co << m.detail  ;        ... m:[ .a:1.int, .b:2.int, ].noname",
+"(; (: i 100 ) ) (; (: s 'Hello' ) ) (; (: f { } ) ) (; (: l [  ] ) ) (; (: m [ (, (: a 1 ) ) (, (: b 2 ) ) ] ) ) (; (<< (<< (. @ .co ) (. i .detail ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. s .detail ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. f .detail ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. l .detail ) ) '\n' ) ) (; (<< (. @ .co ) (. m .detail ) ) )",
+"i:100.int\ns:'Hello'.str\nf:{ }\nl:[ ].noname\nm:[ .a:1.int, .b:2.int, ].noname"
 ) ;
 
 birds_script( "\
-    boo : { b:123 ; } ; \n\
-    foo : { .f:456 ; } ; \n\
-    woo : { .w:'Hello' ; } ; \n\
-    @.co << boo.detail << \"\\n\" ; ... boo:{ }, \n\
-    @.co << foo.detail << \"\\n\" ; ... foo:{ }, \n\
-    @.co << woo.detail << \"\\n\" ; ... woo:{ }, \n\
-    b : boo() ;\n\
-    f : foo() ;\n\
-    w : woo() ;\n\
-    @.co << b.detail  << \"\\n\" ; ... b:[ b:123.int, ].boo, \n\
-    @.co << f.detail  << \"\\n\" ; ... f:[ .f:456.int, ].foo, \n\
-    @.co << w.detail ;          ... w:[ .w:'Hello'.str, ].woo\n",
-    "(; (: boo { (; (: b 123 ) ) } ) ) (; (: foo { (; (: .f 456 ) ) } ) ) (; (: woo { (; (: .w 'Hello' ) ) } ) ) (; (<< (<< (. @ .co ) (. boo .detail ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. foo .detail ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. woo .detail ) ) '\n' ) ) (; (: b (call boo [  ] ) ) ) (; (: f (call foo [  ] ) ) ) (; (: w (call woo [  ] ) ) ) (; (<< (<< (. @ .co ) (. b .detail ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. f .detail ) ) '\n' ) ) (; (<< (. @ .co ) (. w .detail ) ) )",
-    "boo:{ }\nfoo:{ }\nwoo:{ }\nb:[ b:123.int, ].boo\nf:[ .f:456.int, ].foo\nw:[ .w:'Hello'.str, ].woo"
+boo : { b:123 ; } ; \n\
+foo : { .f:456 ; } ; \n\
+woo : { .w:'Hello' ; } ; \n\
+@.co << boo.detail << \"\\n\" ; ... boo:{ }, \n\
+@.co << foo.detail << \"\\n\" ; ... foo:{ }, \n\
+@.co << woo.detail << \"\\n\" ; ... woo:{ }, \n\
+b : boo() ;\n\
+f : foo() ;\n\
+w : woo() ;\n\
+@.co << b.detail  << \"\\n\" ; ... b:[ b:123.int, ].boo, \n\
+@.co << f.detail  << \"\\n\" ; ... f:[ .f:456.int, ].foo, \n\
+@.co << w.detail ;          ... w:[ .w:'Hello'.str, ].woo\n",
+"(; (: boo { (; (: b 123 ) ) } ) ) (; (: foo { (; (: .f 456 ) ) } ) ) (; (: woo { (; (: .w 'Hello' ) ) } ) ) (; (<< (<< (. @ .co ) (. boo .detail ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. foo .detail ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. woo .detail ) ) '\n' ) ) (; (: b (call boo [  ] ) ) ) (; (: f (call foo [  ] ) ) ) (; (: w (call woo [  ] ) ) ) (; (<< (<< (. @ .co ) (. b .detail ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. f .detail ) ) '\n' ) ) (; (<< (. @ .co ) (. w .detail ) ) )",
+"boo:{ }\nfoo:{ }\nwoo:{ }\nb:[ b:123.int, ].boo\nf:[ .f:456.int, ].foo\nw:[ .w:'Hello'.str, ].woo"
 ) ;
 
 </script><pre>
@@ -1330,7 +1323,7 @@ birds_script( "\
 </pre>
 
 <script>
-if ( c_NG === 0 || c_max > 0 )
+if ( c_NG === 0 && c_max > 0 )
     document.write( '<div style="background-color:#99D;padding:10px;">'+(c_max-c_NG)+'/'+c_max+' OK!</div>' ) ;
 else
     document.write( '<div style="background-color:#D55;padding:10px;">'+(c_max-c_NG)+'/'+c_max+' NG!</div>' ) ;

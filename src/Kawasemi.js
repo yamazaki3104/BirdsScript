@@ -426,9 +426,14 @@ function kawasemi_interpreter( _txt )
                     else if ( tkn === '(.' && mat === '.size' ) { // .size 返す予約メンバ
                         // hit
                         var typ = v1._type ;
-                        if ( typ !== 'list' ) return run_time_error( 'not list-object : ' + v1._name+'.'+v1._type ) ;
-                        hit = { _mode:'[stack]', _type:'int', _val:v1._val.length, _name:'literal', _const:false } ;
-                        local_token.push( hit ) ;
+                        if ( typ === 'list' ) {
+                            hit = { _mode:'[stack]', _type:'int', _val:v1._val.length, _name:'literal', _const:false } ;
+                            local_token.push( hit ) ;
+                        }
+                        else if ( typ === 'str' ) {
+                            hit = { _mode:'[stack]', _type:'int', _val:v1._val.length, _name:'literal', _const:false } ;
+                            local_token.push( hit ) ;
+                        }
                     }
                     else if ( tkn === '(.' && mat === '.detail' ) {
                         // hit
@@ -535,7 +540,7 @@ function kawasemi_interpreter( _txt )
                         return {
                             _mode:'[event]', _type:'exception', _name:'on_unmatch', debug_line:(debug_line===''?'':debug_line),
                             _val:[
-                                { _mode:'[stack]', _type:'str', _name:'_e', _const:false, _val:'unmatch index.: '+v1._name+mat }, // _e エラーメッセージ
+                                { _mode:'[stack]', _type:'str', _name:'_e', _const:false, _val:'unmatch member-name.: '+mat }, // _e エラーメッセージ
                                 o1, // _
                                 { _mode:'[stack]', _type:'str', _name:'_idx', _const:false, _val:v2._val }  // _idx
                             ]

@@ -19,15 +19,14 @@ function yamasemi_compiler( _txt, _flag )
         // 構文解析（その２）
         function yamasemi_parser2( _in, _chk_tbl )
         {
-            for ( var cc=0 ; cc<_chk_tbl.length ; cc++ )
+            do
             {{
+                var  re_try = false ;
 
-                var chk = _chk_tbl[cc] ;
-                var m   = chk.src.length ;
-
-                for ( var hit=0 ; hit===0 ; )
+                for ( var cc=0 ; cc<_chk_tbl.length ; cc++ )
                 {{
-                    hit = 1 ; // Hitしたら再確認。Hitしなかったら抜けて次の _chk_tbl へ
+                    var chk = _chk_tbl[cc] ;
+                    var m   = chk.src.length ;
 
                     for ( var ii=0 ; ii<=_in.length-m ; ii++ ) // '->' 左から右に一致確認
                     {{
@@ -59,23 +58,25 @@ function yamasemi_compiler( _txt, _flag )
                             if ( kdb !== '' )
                                 r.dbln = kdb ;
                             var tmp = [] ;
-                            for ( var j=0; j<_in.length ; )
+                            for ( var j=0 ; j<_in.length ; )
                             {{
                                 if ( j === i ) { tmp.push( r      ) ; j+=m ; }
-                                else           { tmp.push( _in[j] ) ; j++ ; }
+                                else           { tmp.push( _in[j] ) ; j++  ; }
                             }}
 
                             _in = tmp ;
-                            hit = 0 ; // continue 再確認。
+                            re_try = true ;
 
                             break ;
                         }
                     }}
                     // for ii
+                    if ( re_try == true ) break ;
                 }}
-                // for hit
+                // for cc
+
             }}
-            // for cc
+            while ( re_try == true )
 
             return _in ;
         }
@@ -236,10 +237,8 @@ function yamasemi_compiler( _txt, _flag )
                 out2.push( out1[i] ) ;
             }
         }}
-        // for i
 
-        // 分割後の余り、すなわち文 statment を評価
-        var out3 = yamasemi_parser2( out2, [
+        var out21 = yamasemi_parser2( out2, [
             { lr:'->', src:['.:.', 'ident:'], fn:function(_tbl,_i){return{lt:'dot_ident:', rt:_tbl[_i].rt+_tbl[_i+1].rt };} },
 
             // {}.type
@@ -247,35 +246,17 @@ function yamasemi_compiler( _txt, _flag )
             // [].type
             { lr:'->', src:['table_select?:', 'dot_ident:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(. [ '+_tbl[_i].rt+' ] '+_tbl[_i+1].rt+' )'};} },
 
-            { lr:'->', src:['ident:', 'dot_ident:'    ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(. '+_tbl[_i].rt+' '+_tbl[_i+1].rt+' )'};} },
-
             // throw aaa() ; exit aaa() ;
             { lr:'->', src:['throw:throw', 'ident:', 'func_call?:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(throw '+_tbl[_i+1].rt+' [ '+_tbl[_i+2].rt+' ] )'};} },
             { lr:'->', src:['exit:exit',   'ident:', 'func_call?:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(throw '+_tbl[_i+1].rt+' [ '+_tbl[_i+2].rt+' ] )'};} },
 
             // until aaa() ; goto aaa() ;
             { lr:'->', src:['until:until', 'ident:', 'func_call?:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(until '+_tbl[_i+1].rt+' [ '+_tbl[_i+2].rt+' ] )'};} },
-            { lr:'->', src:['goto:goto',   'ident:', 'func_call?:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(until '+_tbl[_i+1].rt+' [ '+_tbl[_i+2].rt+' ] )'};} },
+            { lr:'->', src:['goto:goto',   'ident:', 'func_call?:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(until '+_tbl[_i+1].rt+' [ '+_tbl[_i+2].rt+' ] )'};} }
+        ] ) ;
 
-            { lr:'->', src:['func_body:','func_call?:'   ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(call '+_tbl[_i].rt+' [ '+_tbl[_i+1].rt+' ] )'};} },
-            { lr:'->', src:['ident:',    'func_call?:'   ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(call '+_tbl[_i].rt+' [ '+_tbl[_i+1].rt+' ] )'};} },
-            { lr:'->', src:['ident:',    'table_select?:'], fn:function(_tbl,_i){return{lt:'expr:', rt:'(at '  +_tbl[_i].rt+' '  +_tbl[_i+1].rt+' )'  };} },
-            { lr:'->', src:['expr:',     'func_call?:'   ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(call '+_tbl[_i].rt+' [ '+_tbl[_i+1].rt+' ] )'};} },
-            { lr:'->', src:['expr:',     'table_select?:'], fn:function(_tbl,_i){return{lt:'expr:', rt:'(at '  +_tbl[_i].rt+' '  +_tbl[_i+1].rt+' )'  };} },
-            { lr:'->', src:['table_select?:',  'table_select?:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(at [ '  +_tbl[_i].rt + ' ] '  +_tbl[_i+1].rt+' )'  };} },
-
-            // ( ... )
-            { lr:'->', src:['func_call?:'               ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(scope { '+_tbl[_i].rt+' } )'};} },
-
-            // [ ... ]
-            { lr:'->', src:['table_select?:'            ], fn:function(_tbl,_i){return{lt:'expr:', rt:'[ '+_tbl[_i].rt+' ]'};} },
-
-            // a .b
-            { lr:'->', src:['ident:', '.:.', 'expr:'  ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(. '+_tbl[_i].rt+' .'+_tbl[_i+2].rt+' )'};} },
-            { lr:'->', src:['expr:',  'dot_ident:'    ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(. '+_tbl[_i].rt+' '+_tbl[_i+1].rt+' )'};} },
-            { lr:'->', src:['expr:',  '.:.', 'expr:'  ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(. '+_tbl[_i].rt+' .'+_tbl[_i+2].rt+' )'};} },
-            { lr:'->', src:['dot_ident:'              ], fn:function(_tbl,_i){return{lt:'ident:', rt:_tbl[_i].rt};} },
-
+        // 分割後の余り、すなわち文 statment を評価
+        var out22 = yamasemi_parser2( out21, [
             // a..b
             { lr:'->', src:['expr:',   '.:..', 'expr:'  ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(range '+_tbl[_i].rt+' '+_tbl[_i+2].rt+' )'};} },
             { lr:'->', src:['ident:',  '.:..', 'expr:'  ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(range '+_tbl[_i].rt+' '+_tbl[_i+2].rt+' )'};} },
@@ -283,8 +264,42 @@ function yamasemi_compiler( _txt, _flag )
             { lr:'->', src:['ident:',  '.:..', 'ident:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(range '+_tbl[_i].rt+' '+_tbl[_i+2].rt+' )'};} },
 
             // 10.{{ ... }}
-            { lr:'->', src:['expr:',      '.:.', 'loop_body:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(each '+_tbl[_i].rt+' '+_tbl[_i+2].rt+' )'};} },
-            { lr:'->', src:['ident:',     '.:.', 'loop_body:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(each '+_tbl[_i].rt+' '+_tbl[_i+2].rt+' )'};} },
+            { lr:'->', src:['expr:',  '.:.', 'loop_body:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(each '+_tbl[_i].rt+' '+_tbl[_i+2].rt+' )'};} },
+            { lr:'->', src:['ident:', '.:.', 'loop_body:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(each '+_tbl[_i].rt+' '+_tbl[_i+2].rt+' )'};} },
+
+            // { aaa }() ;
+            { lr:'->', src:['func_body:','func_call?:'   ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(call '+_tbl[_i].rt+' [ '+_tbl[_i+1].rt+' ] )'};} },
+
+            // aaa() ; aaa[] ;
+            { lr:'->', src:['ident:',    'func_call?:'   ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(call '+_tbl[_i].rt+' [ '+_tbl[_i+1].rt+' ] )'};} },
+            { lr:'->', src:['ident:',    'table_select?:'], fn:function(_tbl,_i){return{lt:'expr:', rt:'(at '  +_tbl[_i].rt+' '  +_tbl[_i+1].rt+' )'  };} },
+            { lr:'->', src:['expr:',     'func_call?:'   ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(call '+_tbl[_i].rt+' [ '+_tbl[_i+1].rt+' ] )'};} },
+            { lr:'->', src:['expr:',     'table_select?:'], fn:function(_tbl,_i){return{lt:'expr:', rt:'(at '  +_tbl[_i].rt+' '  +_tbl[_i+1].rt+' )'  };} },
+            { lr:'->', src:['table_select?:',  'table_select?:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(at [ '  +_tbl[_i].rt + ' ] '  +_tbl[_i+1].rt+' )'  };} },
+
+            // aaa.bbb()
+            { lr:'->', src:['ident:', 'dot_ident:', 'func_call?:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(call (. '+_tbl[_i].rt+' '+_tbl[_i+1].rt+' ) [ '+_tbl[_i+2].rt+' ] )'};} },
+            { lr:'->', src:['expr:',  'dot_ident:', 'func_call?:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(call (. '+_tbl[_i].rt+' '+_tbl[_i+1].rt+' ) [ '+_tbl[_i+2].rt+' ] )'};} },
+
+            // aaa.bbb
+            { lr:'->', src:['ident:', 'dot_ident:'    ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(. '+_tbl[_i].rt+' '+_tbl[_i+1].rt+' )'};} },
+            { lr:'->', src:['ident:', '.:.', 'expr:'  ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(. '+_tbl[_i].rt+' .'+_tbl[_i+2].rt+' )'};} },
+            { lr:'->', src:['expr:',  'dot_ident:'    ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(. '+_tbl[_i].rt+' '+_tbl[_i+1].rt+' )'};} },
+            { lr:'->', src:['expr:',  '.:.', 'expr:'  ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(. '+_tbl[_i].rt+' .'+_tbl[_i+2].rt+' )'};} },
+
+            // ( ... )
+            { lr:'->', src:['func_call?:'               ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(scope { '+_tbl[_i].rt+' } )'};} },
+
+            // [ ... ]
+            { lr:'->', src:['table_select?:'            ], fn:function(_tbl,_i){return{lt:'expr:', rt:'[ '+_tbl[_i].rt+' ]'};} },
+
+            // {{ ... }}
+            { lr:'->', src:['loop_body:'                  ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(loop '+_tbl[_i].rt+' )'};} }
+        ] ) ;
+
+        var out3 = yamasemi_parser2( out22, [
+
+            { lr:'->', src:['dot_ident:'              ], fn:function(_tbl,_i){return{lt:'ident:', rt:_tbl[_i].rt};} },
 
             { lr:'<-', src:['x:++', 'ident:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(++ '+_tbl[_i+1].rt+' )'};} },
             { lr:'<-', src:['x:--', 'ident:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(-- '+_tbl[_i+1].rt+' )'};} },
@@ -356,7 +371,7 @@ function yamasemi_compiler( _txt, _flag )
             { lr:'->', src:['set_var:', 'table_select?:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:_tbl[_i].rt };} },
 
             // {{ ... }}
-            { lr:'->', src:['loop_body:'                  ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(loop '+_tbl[_i].rt+' )'};} },
+//            { lr:'->', src:['loop_body:'                  ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(loop '+_tbl[_i].rt+' )'};} },
 
             { lr:'<-', src:['const-define:', 'expr:'      ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(: '+_tbl[_i].rt+' '+_tbl[_i+1].rt  + ' )'};} },
             { lr:'<-', src:['const-define:', 'enum-list:' ], fn:enum_def_f, dis:'expr:'  },
