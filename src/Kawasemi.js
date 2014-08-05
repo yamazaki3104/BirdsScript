@@ -178,7 +178,7 @@ function kawasemi_interpreter( _txt )
                 return v2 ;
 
             if ( v2._type !== 'int' )
-                return run_time_error( 'variable type mismatch.: ' + v2._val + ' ' + v2._type ) ;
+                return run_time_error( 'variable type mismatch.: ' + format_var( v2 ) ) ;
 
             var o = false ;
             if ( _v1._type !== 'ident' ) {
@@ -494,6 +494,82 @@ function kawasemi_interpreter( _txt )
                             }}
                         }
                     }
+                    if ( hit === false && v1._mode === '[stack]' && v1._type === 'func_no' ) {
+
+                        // func + at はここを通る func[a] の a は it に乗せる
+                        // 引数 it を乗せる
+                        var arg_it2 = g_stack_tbl.length ; // g_stack_tbl をここまで戻す
+                        var o = clone( v2 ) ; o._name = 'it' ;
+                        g_stack_tbl.push( o ) ;
+
+                        // func 実行
+                        hit = kawa_parser( g_token_tbl[ v1._val ] ) ;
+                        var out = g_stack_pop_and_dotr_and_catch( arg_it2, hit, false ) ; // g_stack_tbl を削る dtorやcatchを実行
+
+                        if ( hit._mode === '[event]' ) {
+                            if ( hit._type === 'return' && hit._val.length > 0 )
+                                // 関数を return で抜けて返ってきた
+                                local_token.push( { _mode:'[stack]', _type:'list', _val:hit._val, _name:'literal', _const:false, _prototype:mat } ) ;
+                            else
+                                return hit ;
+                        }
+                        hit._prototype = v1._name ;
+
+                        // 関数内であたらしく生成されたメンバやメンバ関数は戻り値 list に転送。
+                        for ( ; arg_it2<g_stack_tbl.length ; ) {{
+                            var mem = g_stack_tbl.pop() ; // 転送なのでdtorは実行しない
+                            mem._this = r ;
+                            hit._val.unshift( mem ) ; // 前方からつみなおし（転送）
+                        }}
+                        // 引数は捨てる
+                        for ( ; arg_it<g_stack_tbl.length ; ) {{
+                            var mem = g_stack_tbl.pop() ; // todo check dtorの実行が必要でしょ
+                        }}
+                        local_token.push( hit ) ;
+
+                    }
+                    if ( hit === false ) {
+                        // ここで unmatch の関数を探して、あれば実行する。（外部ライブラリ対応）
+                        var m = '' + v2._val ;
+                        m = '#' + m.substr( 1, m.length-1 ) ;
+
+                        // global stack から探す
+                        for ( var j=g_stack_tbl.length-1 ; j>=0 ; j-- )
+                            if ( g_stack_tbl[j]._mode === '[stack]' )
+                                if ( g_stack_tbl[j]._name === m ) {
+                                    hit = clone( g_stack_tbl[j] ) ;
+                                    break ;
+                                }
+                        if ( hit !== false ) {
+                            if ( hit._type === 'func_no' ) {
+
+                                // 引数を乗せる
+                                var arg_it2 = g_stack_tbl.length ; // g_stack_tbl をここまで戻す
+                                var o = clone( v1 ) ; o._name = '#' ;
+                                g_stack_tbl.push( o ) ; // _
+                                g_stack_tbl.push( { _mode:'[stack]', _type:'str', _name:'idx', _const:false, _val:v2._val } ) ; // _idx
+
+                                // func 実行
+                                hit = kawa_parser( g_token_tbl[ hit._val ] ) ;
+                                var out = g_stack_pop_and_dotr_and_catch( arg_it2, hit, false ) ; // g_stack_tbl を削る dtorやcatchを実行
+
+                                if ( hit._mode === '[event]' ) {
+                                    if ( hit._type === 'return' && hit._val.length > 0 )
+                                        // 関数を return で抜けて返ってきた
+                                        local_token.push( { _mode:'[stack]', _type:'list', _val:hit._val, _name:'literal', _const:false, _prototype:mat } ) ;
+                                    else
+                                        return hit ;
+                                }
+                                else {
+                                    // [ ] が返ってきた場合は、on_unmatch exception
+                                    if ( hit._mode === '[stack]' && hit._val.length > 0 )
+                                        local_token.push( hit ) ;
+                                    else
+                                        hit = false ;
+                                }
+                            }
+                        }
+                    }
                     if ( hit === false ) {
                         // ここで unmatch の関数を探して、あれば実行する。（外部ライブラリ対応）
 
@@ -724,7 +800,7 @@ function kawasemi_interpreter( _txt )
                             else {
                                 // list [] << a
                                 var c = clone( t2 ) ;
-                                if ( c._name[0]!=='.') c._name = '.'+c._name ;
+                                if ( c._name[0]!=='.') c._name = '.'+o._val.length ;
                                 o._val.push( c ) ;
                             }
                         }
@@ -754,7 +830,7 @@ function kawasemi_interpreter( _txt )
 
                 //-------------------------------------
                 // cmp()
-                local_token.push( (function( _c, _v1, _v2 )
+                var r = (function( _c, _v1, _v2 )
                 {
                     var v1 = get_var( _v1 ) ;
                     if ( v1._mode === '[event]' ) return v1 ;
@@ -813,7 +889,12 @@ function kawasemi_interpreter( _txt )
 
                     return run_time_error( _c ) ;
 
-                })( tkn, tmp[1], tmp[2] ) ) ;
+                })( tkn, tmp[1], tmp[2] ) ;
+
+                if ( r._mode === '[event]' )
+                    return r ;
+
+                local_token.push( r ) ;
 
             }
             else if ( tkn === '(??' ) {
@@ -1204,13 +1285,13 @@ function kawasemi_interpreter( _txt )
                     var t = local_token[j] ;
                     if ( t._mode !== '[stack]' ) continue ;
                     if ( t._name ) {
-                        if ( t._name === 'literal' ) // name ありは、 public に
+                        if ( t._name === 'literal' ) // name ありで literal は、 public .0 に
                             t._name = '.' + l.length ;
-                        else if ( t._name[0] !== '.' ) // name ありは、 public に
-                            t._name = '.' + t._name ;
+                        else if ( t._name[0] !== '.' ) // name ありで plivate は、 public .0 に
+                            t._name = '.' + t.length ;
                     }
                     else {
-                        // name 無しは public list に
+                        // name 無しは public .0 に
                         t._name = '.' + l.length ;
                     }
                     l.push( t ) ;
@@ -1218,9 +1299,9 @@ function kawasemi_interpreter( _txt )
                 for ( var j in r._val ) {{
                     var t = clone( r._val[j] ) ;
                     if ( r._val[j]._name )
-                        { if (t._name[0]!=='.') t._name = '.' + t._name ; } // name ありは、 public に
+                        { if (t._name[0]!=='.') t._name = '.' + l.length ; } // name あり plivate は、 public .0 に
                     else
-                        { t = clone(get_var(t)) ; t._name = '.' + l.length ; } // name 無しは public list に
+                        { t = clone(get_var(t)) ; t._name = '.' + l.length ; } // name 無しは public .0 に
                     l.push( t ) ;
                 }}
                 // 戻り値リスト l を返す
@@ -1279,10 +1360,18 @@ function kawasemi_interpreter( _txt )
             // 名前をつける（全部公開）
             lt = clone( lt ) ;
             if ( lt._mode === '[stack]' ) {
-                if ( lt._name    === 'literal' ) lt._name = r2._val.length ;
-                if ( lt._name[0] !== '.'       ) lt._name = '.' + lt._name  ;
+                if ( lt._name    === 'literal' ) lt._name = '' + r2._val.length ;
+                if ( lt._name[0] !== '.'       ) lt._name = '.' + lt._name ; // listの場合、ここでpublic にするのだけど、関数の場合は .0 にしたいんだよねー。対応をどうするか、ちょっと悩む。
                 lt._this = r2 ;
                 r2._val.push( lt ) ;
+            }
+            else if ( lt._mode === '[token]' ) {
+                if ( lt._type === 'func_no' ) {
+                    lt._mode = '[stack]'
+                    lt._name = '.' + r2._val.length ;
+                    lt._this = r2 ;
+                    r2._val.push( lt ) ;
+                }
             }
         }}
 

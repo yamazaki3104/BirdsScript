@@ -510,7 +510,7 @@ function yamasemi_compiler( _txt, _flag )
                 case " " : out1 += ' ' ; break ;
                 case "!" : out1 += 'x' ; break ;
                 case '"' : out1 += 'S' ; break ;
-                case "#" : out1 += 'x' ; break ;
+                case "#" : out1 += 'a' ; break ;
                 case "$" : out1 += 'x' ; break ;
                 case "%" : out1 += 'x' ; break ;
                 case "&" : out1 += 'x' ; break ;
