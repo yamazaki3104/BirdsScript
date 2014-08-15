@@ -239,7 +239,10 @@ function yamasemi_compiler( _txt, _flag )
         }}
 
         var out21 = yamasemi_parser2( out2, [
+            // .aaa
             { lr:'->', src:['.:.', 'ident:'], fn:function(_tbl,_i){return{lt:'dot_ident:', rt:_tbl[_i].rt+_tbl[_i+1].rt };} },
+            // .0
+            { lr:'->', src:['.:.', 'expr:' ], fn:function(_tbl,_i){return{lt:'dot_ident:', rt:_tbl[_i].rt+_tbl[_i+1].rt };} },
 
             // {}.type
             { lr:'->', src:['func_body:',     'dot_ident:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(. '+_tbl[_i].rt+' '+_tbl[_i+1].rt+' )'};} },
@@ -270,16 +273,20 @@ function yamasemi_compiler( _txt, _flag )
             // { aaa }() ;
             { lr:'->', src:['func_body:','func_call?:'   ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(call '+_tbl[_i].rt+' [ '+_tbl[_i+1].rt+' ] )'};} },
 
+            // aaa.bbb()
+            { lr:'->', src:['ident:', 'dot_ident:', 'func_call?:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(call (. '+_tbl[_i].rt+' '+_tbl[_i+1].rt+' ) [ '+_tbl[_i+2].rt+' ] )'};} },
+            { lr:'->', src:['expr:',  'dot_ident:', 'func_call?:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(call (. '+_tbl[_i].rt+' '+_tbl[_i+1].rt+' ) [ '+_tbl[_i+2].rt+' ] )'};} },
+
+            // aaa.bbb[]
+            { lr:'->', src:['ident:', 'dot_ident:', 'table_select?:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(at (. '+_tbl[_i].rt+' '+_tbl[_i+1].rt+' ) [ '+_tbl[_i+2].rt+' ] )'};} },
+            { lr:'->', src:['expr:',  'dot_ident:', 'table_select?:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(at (. '+_tbl[_i].rt+' '+_tbl[_i+1].rt+' ) [ '+_tbl[_i+2].rt+' ] )'};} },
+
             // aaa() ; aaa[] ;
             { lr:'->', src:['ident:',    'func_call?:'   ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(call '+_tbl[_i].rt+' [ '+_tbl[_i+1].rt+' ] )'};} },
             { lr:'->', src:['ident:',    'table_select?:'], fn:function(_tbl,_i){return{lt:'expr:', rt:'(at '  +_tbl[_i].rt+' '  +_tbl[_i+1].rt+' )'  };} },
             { lr:'->', src:['expr:',     'func_call?:'   ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(call '+_tbl[_i].rt+' [ '+_tbl[_i+1].rt+' ] )'};} },
             { lr:'->', src:['expr:',     'table_select?:'], fn:function(_tbl,_i){return{lt:'expr:', rt:'(at '  +_tbl[_i].rt+' '  +_tbl[_i+1].rt+' )'  };} },
             { lr:'->', src:['table_select?:',  'table_select?:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(at [ '  +_tbl[_i].rt + ' ] '  +_tbl[_i+1].rt+' )'  };} },
-
-            // aaa.bbb()
-            { lr:'->', src:['ident:', 'dot_ident:', 'func_call?:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(call (. '+_tbl[_i].rt+' '+_tbl[_i+1].rt+' ) [ '+_tbl[_i+2].rt+' ] )'};} },
-            { lr:'->', src:['expr:',  'dot_ident:', 'func_call?:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(call (. '+_tbl[_i].rt+' '+_tbl[_i+1].rt+' ) [ '+_tbl[_i+2].rt+' ] )'};} },
 
             // aaa.bbb
             { lr:'->', src:['ident:', 'dot_ident:'    ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(. '+_tbl[_i].rt+' '+_tbl[_i+1].rt+' )'};} },
@@ -369,9 +376,6 @@ function yamasemi_compiler( _txt, _flag )
             { lr:'->', src:['set_var:', 'func_body:'     ], fn:function(_tbl,_i){return{lt:'expr:', rt:'('+_tbl[_i].rt+' '+_tbl[_i+1].rt+' )'};} },
             { lr:'->', src:['set_var:', 'func_call?:'    ], fn:function(_tbl,_i){return{lt:'expr:', rt:_tbl[_i].rt };} },
             { lr:'->', src:['set_var:', 'table_select?:' ], fn:function(_tbl,_i){return{lt:'expr:', rt:_tbl[_i].rt };} },
-
-            // {{ ... }}
-//            { lr:'->', src:['loop_body:'                  ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(loop '+_tbl[_i].rt+' )'};} },
 
             { lr:'<-', src:['const-define:', 'expr:'      ], fn:function(_tbl,_i){return{lt:'expr:', rt:'(: '+_tbl[_i].rt+' '+_tbl[_i+1].rt  + ' )'};} },
             { lr:'<-', src:['const-define:', 'enum-list:' ], fn:enum_def_f, dis:'expr:'  },

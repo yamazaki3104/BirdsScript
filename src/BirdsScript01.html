@@ -2,7 +2,7 @@
 <html lang="ja">
 <!--
 つい、カッ！となってLL言語を作りはじめてしまいました。名前は「BirdsScript」です。
-（2014/07/27 現在、未完成。JavaScriptによる試作中。）
+（2014/07/28 現在、未完成。JavaScriptによる試作中。）
 
 Source Layout
 =============
@@ -175,7 +175,7 @@ BirdsScript ver.0.01 (c) 2013/08 YAMAZAKI Satoshi.<br>
 <!-- <a href="https://twitter.com/share" class="twitter-share-button" data-text="BirdsScript" data-lang="ja" data-size="large" data-count="none" data-hashtags="BirdsScript">ツイート</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script> <div class="g-plusone" data-annotation="none"></div><script type="text/javascript">window.___gcfg = {lang: 'ja'};(function() {var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;po.src = 'https://apis.google.com/js/plusone.js'; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);})();</script> <a href="http://b.hatena.ne.jp/entry/" class="hatena-bookmark-button" data-hatena-bookmark-layout="standard-noballoon" data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加"><img src="http://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="http://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
 <br> -->
 試作ページとして公開を開始しました。(2013/12/23)<br>
-現在も試作途中。メソッドチェーンが通るようになって、あと少しな感じになってきた。(2014/07/27)<br>
+現在も試作途中。public の表記を変更。.a -> #a。(2014/08/15)<br>
 <textarea cols="60" rows="8" id="yamasemi">
 --- sample code 階乗(fact) の関数宣言
 fact : { _n <= 1 ?? 1 !! _n * fact( n:_n-1 ).0 } ;
@@ -1165,7 +1165,7 @@ a : [ 1, 2, 3, 4, 5, ] ;\n\
 
 </script><pre>
 
-    で、BirdsScript では list の添え字に list-objct が使えたりします。
+    で、BirdsScript では list の添え字に list が使えたりします。
 
 </pre><script>
 
@@ -1212,97 +1212,6 @@ birds_script( "\
 @.co << [ 1, 2, 3, 4, 5, unmatch:55, ][ 9..11 ] ;    ... [ 55, 55, 55, ]",
 "(; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) (, (: unmatch 55 ) ) ] 9 ) ) ) (; (<< (. @ .co ) '\n' ) ) (; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) (, (: unmatch 55 ) ) ] [ (, 1 ) (, 9 ) (, 2 ) (, 8 ) (, 3 ) (, 7 ) ] ) ) ) (; (<< (. @ .co ) '\n' ) ) (; (<< (. @ .co ) (at [ (, 1 ) (, 2 ) (, 3 ) (, 4 ) (, 5 ) (, (: unmatch 55 ) ) ] (range 9 11 ) ) ) )",
 "55\n[ 2, 55, 3, 55, 4, 55, ]\n[ 55, 55, 55, ]"
-) ;
-
-</script><pre>
-
------------------------------------------------------------------------
-■ 型 .type
-
-    ここでは型の説明をします。
-
-    BirdsScript では、強い型付け（コンパイル時に型が決まり、代入や比較時に型のチェックをする）言語を目指しています。
-
-    また、すべての変数や定数、そして関数や配列も型を持っています。
-
-    それぞれの型を確認するには .type を使います。
-
-    int  整数
-    str  文字列
-    func 関数
-    list list
-
-    enum 列挙型(boolも含まれる予定)
-
-
-</pre><script>
-
-birds_script( "\
-i : 100 ;\n\
-s : 'Hello' ;\n\
-f : {} ;\n\
-l : [] ;\n\
-m : [ a:1, b:2, ] ;  ... 連想配列も list になります。区別はしていません。\n\
-\n\
-@.co << i.type << \"\\n\" ; ... int, \n\
-@.co << s.type << \"\\n\" ; ... str, \n\
-@.co << f.type << \"\\n\" ; ... func, \n\
-@.co << l.type << \"\\n\" ; ... list, \n\
-@.co << m.type  ;        ... list",
-"(; (: i 100 ) ) (; (: s 'Hello' ) ) (; (: f { } ) ) (; (: l [  ] ) ) (; (: m [ (, (: a 1 ) ) (, (: b 2 ) ) ] ) ) (; (<< (<< (. @ .co ) (. i .type ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. s .type ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. f .type ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. l .type ) ) '\n' ) ) (; (<< (. @ .co ) (. m .type ) ) )",
-"int\nstr\nfunc\nlist\nlist"
-) ;
-
-birds_script( "\
-@.co << 100.type     << \"\\n\" ; ... int, \n\
-@.co << 'World'.type << \"\\n\" ; ... str, \n\
-@.co << {}.type      << \"\\n\" ; ... func, \n\
-@.co << [].type      << \"\\n\" ; ... list, \n\
-@.co << [ a:1, b:2, ].type  ;  ... list",
-"(; (<< (<< (. @ .co ) (. 100 .type ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. 'World' .type ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. { } .type ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. [  ] .type ) ) '\n' ) ) (; (<< (. @ .co ) (. [ (, (: a 1 ) ) (, (: b 2 ) ) ] .type ) ) )",
-"int\nstr\nfunc\nlist\nlist"
-) ;
-
-</script><pre>
-
-    デバッグ時などで、型以外にも値などの詳細情報が欲しい場合には .detail を使います。
-
-    .type は型のみですが、
-    .detail は、変数名、値、型、の３つの情報が文字列になります。
-
-</pre><script>
-
-birds_script( "\
-i : 100 ;\n\
-s : 'Hello' ;\n\
-f : {} ;\n\
-l : [] ;\n\
-m : [ a:1, b:2, ] ;  ... 連想配列も list になります。区別はしていません。\n\
-\n\
-@.co << i.detail << \"\\n\" ; ... i:100.int, \n\
-@.co << s.detail << \"\\n\" ; ... s:'Hello'.str, \n\
-@.co << f.detail << \"\\n\" ; ... f:{ }, \n\
-@.co << l.detail << \"\\n\" ; ... l:[ ].noname, \n\
-@.co << m.detail  ;        ... m:[ .a:1.int, .b:2.int, ].noname",
-"(; (: i 100 ) ) (; (: s 'Hello' ) ) (; (: f { } ) ) (; (: l [  ] ) ) (; (: m [ (, (: a 1 ) ) (, (: b 2 ) ) ] ) ) (; (<< (<< (. @ .co ) (. i .detail ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. s .detail ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. f .detail ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. l .detail ) ) '\n' ) ) (; (<< (. @ .co ) (. m .detail ) ) )",
-"i:100.int\ns:'Hello'.str\nf:{ }\nl:[ ].noname\nm:[ .a:1.int, .b:2.int, ].noname"
-) ;
-
-birds_script( "\
-boo : { b:123 ; } ; \n\
-foo : { .f:456 ; } ; \n\
-woo : { .w:'Hello' ; } ; \n\
-@.co << boo.detail << \"\\n\" ; ... boo:{ }, \n\
-@.co << foo.detail << \"\\n\" ; ... foo:{ }, \n\
-@.co << woo.detail << \"\\n\" ; ... woo:{ }, \n\
-b : boo() ;\n\
-f : foo() ;\n\
-w : woo() ;\n\
-@.co << b.detail  << \"\\n\" ; ... b:[ b:123.int, ].boo, \n\
-@.co << f.detail  << \"\\n\" ; ... f:[ .f:456.int, ].foo, \n\
-@.co << w.detail ;          ... w:[ .w:'Hello'.str, ].woo\n",
-"(; (: boo { (; (: b 123 ) ) } ) ) (; (: foo { (; (: .f 456 ) ) } ) ) (; (: woo { (; (: .w 'Hello' ) ) } ) ) (; (<< (<< (. @ .co ) (. boo .detail ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. foo .detail ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. woo .detail ) ) '\n' ) ) (; (: b (call boo [  ] ) ) ) (; (: f (call foo [  ] ) ) ) (; (: w (call woo [  ] ) ) ) (; (<< (<< (. @ .co ) (. b .detail ) ) '\n' ) ) (; (<< (<< (. @ .co ) (. f .detail ) ) '\n' ) ) (; (<< (. @ .co ) (. w .detail ) ) )",
-"boo:{ }\nfoo:{ }\nwoo:{ }\nb:[ b:123.int, ].boo\nf:[ .f:456.int, ].foo\nw:[ .w:'Hello'.str, ].woo"
 ) ;
 
 </script><pre>
