@@ -140,8 +140,8 @@ Copyright (c) YAMAZAKI Satoshi. All rights reserved.
 <title>BirdsScript</title>
 <meta charset="UTF-8">
 <style> body { background-color:#cccccc; } </style>
-<script type="text/javascript" charset="utf-8" src="Yamasemi.mini.js"></script>
-<script type="text/javascript" charset="utf-8" src="Kawasemi.mini.js"></script>
+<script type="text/javascript" charset="utf-8" src="Yamasemi.js"></script>
+<script type="text/javascript" charset="utf-8" src="Kawasemi.js"></script>
 <script>
 
 var c_max = 0 ;
@@ -675,7 +675,7 @@ sw( in:99 ) ;   ... unmatch",
 -----------------------------------------------------------------
 ■ ループ '{{', '}}'    繰り返し（その１） loop文
 
-    予約語 break[], continue
+    予約語 break[], continue[]
 
     ループは '{{', '}}' で表記します。意味としては無限ループ for(;;){ ... } です。
 
@@ -705,50 +705,60 @@ i :: 0 ;\n\
 </pre><script>
 
 birds_script( "\
-a : {{\n\
-    @.co << 'A, ' ;   ... この行を何回通るか表示してみる\n\
-    break[ 10, 20 ] ; ... 複数の値を指定してループを抜ける\n\
+@.co << {{\n\
+    @.co << 'A, ' ;    ... この行を何回通るか表示してみる\n\
+    break [ 10, 20 ] ; ... 複数の値を指定してループを抜ける\n\
     @.co << 'B, ' ;\n\
-    continue ;    ... ここは実行されないけどね\n\
+    continue [] ;      ... ここは実行されないけどね\n\
     @.co << 'C, ' ;\n\
-}} ;\n\
-\n\
-@.co << a ;       ... [ 10, 20, ] list が返る",
-"(; (: a (loop { (; (<< (. @ .co ) 'A, ' ) ) (; (break [ (, 10 ) 20 ] ) ) (; (<< (. @ .co ) 'B, ' ) ) (; (continue ) ) (; (<< (. @ .co ) 'C, ' ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
+}} ;                   ... [ 10, 20, ] list が返る\n\
+",
+"(; (<< (. @ .co ) (loop { (; (<< (. @ .co ) 'A, ' ) ) (; (break [ (, 10 ) 20 ] ) ) (; (<< (. @ .co ) 'B, ' ) ) (; (continue [  ] ) ) (; (<< (. @ .co ) 'C, ' ) ) } ) ) )",
 "A, [ 10, 20, ]"
 ) ;
 
 birds_script( "\
-a : {{\n\
+@.co << {{\n\
     @.co << 'A, ' ;\n\
     break 10 ;      ... ループを抜ける。戻り値が list ではないので実行時 run-time errorになります。できればコンパイルエラーにしたい。\n\
     @.co << 'B, ' ;\n\
-    continue ;\n\
+    continue 20 ;\n\
     @.co << 'C, ' ;\n\
-}} ;\n\
-\n\
-@.co << a ;      ... 10 を表示したいけど・・・",
-"(; (: a (loop { (; (<< (. @ .co ) 'A, ' ) ) (; (break 10 ) ) (; (<< (. @ .co ) 'B, ' ) ) (; (continue ) ) (; (<< (. @ .co ) 'C, ' ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
+}}     ... 10 を表示したいけど・・・\n\
+",
+"(<< (. @ .co ) (loop { (; (<< (. @ .co ) 'A, ' ) ) (; (break 10 ) ) (; (<< (. @ .co ) 'B, ' ) ) (; (continue 20 ) ) (; (<< (. @ .co ) 'C, ' ) ) } ) )",
 "A, \nrun-time error: argument type is not list-object.: (break"
 ) ;
 
 birds_script( "\
-a : {{\n\
+@.co << {{\n\
     @.co << 'A, ' ;\n\
-    break[] ;       ... 戻り値無しでループを抜ける\n\
+    break [] ;       ... 戻り値無しでループを抜ける\n\
     @.co << 'B, ' ;\n\
-    continue ;\n\
+    continue [] ;\n\
     @.co << 'C, ' ;\n\
 }} ;\n\
-\n\
-@.co << a ;      ... a : [ ] ",
-"(; (: a (loop { (; (<< (. @ .co ) 'A, ' ) ) (; (break [  ] ) ) (; (<< (. @ .co ) 'B, ' ) ) (; (continue ) ) (; (<< (. @ .co ) 'C, ' ) ) } ) ) ) (; (<< (. @ .co ) a ) )",
+",
+"(; (<< (. @ .co ) (loop { (; (<< (. @ .co ) 'A, ' ) ) (; (break [  ] ) ) (; (<< (. @ .co ) 'B, ' ) ) (; (continue [  ] ) ) (; (<< (. @ .co ) 'C, ' ) ) } ) ) )",
 "A, [ ]"
+) ;
+
+birds_script( "\
+i :: 0 ;\n\
+@.co << {{\n\
+    ++ i ;\n\
+    i > 7 ?? break [ 555 ] ;\n\
+    i % 2 == 0 ?? continue [ 111 ] ;\n\
+    i\n\
+}} ;\n\
+",
+"(; (:: i 0 ) ) (; (<< (. @ .co ) (loop { (; (++ i ) ) (; (?? (> i 7 ) { (break [ 555 ] ) } ) ) (; (?? (== (% i 2 ) 0 ) { (continue [ 111 ] ) } ) ) i } ) ) )",
+"[ 1, 111, 3, 111, 5, 111, 7, 555, ]"
 ) ;
 
 </script><pre>
 
-    continue文のサンプルコードは FizzBuzz 問題です。
+    continue[] 文のサンプルコードは FizzBuzz 問題です。
 
 </pre><script>
 
@@ -757,20 +767,20 @@ birds_script( "\
 i :: 0 ;\n\
 {{\n\
     ++i > 20 ?? break[] ;\n\
-    i % 15 == 0 ?? ( @.co << 'FizzBuzz, ' ; continue ; )\n\
-    i % 3  == 0 ?? ( @.co << 'Fizz, ' ; continue ; )\n\
-    i % 5  == 0 ?? ( @.co << 'Buzz, ' ; continue ; )\n\
+    i % 15 == 0 ?? ( @.co << 'FizzBuzz, ' ; continue [] ; )\n\
+    i % 3  == 0 ?? ( @.co << 'Fizz, ' ; continue [] ; )\n\
+    i % 5  == 0 ?? ( @.co << 'Buzz, ' ; continue [] ; )\n\
     \n\
     @.co << i << ', ' ;  ... i を表示\n\
 }}",
-"(; (:: i 0 ) ) (loop { (; (?? (> (++ i ) 20 ) { (break [  ] ) } ) ) (; (?? (== (% i 15 ) 0 ) { (scope { (; (<< (. @ .co ) 'FizzBuzz, ' ) ) (; (continue ) ) } ) } ) (?? (== (% i 3 ) 0 ) { (scope { (; (<< (. @ .co ) 'Fizz, ' ) ) (; (continue ) ) } ) } ) (?? (== (% i 5 ) 0 ) { (scope { (; (<< (. @ .co ) 'Buzz, ' ) ) (; (continue ) ) } ) } ) (<< (<< (. @ .co ) i ) ', ' ) ) } )",
+"(; (:: i 0 ) ) (loop { (; (?? (> (++ i ) 20 ) { (break [  ] ) } ) ) (; (?? (== (% i 15 ) 0 ) { (scope { (; (<< (. @ .co ) 'FizzBuzz, ' ) ) (; (continue [  ] ) ) } ) } ) (?? (== (% i 3 ) 0 ) { (scope { (; (<< (. @ .co ) 'Fizz, ' ) ) (; (continue [  ] ) ) } ) } ) (?? (== (% i 5 ) 0 ) { (scope { (; (<< (. @ .co ) 'Buzz, ' ) ) (; (continue [  ] ) ) } ) } ) (<< (<< (. @ .co ) i ) ', ' ) ) } )",
 "1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz, 16, 17, Fizz, 19, Buzz, "
 ) ;
 
 birds_script( "\
---- FizzBuzz 問題。その２．\n\
+--- FizzBuzz 問題。その２。\n\
 --- もう少し BirdsScript の特長を生かした書き方版です。\n\
---- continue ではなく each文を使っています。each文の詳細については次の項目を参考にしてください。\n\
+--- continue [] ではなく each文を使っています。each文の詳細については次の項目を参考にしてください。\n\
 @.co << 20.{{\n\
     i : it + 1 ;\n\
        i % 15 == 0 ?? 'FizzBuzz'\n\
@@ -779,6 +789,21 @@ birds_script( "\
     !! i\n\
 }}",
 "(<< (. @ .co ) (each 20 { (; (: i (+ it 1 ) ) ) (?? (== (% i 15 ) 0 ) { 'FizzBuzz' } { (?? (== (% i 3 ) 0 ) { 'Fizz' } { (?? (== (% i 5 ) 0 ) { 'Buzz' } { i } ) } ) } ) } ) )",
+"[ 1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz, 16, 17, Fizz, 19, Buzz, ]"
+) ;
+
+birds_script( "\
+--- FizzBuzz 問題。その３。\n\
+--- continue [] の list に載せる機能を積極的に使う。\n\
+@.co << 20.{{\n\
+    i : it + 1 ;\n\
+    i % 15 == 0 ?? continue [ 'FizzBuzz' ] ;\n\
+    i %  3 == 0 ?? continue [ 'Fizz' ] ;\n\
+    i %  5 == 0 ?? continue [ 'Buzz' ] ;\n\
+    i\n\
+}} ;\n\
+",
+"(; (<< (. @ .co ) (each 20 { (; (: i (+ it 1 ) ) ) (; (?? (== (% i 15 ) 0 ) { (continue [ 'FizzBuzz' ] ) } ) ) (; (?? (== (% i 3 ) 0 ) { (continue [ 'Fizz' ] ) } ) ) (; (?? (== (% i 5 ) 0 ) { (continue [ 'Buzz' ] ) } ) ) i } ) ) )",
 "[ 1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz, 16, 17, Fizz, 19, Buzz, ]"
 ) ;
 
@@ -791,9 +816,9 @@ birds_script( "\
 birds_script( "\
 --- C言語風の for ( int i=0 ; i < 4 ; i++ ) で\n\
 i :: 0 ;\n\
-a : {{                  ... ループの戻り値 list を a に\n\
-    i >= 4 ?? break[] ; ... 戻り値無しでループを抜ける\n\
-    i,                  ... i を戻り値 list に積む\n\
+a : {{                   ... ループの戻り値 list を a に\n\
+    i >= 4 ?? break [] ; ... 戻り値無しでループを抜ける\n\
+    i,                   ... i を戻り値 list に積む\n\
     ++i ;\n\
 }} ;\n\
 @.co << a ;             ... a を表示してみる [ 0, 1, 2, 3, ]",
@@ -1028,7 +1053,7 @@ birds_script( "\
 
 </script><pre>
 
-    また、 break[], continue の動作も list に積む/積まないが関係します。
+    また、 break[], continue[] の動作も list に積む/積まないが関係します。
 
 </pre><script>
 
@@ -1039,14 +1064,14 @@ birds_script( "\
 ) ;
 
 birds_script( "\
-@.co << 7.{{ it < 3 ?? continue ; it }} ; ... [ 3, 4, 5, 6, ]",
-"(; (<< (. @ .co ) (each 7 { (; (?? (< it 3 ) { (continue ) } ) ) it } ) ) )",
+@.co << 7.{{ it < 3 ?? continue [ ] ; it }} ; ... [ 3, 4, 5, 6, ]",
+"(; (<< (. @ .co ) (each 7 { (; (?? (< it 3 ) { (continue [  ] ) } ) ) it } ) ) )",
 "[ 3, 4, 5, 6, ]"
 ) ;
 
 birds_script( "\
-@.co << 9.{{ it % 2 == 0 ?? continue ; it }} ; ... [ 1, 3, 5, 7, ]",
-"(; (<< (. @ .co ) (each 9 { (; (?? (== (% it 2 ) 0 ) { (continue ) } ) ) it } ) ) )",
+@.co << 9.{{ it % 2 == 0 ?? continue [ ] ; it }} ; ... [ 1, 3, 5, 7, ]",
+"(; (<< (. @ .co ) (each 9 { (; (?? (== (% it 2 ) 0 ) { (continue [  ] ) } ) ) it } ) ) )",
 "[ 1, 3, 5, 7, ]"
 ) ;
 

@@ -25,7 +25,7 @@ function kawasemi_interpreter( _txt )
         '[event]', 'error',     'syntax-error : '+_str,
         '[event]', 'exception', _name:func
         '[event]', 'break',     list-object
-        '[event]', 'continue',  null
+        '[event]', 'continue',  list-object
         '[event]', 'return',    list-object
 
         '[stack]', 'list',      [], _name:'', _const:false
@@ -155,7 +155,7 @@ function kawasemi_interpreter( _txt )
 
             // indent の場合は global stack から探す
             for ( var i=g_stack_tbl.length-1 ; i>=0 ; i-- )
-                if ( g_stack_tbl[i]._mode === '[stack]' )
+                //if ( g_stack_tbl[i]._mode === '[stack]' )
                     if ( g_stack_tbl[i]._name === _v._val )
                     {
                         var o = clone( g_stack_tbl[i] ) ;
@@ -484,6 +484,31 @@ function kawasemi_interpreter( _txt )
                                 // hit
                                 local_token.push( v1._val[hit._val] ) ;
                             }
+                            else if ( hit !== false && hit._type === 'func_no' ) {
+                                // hit
+
+                                // 引数を乗せる（579と同じ処理）
+                                var arg_it2 = g_stack_tbl.length ; // g_stack_tbl をここまで戻す
+                                var o = clone( v1 ) ; o._name = '#' ;
+                                g_stack_tbl.push( o ) ;
+                                // これはいらないよね（.aaa を引数 idx に載せる）
+                                // g_stack_tbl.push( { _mode:'[stack]', _type:'str', _name:'idx', _const:false, _val:v2._val } ) ; // _idx
+
+                                // func 実行
+                                hit = kawa_parser( g_token_tbl[ hit._val ] ) ;
+                                var out = g_stack_pop_and_dotr_and_catch( arg_it2, hit, false ) ; // g_stack_tbl を削る dtorやcatchを実行
+
+                                if ( hit._mode === '[event]' ) {
+                                    if ( hit._type === 'return' && hit._val.length > 0 )
+                                        // 関数を return で抜けて返ってきた
+                                        local_token.push( { _mode:'[stack]', _type:'list', _val:hit._val, _name:'literal', _const:false, _prototype:mat } ) ;
+                                    else
+                                        return hit ;
+                                }
+                                else {
+                                    local_token.push( hit ) ;
+                                }
+                            }
                         }
 
                         if ( hit === false ) {
@@ -551,7 +576,7 @@ function kawasemi_interpreter( _txt )
                         if ( hit !== false ) {
                             if ( hit._type === 'func_no' ) {
 
-                                // 引数を乗せる
+                                // 引数を乗せる (490と同じ処理)
                                 var arg_it2 = g_stack_tbl.length ; // g_stack_tbl をここまで戻す
                                 var o = clone( v1 ) ; o._name = '#' ;
                                 g_stack_tbl.push( o ) ;
@@ -963,7 +988,8 @@ function kawasemi_interpreter( _txt )
                     var out = g_stack_pop_and_dotr_and_catch( arg_it2, r, false ) ; // g_stack_tbl を削る  dtorやcatchを実行
 
                     // break check
-                    if ( r._mode === '[event]' && r._type === 'break' ) {
+                    // continue check
+                    if ( r._mode === '[event]' && ( r._type === 'break' || r._type === 'continue' )) {
                         // break[ hoge ] 戻り値hoge r._val を out_val (list-object)に積む
                         // 先に public なメンバ変数から転送
                         for ( var j in r._val._val ) {{
@@ -980,11 +1006,10 @@ function kawasemi_interpreter( _txt )
                         //     rj._this = out_val._val ;
                         //     out_val._val.push( rj ) ;
                         // }}
+                        if ( r._type === 'continue' ) {
+                            continue ; // loop
+                        }
                         break ; // loop
-                    }
-                    // continue check
-                    if ( r._mode === '[event]' && r._type === 'continue' ) {
-                        continue ; // loop
                     }
 
                     if ( r._mode === '[event]' && out._mode !== '[event]' ) {
@@ -1075,7 +1100,8 @@ function kawasemi_interpreter( _txt )
                     var out = g_stack_pop_and_dotr_and_catch( arg_it2, r, false ) ; // g_stack_tbl を削る dtorやcatchを実行
 
                     // break check
-                    if ( r._mode === '[event]' && r._type === 'break' ) {
+                    // continue check
+                    if ( r._mode === '[event]' && ( r._type === 'break' || r._type === 'continue' ) ) {
                         // 戻り値 r を out_val (list-object)に積む
                         for ( var j in r._val._val ) {{
                             var rj = clone( r._val._val[j] ) ;
@@ -1084,11 +1110,10 @@ function kawasemi_interpreter( _txt )
                             out_val._val.push( rj ) ;   // out._val
                         }}
 
+                        if ( r._type === 'continue' ) {
+                            continue ; // ech
+                        }
                         break ; // ech
-                    }
-                    // continue check
-                    if ( r._mode === '[event]' && r._type === 'continue' ) {
-                        continue ; // ech
                     }
 
                     if ( r._mode === '[event]' && out._mode !== '[event]' ) {
@@ -1120,23 +1145,29 @@ function kawasemi_interpreter( _txt )
                 if ( tmp.length < 2 ) return run_time_error( 'arg_size < 2 : ' + tkn ) ;
                 if ( tmp.length > 2 ) return run_time_error( 'arg_size > 2 : ' + tkn ) ;
                 var rj = get_var( tmp[1] ) ;
-                if ( rj._type !== 'list_no' && rj._type !== 'list' ) return run_time_error( 'argument type is not list-object.: ' + tkn ) ;
+                if ( rj._type !== 'list_no' && rj._type !== 'list' )
+                    return run_time_error( 'argument type is not list-object.: ' + tkn ) ;
                 return { _mode:'[event]', _type:'break', _val:rj } ;
             }
             else if ( tkn === '(continue' ) {
                 // (continue )  <-  continue
 
-                if ( tmp.length < 1 ) return run_time_error( 'arg_size < 1 : ' + tkn ) ;
-                if ( tmp.length > 1 ) return run_time_error( 'arg_size > 1 : ' + tkn ) ;
-                return { _mode:'[event]', _type:'continue', _val:get_null() } ;
+                if ( tmp.length < 2 ) return run_time_error( 'arg_size < 2 : ' + tkn ) ;
+                if ( tmp.length > 2 ) return run_time_error( 'arg_size > 2 : ' + tkn ) ;
+                var rj = get_var( tmp[1] ) ;
+                if ( rj._type !== 'list_no' && rj._type !== 'list' )
+                    return run_time_error( 'argument type is not list-object.: ' + tkn ) ;
+                return { _mode:'[event]', _type:'continue', _val:rj } ;
             }
             else if ( tkn === '(throw' ) {
                 // (throw xxx [ yyy ] )  <-  throw xxx( yyy )  <-  exit xxx( yyy )
 
                 if ( tmp.length < 3 ) return run_time_error( 'arg_size < 3 : ' + tkn ) ;
                 if ( tmp.length > 3 ) return run_time_error( 'arg_size > 3 : ' + tkn ) ;
-                if ( tmp[1]._type !== 'ident' ) return run_time_error( 'argument is not catch-name.: ' + tkn ) ;
-                if ( tmp[2]._type !== 'list_no' && tmp[2]._type !== 'list' ) return run_time_error( 'argument type is not list-object.: ' + tkn ) ;
+                if ( tmp[1]._type !== 'ident' )
+                    return run_time_error( 'argument is not catch-name.: ' + tkn ) ;
+                if ( tmp[2]._type !== 'list_no' && tmp[2]._type !== 'list' )
+                    return run_time_error( 'argument type is not list-object.: ' + tkn ) ;
                 return { _mode:'[event]', _type:'exception', _name:tmp[1]._val, _val:get_var(tmp[2])._val } ;
             }
             else if ( tkn === '(until' ) {
@@ -1144,8 +1175,10 @@ function kawasemi_interpreter( _txt )
 
                 if ( tmp.length < 3 ) return run_time_error( 'arg_size < 3 : ' + tkn ) ;
                 if ( tmp.length > 3 ) return run_time_error( 'arg_size > 3 : ' + tkn ) ;
-                if ( tmp[1]._type !== 'ident' ) return run_time_error( 'argument is not repeat-name.: ' + tkn ) ;
-                if ( tmp[2]._type !== 'list_no' && tmp[2]._type !== 'list' ) return run_time_error( 'argument is not list-object.: ' + tkn ) ;
+                if ( tmp[1]._type !== 'ident' )
+                    return run_time_error( 'argument is not repeat-name.: ' + tkn ) ;
+                if ( tmp[2]._type !== 'list_no' && tmp[2]._type !== 'list' )
+                    return run_time_error( 'argument is not list-object.: ' + tkn ) ;
                 return { _mode:'[event]', _type:'until', _name:tmp[1]._val, _val:get_var(tmp[2])._val } ;
             }
             else if ( tkn === '(++' ) {
@@ -1285,7 +1318,8 @@ function kawasemi_interpreter( _txt )
 
                 var r = get_var( tmp[1] ) ;
                 if ( r._mode === '[event]' ) return r ;
-                if ( r._type !== 'list' ) return run_time_error( 'argument type is not list-object.: ' + tkn ) ;
+                if ( r._type !== 'list' )
+                    return run_time_error( 'argument type is not list-object.: ' + tkn ) ;
 
                 // 戻り値リスト l に引数を push
                 var l = [] ;
@@ -1325,13 +1359,15 @@ function kawasemi_interpreter( _txt )
                 if ( fm._mode === '[event]' ) {
                     return fm ;
                 }
-                if ( fm._type !== 'int' ) return run_time_error( 'argument type is not int : ' + fm._name+'.'+fm._type ) ;
+                if ( fm._type !== 'int' )
+                    return run_time_error( 'argument type is not int : ' + fm._name+'.'+fm._type ) ;
 
                 var to = get_var( tmp[2] ) ;
                 if ( to._mode === '[event]' ) {
                     return to ;
                 }
-                if ( to._type !== 'int' ) return run_time_error( 'argument type is not int : ' + to._name+'.'+to._type ) ;
+                if ( to._type !== 'int' )
+                    return run_time_error( 'argument type is not int : ' + to._name+'.'+to._type ) ;
 
                 var r = { _mode:'[stack]', _type:'list', _val:[], _name:'literal', _const:false, _prototype:'range' } ;
                 for ( var it = fm._val ; ; ) {{
