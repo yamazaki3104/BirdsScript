@@ -883,11 +883,6 @@ function kawasemi_interpreter( _txt )
                     if ( _c === '(&&' ) return  { _mode:'[stack]', _type:'bool', _val:(v1._val &&  v2._val), _name:'literal', _const:true } ;
                     if ( _c === '(||' ) return  { _mode:'[stack]', _type:'bool', _val:(v1._val ||  v2._val), _name:'literal', _const:true } ;
 
-                    if ( v1._type === 'str' && v2._type === 'str' && v1._val.length === 1 && v2._val.length === 1 ) {
-                        if ( _c === '(+' ) return  { _mode:'[stack]', _type:v1._type, _val:String.fromCharCode(v1._val.charCodeAt(0) + v2._val.charCodeAt(0)), _name:'literal', _const:true } ;
-                        if ( _c === '(-' ) return  { _mode:'[stack]', _type:v1._type, _val:String.fromCharCode(v1._val.charCodeAt(0) - v2._val.charCodeAt(0)), _name:'literal', _const:true } ;
-                    }
-
                     if ( _c === '(*' ) return  { _mode:'[stack]', _type:v1._type, _val:(v1._val * v2._val), _name:'literal', _const:true } ;
                     if ( _c === '(/' ) {
                         if ( v2._val === 0 ) {
