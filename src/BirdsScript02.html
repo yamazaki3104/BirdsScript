@@ -617,7 +617,7 @@ foo() ;                 ... 関数 foo をコール",
 birds_script( "\
 throw on_exception() ;  ... on_exception という名前の例外を発生させます。",
 "(; (throw on_exception [  ] ) )",
-"\nexception: on_exception"
+"\nexception: on_exception by throw-command."
 ) ;
 
 birds_script( "\
@@ -627,8 +627,8 @@ throw on_exception ;  ... NG 引数が無くても ( ) は省略できないで�
 ) ;
 
 birds_script( "\
-throw on_exception( e:123 ) ;  ... 引数を指定してみる",
-"(; (throw on_exception [ (: e 123 ) ] ) )",
+throw on_exception( message:123 ) ;  ... 引数を指定してみる",
+"(; (throw on_exception [ (: message 123 ) ] ) )",
 "\nexception: on_exception 123"
 ) ;
 
@@ -642,7 +642,7 @@ throw on_exception( e:123 ) ;  ... 引数を指定してみる",
 birds_script( "\
 exit on_exception() ;  ... throw と同じく on_exception という名前の例外を発生させます。",
 "(; (throw on_exception [  ] ) )",
-"\nexception: on_exception"
+"\nexception: on_exception by throw-command."
 ) ;
 
 </script><pre>
@@ -675,7 +675,7 @@ throw on_exception() ;\n\
 @.co << 777 ;\n\
 catch on_exception ->> { @.co << 123 ; } ; ... catch をあとに書くと発生した例外を捕まえることができません",
 "(; (<< (. @ .co ) 555 ) ) (; (throw on_exception [  ] ) ) (; (<< (. @ .co ) 777 ) ) (; (->> on_exception { (; (<< (. @ .co ) 123 ) ) } ) )",
-"555\nexception: on_exception"
+"555\nexception: on_exception by throw-command."
 ) ;
 
 </script><pre>
@@ -729,24 +729,24 @@ lst : (\n\
 
 birds_script( "\
 foo : {\n\
-    catch on_exception ->> { _e + _e } ; ... 引数 _e を受け取り２倍にして返す\n\
+    catch on_exception ->> { arg.e + arg.e } ; ... 引数 arg.e を受け取り２倍にして返す\n\
     @.co << 555 ;\n\
     throw on_exception( e:123 ) ; ... throw に引数 e:123 を指定する\n\
 } ;\n\
 @.co << foo() ;",
-"(; (: foo { (; (->> on_exception { (+ _e _e ) } ) ) (; (<< (. @ .co ) 555 ) ) (; (throw on_exception [ (: e 123 ) ] ) ) } ) ) (; (<< (. @ .co ) (call foo [  ] ) ) )",
+"(; (: foo { (; (->> on_exception { (+ (. arg .e ) (. arg .e ) ) } ) ) (; (<< (. @ .co ) 555 ) ) (; (throw on_exception [ (: e 123 ) ] ) ) } ) ) (; (<< (. @ .co ) (call foo [  ] ) ) )",
 "555[ 246, ]"
 ) ;
 
 birds_script( "\
 foo : {\n\
-    catch on_exception ->> { _e + _e } ; ... 引数 _e を受け取りたいのに\n\
+    catch on_exception ->> { arg.e + arg.e } ; ... 引数 arg.e を受け取りたいのに\n\
     @.co << 555 ;\n\
     throw on_exception() ; ... throw の引数を忘れると・・・on_undefined の例外が発生します。\n\
 } ;\n\
 @.co << foo() ;",
-"(; (: foo { (; (->> on_exception { (+ _e _e ) } ) ) (; (<< (. @ .co ) 555 ) ) (; (throw on_exception [  ] ) ) } ) ) (; (<< (. @ .co ) (call foo [  ] ) ) )",
-"555\nexception: on_undefined undefined symbol.: _e"
+"(; (: foo { (; (->> on_exception { (+ (. arg .e ) (. arg .e ) ) } ) ) (; (<< (. @ .co ) 555 ) ) (; (throw on_exception [  ] ) ) } ) ) (; (<< (. @ .co ) (call foo [  ] ) ) )",
+"555\nexception: on_unmatch unmatch member-name.: .e"
 ) ;
 
 </script><pre>
@@ -759,54 +759,54 @@ foo : {\n\
 birds_script( "\
 --- scope ( ) 内での例外 throw\n\
 (\n\
-    catch on_exception ->> { @.co << _e ; } ;\n\
+    catch on_exception ->> { @.co << arg.e ; } ;\n\
     @.co << 555 ;\n\
     throw on_exception( e:123 ) ;... こっちの例外は catch される\n\
 ) ;\n\
 throw on_exception( e:456 ) ; ... こっちの例外は catch されない",
-"(; (scope { (; (->> on_exception { (; (<< (. @ .co ) _e ) ) } ) ) (; (<< (. @ .co ) 555 ) ) (; (throw on_exception [ (: e 123 ) ] ) ) } ) ) (; (throw on_exception [ (: e 456 ) ] ) )",
+"(; (scope { (; (->> on_exception { (; (<< (. @ .co ) (. arg .e ) ) ) } ) ) (; (<< (. @ .co ) 555 ) ) (; (throw on_exception [ (: e 123 ) ] ) ) } ) ) (; (throw on_exception [ (: e 456 ) ] ) )",
 "555123\nexception: on_exception 456"
 ) ;
 
 birds_script( "\
 --- function { } 内での例外 throw\n\
 foo : {\n\
-    catch on_exception ->> { @.co << _e ; } ;\n\
+    catch on_exception ->> { @.co << arg.e ; } ;\n\
     @.co << 555 ;\n\
     throw on_exception( e:123 ) ;... こっちの例外は catch される\n\
 } ;\n\
 \n\
 @.co << foo() ;\n\
 throw on_exception( e:456 ) ; ... こっちの例外は catch されない",
-"(; (: foo { (; (->> on_exception { (; (<< (. @ .co ) _e ) ) } ) ) (; (<< (. @ .co ) 555 ) ) (; (throw on_exception [ (: e 123 ) ] ) ) } ) ) (; (<< (. @ .co ) (call foo [  ] ) ) ) (; (throw on_exception [ (: e 456 ) ] ) )",
+"(; (: foo { (; (->> on_exception { (; (<< (. @ .co ) (. arg .e ) ) ) } ) ) (; (<< (. @ .co ) 555 ) ) (; (throw on_exception [ (: e 123 ) ] ) ) } ) ) (; (<< (. @ .co ) (call foo [  ] ) ) ) (; (throw on_exception [ (: e 456 ) ] ) )",
 "555123[ ]\nexception: on_exception 456"
 ) ;
 
 birds_script( "\
 --- loop {{ }} 内での例外 throw\n\
 lp : {{\n\
-    catch on_exception ->> { @.co << _e ; } ;\n\
+    catch on_exception ->> { @.co << arg.e ; } ;\n\
     @.co << 555 ;\n\
     throw on_exception( e:123 ) ;... こっちの例外は catch される\n\
 }} ;\n\
 \n\
 @.co << lp ;                  ... lp を表示してみる。\n\
 throw on_exception( e:456 ) ; ... こっちの例外は catch されない",
-"(; (: lp (loop { (; (->> on_exception { (; (<< (. @ .co ) _e ) ) } ) ) (; (<< (. @ .co ) 555 ) ) (; (throw on_exception [ (: e 123 ) ] ) ) } ) ) ) (; (<< (. @ .co ) lp ) ) (; (throw on_exception [ (: e 456 ) ] ) )",
+"(; (: lp (loop { (; (->> on_exception { (; (<< (. @ .co ) (. arg .e ) ) ) } ) ) (; (<< (. @ .co ) 555 ) ) (; (throw on_exception [ (: e 123 ) ] ) ) } ) ) ) (; (<< (. @ .co ) lp ) ) (; (throw on_exception [ (: e 456 ) ] ) )",
 "555123[ ]\nexception: on_exception 456"
 ) ;
 
 birds_script( "\
 --- each .{{ }} 内での例外 throw\n\
 ech : 7.{{\n\
-    catch on_exception ->> { @.co << _e ; } ;\n\
+    catch on_exception ->> { @.co << arg.e ; } ;\n\
     @.co << 555 ;\n\
     throw on_exception( e:123 ) ;... こっちの例外は catch される\n\
 }} ;\n\
 \n\
 @.co << ech ;                 ... ech を表示してみる。\n\
 throw on_exception( e:456 ) ; ... こっちの例外は catch されない",
-"(; (: ech (each 7 { (; (->> on_exception { (; (<< (. @ .co ) _e ) ) } ) ) (; (<< (. @ .co ) 555 ) ) (; (throw on_exception [ (: e 123 ) ] ) ) } ) ) ) (; (<< (. @ .co ) ech ) ) (; (throw on_exception [ (: e 456 ) ] ) )",
+"(; (: ech (each 7 { (; (->> on_exception { (; (<< (. @ .co ) (. arg .e ) ) ) } ) ) (; (<< (. @ .co ) 555 ) ) (; (throw on_exception [ (: e 123 ) ] ) ) } ) ) ) (; (<< (. @ .co ) ech ) ) (; (throw on_exception [ (: e 456 ) ] ) )",
 "555123[ ]\nexception: on_exception 456"
 ) ;
 
@@ -814,7 +814,7 @@ birds_script( "\
 --- list [] 内での例外 throw\n\
 lst : [\n\
     111,\n\
-    catch on_exception ->> { @.co << _e ; } ;\n\
+    catch on_exception ->> { @.co << arg.e ; } ;\n\
     222,\n\
     throw on_exception( e:123 ) ;... こっちの例外は catch される\n\
     333,\n\
@@ -822,7 +822,7 @@ lst : [\n\
 \n\
 @.co << lst ;                 ... lst を表示してみる。\n\
 throw on_exception( e:456 ) ; ... こっちの例外は catch されない",
-"(; (: lst [ (, 111 ) (; (->> on_exception { (; (<< (. @ .co ) _e ) ) } ) ) (, 222 ) (; (throw on_exception [ (: e 123 ) ] ) ) (, 333 ) ] ) ) (; (<< (. @ .co ) lst ) ) (; (throw on_exception [ (: e 456 ) ] ) )",
+"(; (: lst [ (, 111 ) (; (->> on_exception { (; (<< (. @ .co ) (. arg .e ) ) ) } ) ) (, 222 ) (; (throw on_exception [ (: e 123 ) ] ) ) (, 333 ) ] ) ) (; (<< (. @ .co ) lst ) ) (; (throw on_exception [ (: e 456 ) ] ) )",
 "123[ ]\nexception: on_exception 456"
 ) ;
 

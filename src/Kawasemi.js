@@ -10,8 +10,6 @@ KAWASEMI INTERPRETER 1.0 for Javascript
 //-------------------------------------
 function kawasemi_interpreter( _txt )
 {
-    //-------------------------------------
-    //
     var  g_token_tbl = [] ;
     var  g_stack_tbl = [] ;
 
@@ -19,19 +17,21 @@ function kawasemi_interpreter( _txt )
     var  g_output    = "" ;
 
     var  debug_line  = '' ;
-
-    /*-------------------------------------
-        _mode,     _type,       _val
-        '[event]', 'error',     'syntax-error : '+_str,
-        '[event]', 'exception', _name:func
-        '[event]', 'break',     list
-        '[event]', 'continue',  list
-        '[event]', 'return',    list
-
-        '[stack]', 'list',      [], _name:'', _const:false
-    */
-
     //-------------------------------------
+    function on_exception_this(
+        _v1,    // # に載せる
+        _ex,    // 'on_exception'
+        _mes    // arg.message に入れる文字列（'undefined symbol.: '+_v._val とか）
+    ) {
+        var shp = clone( _v1 ) ; shp._name = '#' ;   // #
+
+        return {
+            _mode:'[event]', _type:'exception', _name:_ex, debug_line:(debug_line===''?'':debug_line),
+            _val:[ { _mode:'[stack]', _type:'list', _name:'arg', _const:false,
+                _val:[ { _mode:'[stack]', _type:'str', _name:'#message', _const:false, _val:_mes } ]
+            }, shp ] };
+    }
+    //34-------------------------------------
     // null
     function get_null()
     {
@@ -80,13 +80,13 @@ function kawasemi_interpreter( _txt )
                 // throw -> catch
                 if ( it._type === 'func_no' ) {
 
-                    // _ev._val が Array なら引数として積む  .a -> _a
+                    // _ev._val が Array なら引数として積む  #, arg
                     var ls = _ev._val ;
                     if ( ls instanceof Array ) {
                         for ( var j in ls ) {{
                             var lss = clone( ls[j] ) ;
-                            if ( lss._name[0] === '#' )
-                                lss._name = '_' + lss._name.substr( 1, lss._name.length-1 ) ;
+//                            if ( lss._name[0] === '#' )
+  //                              lss._name = '_' + lss._name.substr( 1, lss._name.length-1 ) ;
                             g_stack_tbl.push( lss ) ;
                         }}
                     }
@@ -163,14 +163,20 @@ function kawasemi_interpreter( _txt )
                     }
 
             // みつからなかった -> undefined
-            var o = clone( _v ) ; o._name = '#' ;
+            return on_exception_this( _v, 'on_undefined', 'undefined symbol.: '+_v._val ) ;
+        }
+        //-------------------------------------
+        function on_exception_list(
+            _list,  // arg に載せる
+            _ex,    // 'on_exception'
+            _mes    // arg.message に入れる文字列（'undefined symbol.: '+_v._val とか）
+        ) {
+            var arg = clone( get_var( _list ) ) ;
+            arg._name='arg' ;
+            arg._val.push( { _mode:'[stack]', _type:'str', _name:'#message', _const:false, _val:_mes } ) ;
             return {
-                _mode:'[event]', _type:'exception', _name:'on_undefined', debug_line:(debug_line===''?'':debug_line),
-                _val:[
-                    { _mode:'[stack]', _type:'str', _name:'message', _const:false, _val:'undefined symbol.: '+_v._val },
-                    o
-                ]
-            } ;
+                _mode:'[event]', _type:'exception', _name:_ex, debug_line:(debug_line===''?'':debug_line),
+                _val:[ arg ] };
         }
 
         //-------------------------------------
@@ -189,7 +195,8 @@ function kawasemi_interpreter( _txt )
                 o = _v1 ; // リファレンス（クローンしたら値が更新されないから）を返す
             }
             else {
-                for ( var i=g_stack_tbl.length-1 ; i>=0 ; i-- ) {{
+                for ( var i=g_stack_tbl.length-1 ; i>=0 ; i-- )
+                {{
                     if ( g_stack_tbl[i]._name === _v1._val ) {
                         o = g_stack_tbl[i] ; // リファレンス（クローンしたら値が更新されないから）を返す
                         break ;
@@ -203,44 +210,43 @@ function kawasemi_interpreter( _txt )
                 if ( o._type  !== 'int' )
                     return run_time_error( 'variable type mismatch.: ' + format_var( o ) ) ;
 
-                if ( _c === '*='  ) { o._val *= v2._val ; return clone( o ) ; } ;
-                if ( _c === '/='  ) {
-                    if ( v2._val === 0 ) {
-                        var o1 = clone( o ) ;  o1._name = '#' ;   // #
-                        var o2 = clone( v2 ) ; o2._name = 'idx' ; // idx
-                        return {
-                            _mode:'[event]', _type:'exception', _name:'on_division_by_zero', debug_line:(debug_line===''?'':debug_line),
-                            _val:[ { _mode:'[stack]', _type:'str', _name:'message', _const:false, _val:'division by zero.: '+format_detail_var(o)+' /= 0' }, o1, o2 ]
-                        } ;
-                    }
+                if ( _c === '*='  ) {
+                    o._val *= v2._val ;
+                    return clone( o ) ;
+                }
+                else if ( _c === '/='  ) {
+                    if ( v2._val === 0 )
+                        return on_exception_this( o, 'on_division_by_zero', 'division by zero.: '+format_detail_var(o)+' /= 0' ) ;
+
                     o._val = Math.floor(o._val/v2._val) ;
                     return clone( o ) ;
-                } ;
-                if ( _c === '%='  ) {
-                    if ( v2._val === 0 ) {
-                        var o1 = clone( o ) ;  o1._name = '#' ;   // #
-                        var o2 = clone( v2 ) ; o2._name = 'idx' ; // idx
-                        return {
-                            _mode:'[event]', _type:'exception', _name:'on_division_by_zero', debug_line:(debug_line===''?'':debug_line),
-                            _val:[ { _mode:'[stack]', _type:'str', _name:'message', _const:false, _val:'division by zero.: '+format_detail_var(o)+' %= 0' }, o1, o2 ]
-                        } ;
-                    }
+                }
+                else if ( _c === '%='  ) {
+                    if ( v2._val === 0 )
+                        return on_exception_this( o, 'on_division_by_zero', 'division by zero.: '+format_detail_var(o)+' %= 0' ) ;
+
                     o._val %= v2._val ;
                     return clone( o ) ;
-                } ;
-                if ( _c === '+='  ) { o._val += v2._val ; return clone( o ) ; } ;
-                if ( _c === '-='  ) { o._val -= v2._val ; return clone( o ) ; } ;
+                }
+                else if ( _c === '+='  ) {
+                    o._val += v2._val ;
+                    return clone( o ) ;
+                }
+                else if ( _c === '-='  ) {
+                    o._val -= v2._val ;
+                    return clone( o ) ;
+                }
             }
 
-            o = clone( _v1 ) ; o._name = '#' ;
-            return {
-                _mode:'[event]', _type:'exception', _name:'on_undefined', debug_line:(debug_line===''?'':debug_line),
-                _val:[
-                    { _mode:'[stack]', _type:'str', _name:'message', _const:false, _val:'undefined symbol.: '+_v1._val },
-                    o
-                ]
-            } ;
+            return on_exception_this( _v1, 'on_undefined', 'undefined symbol.: '+_v1._val ) ;
         }
+
+
+
+
+
+
+
 
         //-------------------------------------
         //
@@ -373,10 +379,8 @@ function kawasemi_interpreter( _txt )
             else if ( tkn === '(,' ) {
                 // (, xxx ) <- xxx,
 
-                if ( tmp.length < 2 )
-                    return run_time_error( 'arg_size < 2 : ' + tkn ) ;
-                if ( tmp.length > 2 )
-                    return run_time_error( 'arg_size > 2 : ' + tkn ) ;
+                if ( tmp.length < 2 ) return run_time_error( 'arg_size < 2 : ' + tkn ) ;
+                if ( tmp.length > 2 ) return run_time_error( 'arg_size > 2 : ' + tkn ) ;
 
                 var v1 = get_var( tmp[1] ) ;
                 if ( v1._mode === '[event]' ) return v1 ;
@@ -385,33 +389,32 @@ function kawasemi_interpreter( _txt )
             else if ( tkn === '(;' ) {
                 // (; xxx ) <- xxx ;
                 // 全引数を評価 get_var する(戻り値は捨てる)
-                for( var j in tmp ) {{
-                    if ( j === '0' ) continue ;
-                    var v1 = get_var( tmp[j] ) ;
-                    if ( v1._mode === '[event]' ) return v1 ;
+                for ( var j in tmp )
+                {{
+                    if ( j === '0' )
+                        continue ;
 
+                    var v1 = get_var( tmp[j] ) ;
+                    if ( v1._mode === '[event]' )
+                        return v1 ;
                 }}
             }
             else if ( tkn === '(at' || tkn === '(.' ) {
 
-                // (at xxx yyy )  <-  xxx[yyy]
-                // (. xxx yyy )   <-  xxx.yyy
-                if ( tmp.length < 3 )
-                    return run_time_error( 'arg_size < 3 : ' + tkn ) ;
-                if ( tmp.length > 3 )
-                    return run_time_error( 'arg_size > 3 : ' + tkn ) ;
+                // (at xxx [ yyy zzz ] )  <-  xxx[ yyy, zzz ]
+                // (. xxx yyy )           <-  xxx.yyy
+                if ( tmp.length < 3 ) return run_time_error( 'arg_size < 3 : ' + tkn ) ;
+                if ( tmp.length > 3 ) return run_time_error( 'arg_size > 3 : ' + tkn ) ;
 
                 var v1 = get_var( tmp[1] ) ;
-                if ( v1._mode === '[event]' ) {
+                if ( v1._mode === '[event]' )
                     return v1 ;
-                }
 
                 var v2 = tmp[2] ;
                 if ( tkn === '(at' ) {
                     v2 = get_var( tmp[2] ) ;
-                    if ( v2._mode === '[event]' ) {
+                    if ( v2._mode === '[event]' )
                         return v2 ;
-                    }
                 }
                 if ( v2._type === 'ident' || v2._type === 'int' ||  v2._type === 'str' ) {
 
@@ -460,7 +463,8 @@ function kawasemi_interpreter( _txt )
 
                         if ( hit === false ) {
                             // list の場合は、public-memberから探す
-                            for ( var j in v1._val ) {
+                            for ( var j in v1._val )
+                            {{
                                 hit = v1._val[j] ;
                                 if ( hit._name === mat2 ) {
                                     // hit
@@ -468,7 +472,7 @@ function kawasemi_interpreter( _txt )
                                     break ; // hit
                                 }
                                 hit = false ;
-                            }
+                            }}
                         }
 
                         if ( hit === false ) {
@@ -514,7 +518,8 @@ function kawasemi_interpreter( _txt )
                         if ( hit === false ) {
                             // list 内に添字が見つからないが、unmatchはある場合の特殊処理。この処理を入れなくても、例外の通常処理でカバーできるとうれしい。
                             // 'unmatch 'がある場合は、その値を返す
-                            for ( var j in v1._val ) {{
+                            for ( var j in v1._val )
+                            {{
                                 hit = v1._val[j] ;
                                 if ( hit._name === '#unmatch' ) {
                                     // hit
@@ -549,13 +554,15 @@ function kawasemi_interpreter( _txt )
                         hit._prototype = v1._name ;
 
                         // 関数内であたらしく生成されたメンバやメンバ関数は戻り値 list に転送。
-                        for ( ; arg_it2<g_stack_tbl.length ; ) {{
+                        for ( ; arg_it2<g_stack_tbl.length ; )
+                        {{
                             var mem = g_stack_tbl.pop() ; // 転送なのでdtorは実行しない
                             mem._this = r ;
                             hit._val.unshift( mem ) ; // 前方からつみなおし（転送）
                         }}
                         // 引数は捨てる
-                        for ( ; arg_it<g_stack_tbl.length ; ) {{
+                        for ( ; arg_it<g_stack_tbl.length ; )
+                        {{
                             var mem = g_stack_tbl.pop() ; // todo check dtorの実行が必要でしょ
                         }}
                         local_token.push( hit ) ;
@@ -610,48 +617,39 @@ function kawasemi_interpreter( _txt )
                                     hit = clone( g_stack_tbl[j] ) ;
                                     break ;
                                 }
-                        if ( hit !== false ) {
-                            if ( hit._type === 'func_no' ) {
 
-                                // 引数を乗せる
-                                var arg_it2 = g_stack_tbl.length ; // g_stack_tbl をここまで戻す
-                                var o = clone( v1 ) ; o._name = '#' ;
-                                g_stack_tbl.push( o ) ; // #
-                                g_stack_tbl.push( { _mode:'[stack]', _type:'str', _name:'idx', _const:false, _val:v2._val } ) ; // idx
+                        if ( hit !== false && hit._type === 'func_no' ) {
 
-                                // func 実行
-                                hit = kawa_parser( g_token_tbl[ hit._val ] ) ;
-                                var out = g_stack_pop_and_dotr_and_catch( arg_it2, hit, false ) ; // g_stack_tbl を削る dtorやcatchを実行
+                            // 引数を乗せる
+                            var arg_it2 = g_stack_tbl.length ; // g_stack_tbl をここまで戻す
+                            var o = clone( v1 ) ; o._name = '#' ;
+                            g_stack_tbl.push( o ) ; // #
+                            g_stack_tbl.push( { _mode:'[stack]', _type:'str', _name:'idx', _const:false, _val:v2._val } ) ; // idx
 
-                                if ( hit._mode === '[event]' ) {
-                                    if ( hit._type === 'return' && hit._val.length > 0 )
-                                        // 関数を return で抜けて返ってきた
-                                        local_token.push( { _mode:'[stack]', _type:'list', _val:hit._val, _name:'literal', _const:false, _prototype:mat } ) ;
-                                    else
-                                        return hit ;
-                                }
-                                else {
-                                    // [ ] が返ってきた場合は、on_unmatch exception
-                                    if ( hit._mode === '[stack]' && hit._val.length > 0 )
-                                        local_token.push( hit ) ;
-                                    else
-                                        hit = false ;
-                                }
+                            // func 実行
+                            hit = kawa_parser( g_token_tbl[ hit._val ] ) ;
+                            var out = g_stack_pop_and_dotr_and_catch( arg_it2, hit, false ) ; // g_stack_tbl を削る dtorやcatchを実行
+
+                            if ( hit._mode === '[event]' ) {
+                                if ( hit._type === 'return' && hit._val.length > 0 )
+                                    // 関数を return で抜けて返ってきた
+                                    local_token.push( { _mode:'[stack]', _type:'list', _val:hit._val, _name:'literal', _const:false, _prototype:mat } ) ;
+                                else
+                                    return hit ;
+                            }
+                            else {
+                                // [ ] が返ってきた場合は、on_unmatch exception
+                                if ( hit._mode === '[stack]' && hit._val.length > 0 )
+                                    local_token.push( hit ) ;
+                                else
+                                    hit = false ;
                             }
                         }
                     }
 
-                    if ( hit === false ) {
-                        var o1 = clone( v1 ) ; o1._name = '#' ;    // 3
-                        return {
-                            _mode:'[event]', _type:'exception', _name:'on_unmatch', debug_line:(debug_line===''?'':debug_line),
-                            _val:[
-                                { _mode:'[stack]', _type:'str', _name:'message', _const:false, _val:'unmatch member-name.: '+mat }, // エラーメッセージ
-                                o1, // #
-                                { _mode:'[stack]', _type:'str', _name:'idx', _const:false, _val:v2._val }  // idx
-                            ]
-                        } ;
-                    }
+                    if ( hit === false ) // メンバ v2 がみつからない場合 on_unmatch
+                        return on_exception_this( v1, 'on_unmatch', 'unmatch member-name.: '+mat ) ;
+
                 }
                 else if ( v2._type === 'list' ) {
 
@@ -659,10 +657,12 @@ function kawasemi_interpreter( _txt )
                     if ( v1._type === 'list' && v2._type === 'list' ) {
                         // hit
                         var hit = { _mode:'[stack]', _type:'list', _val:[], _name:'literal', _const:false, _prototype:mat } ;
-                        for ( var j in v2._val ) {{
+                        for ( var j in v2._val )
+                        {{
                             var v2j = '#' + v2._val[j]._val ;
                             var hit_flag = false ;
-                            for ( var v1j in v1._val ) {{
+                            for ( var v1j in v1._val )
+                            {{
                                 var h = v1._val[v1j] ;
                                 if ( v2j === h._name ) {
                                     // hit
@@ -677,7 +677,8 @@ function kawasemi_interpreter( _txt )
 
                                 // list 内に添字が見つからないが、unmatchはある場合の特殊処理、この処理を入れなくても、例外の通常処理でカバーできるとうれしい。
                                 // 'unmatch'がある場合は、その値を返す
-                                for ( var v1j in v1._val ) {{
+                                for ( var v1j in v1._val )
+                                {{
                                     var h = v1._val[v1j] ;
                                     if ( h._name === '#unmatch' ) {
                                         // hit
@@ -695,14 +696,19 @@ function kawasemi_interpreter( _txt )
                         }}
                         local_token.push( hit ) ;
                     }
-
                 }
+
+
+
+
+
+
             }
             else if ( tkn === '(:' || tkn === '(::' || tkn === '(->>' || tkn === '(<<-' ) {
-                // (: xxx yyy )   <- xxx : yyy
-                // (:: xxx yyy )  <- xxx :: yyy
-                // (->> xxx yyy ) <- catch xxx ->> yyy
-                // (<<- xxx yyy ) <- until xxx <<- yyy
+                // (: xxx yyy   )  <-  xxx : yyy
+                // (:: xxx yyy  )  <-  xxx :: yyy
+                // (->> xxx yyy )  <-  catch xxx ->> yyy
+                // (<<- xxx yyy )  <-  until xxx <<- yyy ,  label xxx <<- yyy
 
                 if ( tmp.length < 3 ) return run_time_error( 'arg_size < 3 : ' + tkn ) ;
                 if ( tmp.length > 3 ) return run_time_error( 'arg_size > 3 : ' + tkn ) ;
@@ -757,40 +763,40 @@ function kawasemi_interpreter( _txt )
 
                     // global stack から探す
                     var o = false ;
-                    for ( var i=g_stack_tbl.length-1 ; i>=0 ; i-- ) {{
+                    for ( var i=g_stack_tbl.length-1 ; i>=0 ; i-- )
+                    {{
                         o = g_stack_tbl[i] ;
-                        if ( o._mode === '[stack]' && o._name === _n._val )
-                        {
-                            if ( o._const === true )
-                                return run_time_error( 'cannot be set to a read-only property.: ' + o._name+'.'+o._type ) ;
-                            if ( o._type !== vv._type )
-                                return run_time_error( 'type mismatch.: ' + o._name + '.' + o._type + " != " + vv._name + "." + vv._type ) ;
+                        if ( o._mode !== '[stack]' ) continue ;
+                        if ( o._name !== _n._val   ) continue ;
 
-                            // set val
-                            // o._type が list の場合はデストラクタの実行が必要では？？
-                            o._val  = vv._val ;
-                            o._type = vv._type ;
+                        if ( o._const === true )
+                            return run_time_error( 'cannot be set to a read-only property.: ' + o._name+'.'+o._type ) ;
 
-                            var r = clone( o ) ;
-                            r._name = 'literal' ;
+                        if ( o._type !== vv._type )
+                            return run_time_error( 'type mismatch.: ' + o._name + '.' + o._type + " != " + vv._name + "." + vv._type ) ;
 
-                            return r ;
-                        }
+                        // set val
+                        // o._type が list の場合はデストラクタの実行が必要では？？
+                        o._val  = vv._val ;
+                        o._type = vv._type ;
+
+                        var r = clone( o ) ;
+                        r._name = 'literal' ;
+
+                        return r ;
                     }}
 
-                    o = clone( _n ) ; o._name = '#' ;
-                    return {
-                        _mode:'[event]', _type:'exception', _name:'on_undefined', debug_line:(debug_line===''?'':debug_line),
-                        _val:[
-                            { _mode:'[stack]', _type:'str', _name:'message', _const:false, _val:'undefined symbol.: '+_n._val },
-                            o
-                        ]
-                    } ;
+                    return on_exception_this( _n, 'on_undefined', 'undefined symbol.: '+_n._val ) ;
+
                 })( tmp[1], tmp[2] ) ;
 
                 if ( r._mode === '[event]' )
                     return r ;
                 local_token.push( r ) ;
+
+
+
+
             }
             else if ( tkn === '(<<' ) {
                 // (<< xxx yyy )  <-  xxx << yyy
@@ -856,7 +862,7 @@ function kawasemi_interpreter( _txt )
                    || tkn === '(!=' || tkn === '(&&' || tkn === '(||' || tkn === '(*'  || tkn === '(/' || tkn === '(%'
                    || tkn === '(+'  || tkn === '(-'  || tkn === '(&'  || tkn === '(|'  || tkn === '(^' || tkn === '(>>' )
             {
-                // (< xxx yyy )  <-  xxx < yyy
+                // (< xxx yyy )  <-  xxx < yyy    ここは 2では外部関数になるはず・・・
 
                 if ( tmp.length < 3 ) return run_time_error( 'arg_size < 3 : ' + tkn ) ;
                 if ( tmp.length > 3 ) return run_time_error( 'arg_size > 3 : ' + tkn ) ;
@@ -866,10 +872,12 @@ function kawasemi_interpreter( _txt )
                 var r = (function( _c, _v1, _v2 )
                 {
                     var v1 = get_var( _v1 ) ;
-                    if ( v1._mode === '[event]' ) return v1 ;
+                    if ( v1._mode === '[event]' )
+                        return v1 ;
 
                     var v2 = get_var( _v2 ) ;
-                    if ( v2._mode === '[event]' ) return v2 ;
+                    if ( v2._mode === '[event]' )
+                        return v2 ;
 
                     if ( v1._type !== v2._type )
                         return { _mode:'[stack]', _type:'bool', _val:false, _name:'literal', _const:true } ;
@@ -883,28 +891,19 @@ function kawasemi_interpreter( _txt )
                     if ( _c === '(&&' ) return  { _mode:'[stack]', _type:'bool', _val:(v1._val &&  v2._val), _name:'literal', _const:true } ;
                     if ( _c === '(||' ) return  { _mode:'[stack]', _type:'bool', _val:(v1._val ||  v2._val), _name:'literal', _const:true } ;
 
+                    // 以下int のみの処理なんだけど、チェックが抜けていると思われる。 todo
+
                     if ( _c === '(*' ) return  { _mode:'[stack]', _type:v1._type, _val:(v1._val * v2._val), _name:'literal', _const:true } ;
                     if ( _c === '(/' ) {
-                        if ( v2._val === 0 ) {
-                            var o1 = clone( v1 ) ; o1._name = '#' ;   // #
-                            var o2 = clone( v2 ) ; o2._name = 'idx' ; // idx
-                            return {
-                                _mode:'[event]', _type:'exception', _name:'on_division_by_zero', debug_line:(debug_line===''?'':debug_line),
-                                _val:[ { _mode:'[stack]', _type:'str', _name:'message', _const:false, _val:'division by zero.: '+format_detail_var(v1)+' / 0' }, o1, o2 ]
-                            } ;
-                        }
+                        if ( v2._val === 0 )
+                            return on_exception_this( v1, 'on_division_by_zero', 'division by zero.: '+format_detail_var(v1)+' / 0' ) ;
 
                         return  { _mode:'[stack]', _type:v1._type, _val:Math.floor(v1._val / v2._val), _name:'literal', _const:true } ;
                     }
                     if ( _c === '(%' ) {
-                        if ( v2._val === 0 ) {
-                            var o1 = clone( v1 ) ; o1._name = '#' ;   // #
-                            var o2 = clone( v2 ) ; o2._name = 'idx' ; // idx
-                            return {
-                                _mode:'[event]', _type:'exception', _name:'on_division_by_zero', debug_line:(debug_line===''?'':debug_line),
-                                _val:[ { _mode:'[stack]', _type:'str', _name:'message', _const:false, _val:'division by zero.: '+format_detail_var(v1)+' % 0' }, o1, o2 ]
-                            } ;
-                        }
+                        if ( v2._val === 0 )
+                            return on_exception_this( v1, 'on_division_by_zero', 'division by zero.: '+format_detail_var(v1)+' % 0' ) ;
+
                         return  { _mode:'[stack]', _type:v1._type, _val:(v1._val % v2._val), _name:'literal', _const:true } ;
                     }
                     if ( _c === '(+' ) return  { _mode:'[stack]', _type:v1._type, _val:(v1._val + v2._val), _name:'literal', _const:true } ;
@@ -923,6 +922,13 @@ function kawasemi_interpreter( _txt )
                     return r ;
 
                 local_token.push( r ) ;
+
+
+
+
+
+
+
 
             }
             else if ( tkn === '(??' ) {
@@ -1024,8 +1030,7 @@ function kawasemi_interpreter( _txt )
                 }}
                 if ( ech >= max )
                     // exception on_loop_limit_over
-                    return { _mode:'[event]', _type:'exception', _name:'on_loop_limit_over', debug_line:(debug_line===''?'':debug_line),
-                        _val:[ { _mode:'[stack]', _type:'str', _name:'e', _const:false, _val:'loop limit over.: '+max } ] } ;
+                    return on_exception_this( get_null(), 'on_loop_limit_over', 'loop limit over.: '+max ) ;
 
                 // ループを抜けるので、idx を解放する
                 for ( ; g_stack_tbl.length > arg_it ; )
@@ -1062,7 +1067,8 @@ function kawasemi_interpreter( _txt )
 
                 var r = get_null() ;
 
-                for ( var ech=0 ; ech<max ; ech ++ ) {{
+                for ( var ech=0 ; ech<max ; ech ++ )
+                {{
                     // it
                     if      ( v1._type === 'str'  ) g_stack_tbl[arg_it]._val = v1._val.substr(ech,1) ;
                     else if ( v1._type === 'int'  ) g_stack_tbl[arg_it]._val = ech ;
@@ -1119,7 +1125,8 @@ function kawasemi_interpreter( _txt )
                         return r ; // catch されないその他のイベントはそのまま return
 
                     // 戻り値 out._val を out_val (list)に積みなおす
-                    for ( var j in out._val ) {{
+                    for ( var j in out._val )
+                    {{
                         var rj = clone( out._val[j] ) ;
                         rj._this = out_val._val ;
                         rj._name = '#' + out_val._val.length ;
@@ -1135,7 +1142,7 @@ function kawasemi_interpreter( _txt )
                 local_token.push( out_val ) ;
             }
             else if ( tkn === '(break' ) {
-                // (break [ yyy ] )  <-  break[ xxx ]
+                // (break [ xxx ] )  <-  break[ xxx ]
 
                 if ( tmp.length < 2 ) return run_time_error( 'arg_size < 2 : ' + tkn ) ;
                 if ( tmp.length > 2 ) return run_time_error( 'arg_size > 2 : ' + tkn ) ;
@@ -1145,7 +1152,7 @@ function kawasemi_interpreter( _txt )
                 return { _mode:'[event]', _type:'break', _val:rj } ;
             }
             else if ( tkn === '(continue' ) {
-                // (continue )  <-  continue
+                // (continue [ xxx ] )  <-  continue [ xxx ]
 
                 if ( tmp.length < 2 ) return run_time_error( 'arg_size < 2 : ' + tkn ) ;
                 if ( tmp.length > 2 ) return run_time_error( 'arg_size > 2 : ' + tkn ) ;
@@ -1163,10 +1170,15 @@ function kawasemi_interpreter( _txt )
                     return run_time_error( 'argument is not catch-name.: ' + tkn ) ;
                 if ( tmp[2]._type !== 'list_no' && tmp[2]._type !== 'list' )
                     return run_time_error( 'argument type is not list.: ' + tkn ) ;
-                return { _mode:'[event]', _type:'exception', _name:tmp[1]._val, _val:get_var(tmp[2])._val } ;
+
+                return on_exception_list(
+                    tmp[2],  // 引数リストなんだけど２では get_var() で評価せずに渡す予定。
+                    tmp[1]._val, 'by throw-command.' ) ;
             }
             else if ( tkn === '(until' ) {
                 // (until xxx [ yyy ] )  <-  repeat xxx( yyy )  <- goto xxx ( yyy )
+
+                // ここって、未実装機能だよね。なんか、動くような錯覚もするんだけど、実際のところどうなのさ。 todo
 
                 if ( tmp.length < 3 ) return run_time_error( 'arg_size < 3 : ' + tkn ) ;
                 if ( tmp.length > 3 ) return run_time_error( 'arg_size > 3 : ' + tkn ) ;
@@ -1174,7 +1186,10 @@ function kawasemi_interpreter( _txt )
                     return run_time_error( 'argument is not repeat-name.: ' + tkn ) ;
                 if ( tmp[2]._type !== 'list_no' && tmp[2]._type !== 'list' )
                     return run_time_error( 'argument is not list.: ' + tkn ) ;
-                return { _mode:'[event]', _type:'until', _name:tmp[1]._val, _val:get_var(tmp[2])._val } ;
+
+                return on_exception_list(
+                    tmp[2],  // 引数リストなんだけど２では get_var() で評価せずに渡す予定。
+                    tmp[1]._val, 'by until-command.' ) ;
             }
             else if ( tkn === '(++' ) {
                 // (++ xxx )  <-  ++xxx
@@ -1239,9 +1254,6 @@ function kawasemi_interpreter( _txt )
                     // a -> _a
                     for ( var j=g_stack_tbl.length-1 ; arg_it-1 < j ; j-- )
                         g_stack_tbl[j]._name = '_' + g_stack_tbl[j]._name ;
-
-                    // arg_size は積まないことになった
-                    // g_stack_tbl.push( { _mode:'[stack]', _type:'int', _val:g_stack_tbl.length-arg_it, _name:'arg_size', _const:true } ) ;
                 }
 
                 // arg を追加する前に既存の引数を隠ぺいする _a -> _._a
@@ -1318,7 +1330,8 @@ function kawasemi_interpreter( _txt )
 
                 // 戻り値リスト l に引数を push
                 var l = [] ;
-                for ( var j in local_token ) {{
+                for ( var j in local_token )
+                {{
                     var t = local_token[j] ;
                     if ( t._mode !== '[stack]' ) continue ;
                     if ( t._name ) {
@@ -1333,7 +1346,8 @@ function kawasemi_interpreter( _txt )
                     }
                     l.push( t ) ;
                 }}
-                for ( var j in r._val ) {{
+                for ( var j in r._val )
+                {{
                     var t = clone( r._val[j] ) ;
                     if ( r._val[j]._name )
                         { if (t._name[0]!=='#') t._name = '#' + l.length ; } // name あり plivate は、 public #0 に
@@ -1385,7 +1399,8 @@ function kawasemi_interpreter( _txt )
         if ( local_token.length === 0 ) return r2 ;
 
         // 数字の name を付け r2._val に積む
-        for ( var it in local_token ) {{
+        for ( var it in local_token )
+        {{
             var lt = local_token[it] ;
             if ( lt._type === 'ident' ) {
                 lt = get_var( lt ) ; // [token],ident （変数） -> [stack],literal （実数）
@@ -1437,7 +1452,8 @@ function kawasemi_interpreter( _txt )
         // 文字列 '', "" の処理
         var out2 = "" ;
         var mode = ' ' ;
-        for ( var i=0 ; i<out1.length ; i++  ) {{
+        for ( var i=0 ; i<out1.length ; i++  )
+        {{
             switch( out1[i] )
             {
                 case 's' :
@@ -1456,7 +1472,8 @@ function kawasemi_interpreter( _txt )
         // コメントの削除処理
         var out3 = "" ;
         mode = ' ' ;
-        for ( var i=0 ; i<out2.length ; i++ ) {{
+        for ( var i=0 ; i<out2.length ; i++ )
+        {{
             c = out2[i] ;
             switch( mode+c )
             {
@@ -1489,7 +1506,8 @@ function kawasemi_interpreter( _txt )
     // 字句解析
     var token_tbl = (function( _str ) {
         var out1 = "" ;
-        for ( var i=0 ; i<str.length ; i++ ) {{
+        for ( var i=0 ; i<str.length ; i++ )
+        {{
             switch( _str[i] )
             {
                 case " " : out1 += ' ' ; break ;
@@ -1594,7 +1612,8 @@ function kawasemi_interpreter( _txt )
         // 文字列 string  '', "" の処理
         var out2 = "" ;
         var mode = ' ' ;
-        for ( var i=0 ; i<out1.length ; i++ ) {{
+        for ( var i=0 ; i<out1.length ; i++ )
+        {{
             switch( out1[i] )
             {
                 case 's' :
@@ -1620,7 +1639,8 @@ function kawasemi_interpreter( _txt )
         var wd   = "" ;
         mode = out2[0] ;
         var tbl  = [] ;
-        for ( var i=0 ; i<out2.length ; i++ ) {{
+        for ( var i=0 ; i<out2.length ; i++ )
+        {{
             if ( mode === out2[i] ) {
                 wd += _str[i] ;
             }
@@ -1646,7 +1666,7 @@ function kawasemi_interpreter( _txt )
             _mode,     _type,     _val
             '[token]', 'int',     int
             '[token]', 'str',     str
-            '[token]', 'bool',    bool
+            '[token]', 'bool',    bool      true false
             '[token]', 'ident',   str
             '[token]', 'func_no', int
             '[token]', 'list_no', int
@@ -1671,12 +1691,14 @@ function kawasemi_interpreter( _txt )
 
         // 括弧 { } 分割。
         var root = [] ;
-        for ( var i=0 ; i<_in_tbl.length ; i++ ) {{
+        for ( var i=0 ; i<_in_tbl.length ; i++ )
+        {{
             // { } func
             if ( _in_tbl[i] === '}:}' ) {
                 var tmp = [] ;
                 var e ;
-                while ( e = root.pop() ) {{
+                while ( e = root.pop() )
+                {{
                     if ( e._type === 'ident' && e._val === '{' ) {
                         var func_no = g_token_tbl.length ;
                         g_token_tbl.push( tmp ) ;
@@ -1690,7 +1712,8 @@ function kawasemi_interpreter( _txt )
             else if ( _in_tbl[i] === ']:]' ) {
                 var tmp = [] ;
                 var e ;
-                while ( e = root.pop() ) {{
+                while ( e = root.pop() )
+                {{
                     if ( e._type === 'ident' && e._val === '[' ) {
                         var list_no = g_token_tbl.length ;
                         g_token_tbl.push( tmp ) ;
@@ -1720,9 +1743,15 @@ function kawasemi_interpreter( _txt )
     // 実行
     var r = kawa_parser( g_token_tbl[g_token_tbl.length-1] ) ;
     var out = g_stack_pop_and_dotr_and_catch( 0, r, false ) ; // g_stack_tbl を削る dtorやcatchを実行
-    if ( out._mode==='[event]' ) // ↓例外throwしか、考慮されていない。return, break, continue, など間違った使い方の時のエラー処理が抜けている
+    if ( out._mode==='[event]' ) // エラー表示。↓例外throwしか、考慮されていない。return, break, continue, など間違った使い方の時のエラー処理が抜けている
         g_err_list.push( '' + out._type + ': '+
-            ((out._type==='exception')?((out._val.length>0) ? out._name+' '+out._val[0]._val : out._name ):out._val) +
+            ((out._type==='exception')
+                ?(  (out._val.length>0)
+                    ? out._name+' '+out._val[0]._val[0]._val
+                    : out._name
+                )
+                :out._val
+            ) +
             (out.hasOwnProperty( 'debug_line' )&&out.debug_line!==""?"\n\tline:"+out.debug_line:"")
         ) ;
 
