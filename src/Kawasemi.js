@@ -17,21 +17,8 @@ function kawasemi_interpreter( _txt )
     var  g_output    = "" ;
 
     var  debug_line  = '' ;
-    //-------------------------------------
-    function on_exception_this(
-        _v1,    // # に載せる
-        _ex,    // 'on_exception'
-        _mes    // arg.message に入れる文字列（'undefined symbol.: '+_v._val とか）
-    ) {
-        var shp = clone( _v1 ) ; shp._name = '#' ;   // #
 
-        return {
-            _mode:'[event]', _type:'exception', _name:_ex, debug_line:(debug_line===''?'':debug_line),
-            _val:[ { _mode:'[stack]', _type:'list', _name:'arg', _const:false,
-                _val:[ { _mode:'[stack]', _type:'str', _name:'#message', _const:false, _val:_mes } ]
-            }, shp ] };
-    }
-    //34-------------------------------------
+    //-------------------------------------
     // null
     function get_null()
     {
@@ -41,9 +28,6 @@ function kawasemi_interpreter( _txt )
     //-------------------------------------
     //
     function clone( _v ) {
-    //     return _v ;
-    // }
-    // function clone2( _v ) {
         if ( _v._prototype )
             return { _mode:_v._mode, _type:_v._type, _val:_v._val, _name:_v._name, _const:_v._const, _prototype:_v._prototype } ;
         else
@@ -53,7 +37,9 @@ function kawasemi_interpreter( _txt )
     //-------------------------------------
     // デストラクタの実行（再帰する）
     function list_dtor( _lst ) {
-        for ( var i in _lst ) {{
+
+        for ( var i in _lst )
+        {{
             var it = _lst[i] ;
 
             if ( it._type === 'list' ) {
@@ -72,7 +58,8 @@ function kawasemi_interpreter( _txt )
 
         var r = _ev ;
 
-        for ( ; g_stack_tbl.length > _pos ; ) {{
+        for ( ; g_stack_tbl.length > _pos ; )
+        {{
             var it = g_stack_tbl.pop() ;
 
             if ( it._mode==='[catch]' && _ev._mode==='[event]' && it._name===_ev._name ) {
@@ -85,8 +72,6 @@ function kawasemi_interpreter( _txt )
                     if ( ls instanceof Array ) {
                         for ( var j in ls ) {{
                             var lss = clone( ls[j] ) ;
-//                            if ( lss._name[0] === '#' )
-  //                              lss._name = '_' + lss._name.substr( 1, lss._name.length-1 ) ;
                             g_stack_tbl.push( lss ) ;
                         }}
                     }
@@ -140,13 +125,7 @@ function kawasemi_interpreter( _txt )
                 var arg_it = g_stack_tbl.length ;
                 var r = kawa_parser( g_token_tbl[_v._val] ) ;
                 var out = g_stack_pop_and_dotr_and_catch( arg_it, r, true ) ; // g_stack_tbl を削る dtorやcatchを実行
-                if ( out._mode === '[event]' ) return out ;
-/* 必要？？いらないでしょ。
-                for ( var it in out._val ) {{
-                    if ( out._val[it]._mode === '[stack]' && out._val[it]._name[0] !== '#' )
-                        out._val[it]._name = '#' + out._val[it]._name ;
-                }}
-*/
+
                 return out ;
             }
 
@@ -165,6 +144,22 @@ function kawasemi_interpreter( _txt )
             // みつからなかった -> undefined
             return on_exception_this( _v, 'on_undefined', 'undefined symbol.: '+_v._val ) ;
         }
+
+        //-------------------------------------
+        function on_exception_this(
+            _v1,    // # に載せる
+            _ex,    // 'on_exception'
+            _mes    // arg.message に入れる文字列（'undefined symbol.: '+_v._val とか）
+        ) {
+            var shp = clone( _v1 ) ; shp._name = '#' ;   // #
+
+            return {
+                _mode:'[event]', _type:'exception', _name:_ex, debug_line:(debug_line===''?'':debug_line),
+                _val:[ { _mode:'[stack]', _type:'list', _name:'arg', _const:false,
+                    _val:[ { _mode:'[stack]', _type:'str', _name:'#message', _const:false, _val:_mes } ]
+                }, shp ] };
+        }
+
         //-------------------------------------
         function on_exception_list(
             _list,  // arg に載せる
@@ -174,6 +169,7 @@ function kawasemi_interpreter( _txt )
             var arg = clone( get_var( _list ) ) ;
             arg._name='arg' ;
             arg._val.push( { _mode:'[stack]', _type:'str', _name:'#message', _const:false, _val:_mes } ) ;
+
             return {
                 _mode:'[event]', _type:'exception', _name:_ex, debug_line:(debug_line===''?'':debug_line),
                 _val:[ arg ] };
@@ -240,13 +236,6 @@ function kawasemi_interpreter( _txt )
 
             return on_exception_this( _v1, 'on_undefined', 'undefined symbol.: '+_v1._val ) ;
         }
-
-
-
-
-
-
-
 
         //-------------------------------------
         //
@@ -697,12 +686,6 @@ function kawasemi_interpreter( _txt )
                         local_token.push( hit ) ;
                     }
                 }
-
-
-
-
-
-
             }
             else if ( tkn === '(:' || tkn === '(::' || tkn === '(->>' || tkn === '(<<-' ) {
                 // (: xxx yyy   )  <-  xxx : yyy
@@ -792,11 +775,8 @@ function kawasemi_interpreter( _txt )
 
                 if ( r._mode === '[event]' )
                     return r ;
+
                 local_token.push( r ) ;
-
-
-
-
             }
             else if ( tkn === '(<<' ) {
                 // (<< xxx yyy )  <-  xxx << yyy
@@ -922,14 +902,6 @@ function kawasemi_interpreter( _txt )
                     return r ;
 
                 local_token.push( r ) ;
-
-
-
-
-
-
-
-
             }
             else if ( tkn === '(??' ) {
                 // (?? xxx { yyy } )          <-  xxx ?? yyy
@@ -1000,13 +972,7 @@ function kawasemi_interpreter( _txt )
                             rj._name = '#' + out_val._val.length ; // 数字の名前を付ける
                             out_val._val.push( rj ) ;
                         }}
-                        // // 次に private なメンバ変数を転送
-                        // for ( var j in r._val._val ) {{
-                        //     var rj = clone( r._val._val[j] ) ;
-                        //     if ( rj._name[0] === '#' ) continue ;
-                        //     rj._this = out_val._val ;
-                        //     out_val._val.push( rj ) ;
-                        // }}
+
                         if ( r._type === 'continue' ) {
                             continue ; // loop
                         }
@@ -1146,9 +1112,11 @@ function kawasemi_interpreter( _txt )
 
                 if ( tmp.length < 2 ) return run_time_error( 'arg_size < 2 : ' + tkn ) ;
                 if ( tmp.length > 2 ) return run_time_error( 'arg_size > 2 : ' + tkn ) ;
+
                 var rj = get_var( tmp[1] ) ;
                 if ( rj._type !== 'list_no' && rj._type !== 'list' )
                     return run_time_error( 'argument type is not list.: ' + tkn ) ;
+
                 return { _mode:'[event]', _type:'break', _val:rj } ;
             }
             else if ( tkn === '(continue' ) {
@@ -1156,9 +1124,11 @@ function kawasemi_interpreter( _txt )
 
                 if ( tmp.length < 2 ) return run_time_error( 'arg_size < 2 : ' + tkn ) ;
                 if ( tmp.length > 2 ) return run_time_error( 'arg_size > 2 : ' + tkn ) ;
+
                 var rj = get_var( tmp[1] ) ;
                 if ( rj._type !== 'list_no' && rj._type !== 'list' )
                     return run_time_error( 'argument type is not list.: ' + tkn ) ;
+
                 return { _mode:'[event]', _type:'continue', _val:rj } ;
             }
             else if ( tkn === '(throw' ) {
@@ -1166,8 +1136,10 @@ function kawasemi_interpreter( _txt )
 
                 if ( tmp.length < 3 ) return run_time_error( 'arg_size < 3 : ' + tkn ) ;
                 if ( tmp.length > 3 ) return run_time_error( 'arg_size > 3 : ' + tkn ) ;
+
                 if ( tmp[1]._type !== 'ident' )
                     return run_time_error( 'argument is not catch-name.: ' + tkn ) ;
+
                 if ( tmp[2]._type !== 'list_no' && tmp[2]._type !== 'list' )
                     return run_time_error( 'argument type is not list.: ' + tkn ) ;
 
@@ -1182,8 +1154,10 @@ function kawasemi_interpreter( _txt )
 
                 if ( tmp.length < 3 ) return run_time_error( 'arg_size < 3 : ' + tkn ) ;
                 if ( tmp.length > 3 ) return run_time_error( 'arg_size > 3 : ' + tkn ) ;
+
                 if ( tmp[1]._type !== 'ident' )
                     return run_time_error( 'argument is not repeat-name.: ' + tkn ) ;
+
                 if ( tmp[2]._type !== 'list_no' && tmp[2]._type !== 'list' )
                     return run_time_error( 'argument is not list.: ' + tkn ) ;
 
@@ -1325,6 +1299,7 @@ function kawasemi_interpreter( _txt )
 
                 var r = get_var( tmp[1] ) ;
                 if ( r._mode === '[event]' ) return r ;
+
                 if ( r._type !== 'list' )
                     return run_time_error( 'argument type is not list.: ' + tkn ) ;
 
@@ -1365,16 +1340,16 @@ function kawasemi_interpreter( _txt )
                 if ( tmp.length > 3 ) return run_time_error( 'arg_size > 3 : ' + tkn ) ;
 
                 var fm = get_var( tmp[1] ) ;
-                if ( fm._mode === '[event]' ) {
+                if ( fm._mode === '[event]' )
                     return fm ;
-                }
+
                 if ( fm._type !== 'int' )
                     return run_time_error( 'argument type is not int : ' + fm._name+'.'+fm._type ) ;
 
                 var to = get_var( tmp[2] ) ;
-                if ( to._mode === '[event]' ) {
+                if ( to._mode === '[event]' )
                     return to ;
-                }
+
                 if ( to._type !== 'int' )
                     return run_time_error( 'argument type is not int : ' + to._name+'.'+to._type ) ;
 
